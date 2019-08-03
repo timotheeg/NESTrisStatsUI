@@ -49,6 +49,12 @@ let current_player = 'TIM';
 
 module.exports = async function (fastify, opts) {
 	async function getStats(request, reply) {
+		const
+			now = new Date(),
+			tomorrow = new Date(now);
+
+		tomorrow.setDate(now.getDate() + 1);
+
 		return {
 			current_player,
 			pbs: [
@@ -73,8 +79,6 @@ module.exports = async function (fastify, opts) {
 		}
 
 		const
-			now = new Date(),
-			tomorrow = new Date(now),
 			data = {
 				...request.body,
 				name:         current_player,
@@ -85,8 +89,6 @@ module.exports = async function (fastify, opts) {
 				max_drought:  request.body.i_droughts.max,
 				das_avg:      request.body.das.avg
 			};
-
-		tomorrow.setDate(now.getDate() + 1);
 
 		// insert game
 		db.transaction(() => insert.run(data))();
