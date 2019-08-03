@@ -48,6 +48,23 @@ const
 let current_player = 'TIM';
 
 module.exports = async function (fastify, opts) {
+	async function getStats(request, reply) {
+		return {
+			current_player,
+			pbs: [
+				pbs.get(current_player, 15),
+				pbs.get(current_player, 18),
+				pbs.get(current_player, 19),
+			],
+			high_scores: {
+				overall: best_overall.all(current_player),
+				today:   best_today.all(current_player, now.toISOString().split('T')[0], tomorrow.toISOString().split('T')[0])
+			}
+		};
+	}
+
+	fastify.get('/get_stats', getStats);
+
 	fastify.post('/report_game', async function (request, reply) {
 
 		// TODO: figure out whey headers are not sent as application/json
@@ -74,20 +91,7 @@ module.exports = async function (fastify, opts) {
 		// insert game
 		db.transaction(() => insert.run(data))();
 
-		const res = {
-			current_player,
-			pbs: [
-				pbs.get(current_player, 15),
-				pbs.get(current_player, 18),
-				pbs.get(current_player, 19),
-			],
-			high_scores: {
-				overall: best_overall.all(current_player),
-				today:   best_today.all(current_player, now.toISOString().split('T')[0], tomorrow.toISOString().split('T')[0])
-			}
-		};
-
-		return res
+		return getStats(request, reply);
 	});
 
 	fastify.register(require('fastify-formbody'));
