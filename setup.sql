@@ -6,5 +6,7 @@ CREATE TABLE scores (
 	score int,
 	lines int,
 	tetris_rate real,
-	game_stats_json blob
+	num_droughts int,
+	max_drought int,
+	das_avg real
 );
