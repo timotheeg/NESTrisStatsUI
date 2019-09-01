@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script src="soundmanager2-jsmin.js"></script>
+<script>
+window.speechSynthesis.getVoices()
+window.speechSynthesis.getVoices()
+
+
+function playitapi() {
+	var utterThis = new SpeechSynthesisUtterance('Transition approaching');
+
+	window.speechSynthesis.speak(new SpeechSynthesisUtterance('Transition approaching'));
+}
+
+/**/
+
+/**/
+
+function playitgoogle() {
+	var audio = new Audio('https://translate.google.com/translate_tts?ie=UTF-8&total=1&idx=0&textlen=29&client=tw-ob&q=This%20is%20a%20test%20donation%20for%20%2426&tl=en');
+
+	audio.play()
+		.then(
+			console.log,
+			console.error
+		)
+}
+
+playitgoogle();
+
+/**/
+
+/**/
+soundManager.setup({
+  // where to find flash audio SWFs, as needed
+  url: './soundmanager2.swf',
+  onready: function() {}
+});
+
+function playitSoundManager() {
+	var mySound = soundManager.createSound({
+		url: 'http://translate.google.com/translate_tts?ie=UTF-8&total=1&idx=0&textlen=29&client=tw-ob&q=This%20is%20a%20test%20donation%20for%20%2426&tl=en'
+	});
+
+	mySound.play();
+}
+
+
+/**/
+
+
+
+const ws = new WebSocket('ws://localhost:8080');
+ 
+ws.onmessage = function(evt) {
+	evt.userActivation = true;
+	console.log(evt);
+	playitapi();
+}
+
+
+</script>
+</head>
+<body>
+<button id="foo" onclick="playitgoogle()">Play It Google</button>
+
+<button id="bar" onclick="playitapi()">Play It API</button>
+
+<button id="baz" onclick="playitSoundManager()">Play It Sound Manager</button>
+
+</body>
+</html>
