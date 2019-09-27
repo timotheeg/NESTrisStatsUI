@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+@font-face {
+	font-family: "Press Start";
+	src: url("./prstart.ttf");
+}
+
+@font-face {
+	font-family: "Press Start K";
+	src: url("./prstartk.ttf");
+}
+
+html, body, table, tr, th, td {
+	margin: 0;
+	padding: 0;
+	border: 0;
+	font-family: "Press Start K", "Lucida Console", Monaco, monospace;
+}
+
+#stream_bg {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 1280px;
+	height: 720px;
+	border-bottom: 1px solid black;
+	border-right: 1px solid black;
+}
+
+#playing_fields {
+	position: absolute;
+	left: 640px;
+	top: 24px;
+}
+
+.box {
+	position: absolute;
+	padding: 12px;
+
+	color: white;
+	font-size: 16px;
+	line-height: 20px;
+
+	border-image: url('./border.png');
+	border-image-slice: 10 10 10 10 fill;
+	border-image-width: 10px 10px;
+}
+
+.box .header {
+	text-align: center;
+}
+
+.box .content {
+	text-align: center;
+}
+
+.score {
+	width: 178px;
+	height: 54px;
+	right: 34px;
+}
+.score .content {
+	padding-top: 8px;
+	font-size: 24px;
+}
+
+.next_piece {
+	width: 99px;
+	height: 40px;
+	top: 76px;
+	right: 15px;
+}
+
+.lines {
+	width: 99px;
+	height: 40px;
+	top: 76px;
+	right: 136px;
+}
+
+.board {
+	width: 220px;
+	height: 440px;
+	right: 15px;
+	top: 138px;
+}
+
+.name {
+	width: 220px;
+	right: 15px;
+	height: 40px;
+	top: 600px;
+}
+
+.name .content {
+	color: #b0afb0;
+}
+
+.name .content .win {
+	color: #fb0204;
+}
+
+.tetris_rate {
+	width: 50px;
+	height: 40px;
+	top: 600px;
+	right: 257px;
+}
+
+.level {
+	width: 34px;
+	height: 40px;
+	top: 538px;
+	right: 257px;
+}
+
+.p2.score {
+	left: 34px;
+}
+
+.p2.next_piece {
+	left: 136px;
+}
+
+.p2.lines {
+	left: 15px;
+}
+
+.p2.board {
+	left: 15px;
+}
+
+.p2.name {
+	left: 15px;
+}
+
+.p2.tetris_rate {
+	left: 257px;
+}
+
+.p2.level {
+	left: 257px;
+}
+
+.divider {
+	position: absolute;
+	left: -15px;
+	width: 30px;
+	top: 76px;
+	height: 587px;
+	background-color: #000;
+	color: #f8e889;
+	font-size: 16px;
+
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	text-align: center;
+}
+
+
+</style>
+</head>
+<body>
+
+<div id="stream_bg">
+<div id="playing_fields">
+
+<!-- divider -->
+
+<div class="divider">vs</div>
+
+<!-- Player 1 -->
+
+<div class="box score p1">
+	<div class="header">SCORE</div>
+	<div class="content">000000</div>
+</div>
+
+<div class="box lines p1">
+	<div class="header">LINES</div>
+	<div class="content">000</div>
+</div>
+
+<div class="box next_piece p1"></div>
+
+<div class="box level p1">
+	<div class="header">LV</div>
+	<div class="content">00</div>
+</div>
+
+<div class="box tetris_rate p1">
+	<div class="header">TRT</div>
+	<div class="content">100</div>
+</div>
+
+<div class="box name p1">
+	<div class="header">PLAYER 1</div>
+	<div class="content">&#338;&#338;&#338;</div>
+</div>
+
+<div class="box board p1"></div>
+
+<!-- Player 2 -->
+
+<div class="box score p2">
+	<div class="header">SCORE</div>
+	<div class="content">000000</div>
+</div>
+
+<div class="box lines p2">
+	<div class="header">LINES</div>
+	<div class="content">000</div>
+</div>
+
+<div class="box next_piece p2"></div>
+
+<div class="box level p2">
+	<div class="header">LV</div>
+	<div class="content">00</div>
+</div>
+
+<div class="box tetris_rate p2">
+	<div class="header">TRT</div>
+	<div class="content">100</div>
+</div>
+
+<div class="box name p2">
+	<div class="header">PLAYER 2</div>
+	<div class="content">&#338;&#338;&#338;</div>
+</div>
+
+<div class="box board p2"></div>
+
+
+</div><!-- End Playing Fields -->
+</div><!-- End Stream BG -->
+
+<script src="competition.js"></script>
+
+</body>
+<html>
