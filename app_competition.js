@@ -9,7 +9,7 @@ wss.on('connection', function connection(ws) {
   connections.add(ws);
 
   ws.on('close', () => {
-    connections.remove(ws);
+    connections.delete(ws);
   });
 
   ws.on('message', console.log);
