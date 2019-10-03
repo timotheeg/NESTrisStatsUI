@@ -44,6 +44,25 @@ getStats();
 let timeline_idx = 0;
 // interval = setInterval(() => {onFrame(frames[timeline_idx++])}, 16);
 
+function onTetris() {
+	let remaining_frames = 20;
+
+	function steps() {
+		dom.stream_bg.element.style.backgroundColor = (--remaining_frames % 2) ? 'white' : 'black';
+
+		if (remaining_frames <= 0) {
+			window.cancelAnimationFrame(tetris_animation_ID);
+		}
+		else {
+			window.requestAnimationFrame(steps);
+		}
+	}
+
+	const tetris_animation_ID = window.requestAnimationFrame(steps);
+
+	// TODO play sound
+}
+
 function oneFrame(debug=false) {
 	const
 		frame1_copy = {...frames[timeline_idx]},
@@ -116,7 +135,8 @@ var
 	pending_game = false,
 	pending_piece = false,
 	pending_line = false,
-	new_piece_cooldown_frames = 0;
+	new_piece_cooldown_frames = 0,
+	clear_animation = [];
 
 function onFrame(event, debug) {
 	// TODO: detect a reset to zero and setup a new Game
@@ -273,10 +293,33 @@ function onFrame(event, debug) {
 		}
 	}
 	else if (diff.stage_blocks < 0) {
+		// reduction could be an interleaving artefact of the moving piece OR a clear animation
+		// a reduction <= 4 could be either, so we have to ignore. reduction >= 6 is a clear animation
+		// sequence of clear for tetris are 8, 16, 24, 32, 40. We can detect as early as 16
+		const last_diff = peek(clear_animation);
+
+		if (diff.stage_blocks !== last_diff) {
+			if (diff.stage_blocks === -16 && last_diff === -8) {
+				onTetris();
+			}
+
+			switch(diff.stage_blocks) {
+				case -8:
+				case -12:
+				case -16:
+					clear_animation.push(diff.stage_blocks);
+			}
+		}
+
 		if (diff.stage_blocks % 10 === 0) { // works no matter how many lines are cleared!
 			last_valid_state.stage = transformed.stage;
+			clear_animation.length = 0;
 		}
 	}
+}
+
+function peek(arr) {
+	return arr[arr.length - 1];
 }
 
 function getStats() {

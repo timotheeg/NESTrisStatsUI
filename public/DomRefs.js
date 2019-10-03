@@ -2,6 +2,10 @@
 
 class DomRefs {
 	constructor(doc) {
+		this.stream_bg = {
+			element: doc.querySelector('#stream_bg')
+		};
+
 		// store refs by component
 		this.tetris_rate = {
 			element: doc.querySelector('#tetris_rate'),
