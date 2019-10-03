@@ -358,11 +358,18 @@ function renderPastGamesAndPBs(data) {
 	});
 }
 
+// return a [0-1] ratio as percentage over exacly 3 characters: 100 OR XX%
+function getPercent(ratio) {
+	const percent = Math.round(ratio * 100);
+
+	return percent >= 100 ? '100' : (percent).toString().padStart(2, '0') + '%';
+}
+
 function renderLine() {
 	// massive population of all data shown on screen
 
 	// do the small boxes first
-	dom.tetris_rate.value.textContent = Math.round(game.data.lines[4].percent * 100).toString().padStart(2, '0') + '%';
+	dom.tetris_rate.value.textContent = getPercent(game.data.lines[4].percent);
 	dom.level.value.textContent = game.data.level.toString().padStart(2, '0');
 	dom.burn.count.textContent = game.data.burn.toString().padStart(2, '0');
 	dom.lines.count.textContent = game.data.lines.count.toString().padStart(3, '0');
@@ -385,14 +392,14 @@ function renderLine() {
 
 		dom.lines_stats[name].count.textContent = game.data.lines[num_lines].count.toString().padStart(3, '0');
 		dom.lines_stats[name].lines.textContent = game.data.lines[num_lines].lines.toString().padStart(3, '0');
-		dom.lines_stats[name].percent.textContent = Math.round(game.data.lines[num_lines].percent * 100).toString().padStart(2, '0').padStart(3, ' ') + '%';
+		dom.lines_stats[name].percent.textContent = getPercent(game.data.lines[num_lines].percent)
 
 		dom.points[name].count.textContent = game.data.points[num_lines].count.toString().padStart(6, '0');
-		dom.points[name].percent.textContent = Math.round(game.data.points[num_lines].percent * 100).toString().padStart(2, '0').padStart(3, ' ') + '%';
+		dom.points[name].percent.textContent = getPercent(game.data.points[num_lines].percent);
 	}
 
 	dom.points.drops.count.textContent = game.data.points.drops.count.toString().padStart(6, '0');
-	dom.points.drops.percent.textContent = Math.round(game.data.points.drops.percent * 100).toString().padStart(2, '0').padStart(3, ' ') + '%';
+	dom.points.drops.percent.textContent = getPercent(game.data.points.drops.percent);
 
 	// graph tetris rate
 	dom.lines_stats.trt_ctx.clear();
@@ -428,7 +435,7 @@ function renderPiece() {
 	PIECES.forEach(name => {
 		dom.pieces[name].count.textContent = game.data.pieces[name].count.toString().padStart(3, '0');
 		dom.pieces[name].drought.textContent = game.data.pieces[name].drought.toString().padStart(2, '0');
-		dom.pieces[name].percent.textContent = Math.round(game.data.pieces[name].percent * 100).toString().padStart(2, '0') + '%';
+		dom.pieces[name].percent.textContent = getPercent(game.data.pieces[name].percent);
 
 		dom.pieces[name].ctx.resetTransform();
 		dom.pieces[name].ctx.clear();
