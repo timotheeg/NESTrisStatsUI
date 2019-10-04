@@ -45,7 +45,7 @@ let timeline_idx = 0;
 // interval = setInterval(() => {onFrame(frames[timeline_idx++])}, 16);
 
 function onTetris() {
-	let remaining_frames = 20;
+	let remaining_frames = 12;
 
 	function steps() {
 		dom.stream_bg.element.style.backgroundColor = (--remaining_frames % 2) ? 'white' : 'black';
