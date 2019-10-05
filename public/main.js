@@ -81,6 +81,16 @@ function onTetris() {
 	// TODO play sound
 }
 
+const user_colors = {};
+
+function getUserColor(username) {
+	if (!(username in user_colors)) {
+		user_colors[username] = `hsl(${~~(360 * Math.random())},${~~(80 + 20 * Math.random())}%,${~~(40 + 20 * Math.random())}%)`;
+	}
+
+	return user_colors[username];
+}
+
 function onMessage(entry) {
 	const p = document.createElement('p');
 	p.classList.add('message');
@@ -88,7 +98,7 @@ function onMessage(entry) {
 	const name = document.createElement('span');
 	name.classList.add('name');
 	name.textContent = entry.display_name;
-	name.style.color = entry.color;
+	name.style.color = entry.color || getUserColor(entry.username);
 
 	const divider = document.createElement('br');
 
