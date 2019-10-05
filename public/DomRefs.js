@@ -6,6 +6,10 @@ class DomRefs {
 			element: doc.querySelector('#stream_bg')
 		};
 
+		this.chat = {
+			element: doc.querySelector('#chat .content')
+		};
+
 		// store refs by component
 		this.tetris_rate = {
 			element: doc.querySelector('#tetris_rate'),

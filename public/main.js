@@ -63,6 +63,30 @@ function onTetris() {
 	// TODO play sound
 }
 
+function onMessage(entry) {
+	const p = document.createElement('p');
+	p.classList.add('message');
+
+	const name = document.createElement('span');
+	name.classList.add('name');
+	name.textContent = entry.display_name;
+	name.style.color = entry.color;
+
+	const divider = document.createElement('br');
+
+	const msg = document.createElement('span');
+	msg.classList.add('text');
+	msg.textContent = entry.message;
+
+	p.appendChild(name);
+	p.appendChild(divider);
+	p.appendChild(msg);
+
+	dom.chat.element.appendChild(p);
+
+	dom.chat.element.scrollTop = dom.chat.element.scrollHeight - dom.chat.element.clientHeight;
+}
+
 function oneFrame(debug=false) {
 	const
 		frame1_copy = {...frames[timeline_idx]},
