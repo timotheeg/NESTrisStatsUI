@@ -25,9 +25,8 @@ for (const [rating, color] of Object.entries(DAS_COLORS)) {
 
 
 
-/**/
-const socket = new WebSocket('ws://127.0.0.1:3338');
-socket.addEventListener('message', (frame => {
+const ocr_socket = new WebSocket('ws://127.0.0.1:3338');
+ocr_socket.addEventListener('message', (frame => {
 	try{
 		onFrame(JSON.parse(frame.data));
 	}
@@ -36,7 +35,26 @@ socket.addEventListener('message', (frame => {
 		console.error(e);
 	}
 }));
-/**/
+
+const API = {
+	message:       onMessage,
+	setPlayer:     setPlayer,
+	setPastScores: setPastScore,
+	frame:         onFrame,
+};
+
+const chat_and_pbs_socket = new WebSocket('ws://127.0.0.1:3339');
+chat_and_pbs_socket.addEventListener('message', (frame => {
+	try{
+		const [type, ...args] = JSON.parse(frame.data);
+
+		API[type](...args);
+	}
+	catch(e) {
+		// socket.close();
+		console.error(e);
+	}
+}));
 
 // get High Scores
 getStats();
