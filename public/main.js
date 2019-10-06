@@ -38,8 +38,8 @@ ocr_socket.addEventListener('message', (frame => {
 
 const API = {
 	message:       onMessage,
-	setPlayer:     setPlayer,
-	setPastScores: setPastScore,
+	// setPlayer:     setPlayer,
+	// setPastScores: setPastScore,
 	frame:         onFrame,
 };
 
@@ -157,6 +157,24 @@ document.querySelector('#goto_next_frame').addEventListener('click', () => {
 document.querySelector('#goto_next_frame_debug').addEventListener('click', () => {
 	oneFrame(true);
 });
+
+let play_ID
+
+function play() {
+	function playFrame() {
+		oneFrame()
+		play_ID = window.requestAnimationFrame(playFrame);
+	}
+
+	playFrame();
+}
+
+function stop() {
+	window.cancelAnimationFrame(play_ID);
+}
+
+document.querySelector('#play').addEventListener('click', play);
+document.querySelector('#stop').addEventListener('click', stop);
 
 document.querySelector('#skip .btn').addEventListener('click', () => {
 	const
