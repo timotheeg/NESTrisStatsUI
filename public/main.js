@@ -24,18 +24,6 @@ for (const [rating, color] of Object.entries(DAS_COLORS)) {
 }
 
 
-
-const ocr_socket = new WebSocket('ws://127.0.0.1:3338');
-ocr_socket.addEventListener('message', (frame => {
-	try{
-		onFrame(JSON.parse(frame.data));
-	}
-	catch(e) {
-		// socket.close();
-		console.error(e);
-	}
-}));
-
 const API = {
 	message:       onMessage,
 	// setPlayer:     setPlayer,

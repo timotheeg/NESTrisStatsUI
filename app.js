@@ -1,5 +1,6 @@
 'use strict'
 
+const net = require('net');
 const path = require('path');
 const AutoLoad = require('fastify-autoload');
 const config = require('./config');
@@ -54,7 +55,8 @@ wss.on('connection', function connection(ws) {
 });
 
 
-const ConnectionAPI = new Proxy({}, {
+
+const ClientConnectionAPI = new Proxy({}, {
   get: function(target, prop, ...args) {
     return function(...args) {
       const msg = JSON.stringify([prop, ...args]);
@@ -67,13 +69,10 @@ const ConnectionAPI = new Proxy({}, {
 });
 
 
+// Connect to Twitch and forward chgat messages to client
 const TwitchBot = require('twitch-bot')
 
-const Bot = new TwitchBot({
-  username: 'yobi9',
-  oauth: config.twitch.oauth,
-  channels: ['yobi9']
-});
+const Bot = new TwitchBot(config.twitch);
 
 Bot.on('join', channel => {
   console.log(`Joined channel: ${channel}`)
@@ -86,7 +85,53 @@ Bot.on('join', channel => {
 });
 
 Bot.on('message', chatter => {
-  ConnectionAPI.message(chatter);
+  ClientConnectionAPI.message(chatter);
+});
+
+
+// Open server to receive OCR events and forward them to client
+// OCR client sends data in the form <BYTELENGTH32LE><DATA>, so we must extract the header first
+// Below is the minimum code to do that
+const server = net.createServer((conn) => {
+  // 'connection' listener.
+  console.log('OCR producer connected');
+
+  let stream_data = Buffer.from([]);
+
+  function onData() {
+    // check if ready to process:
+    const msg_length = stream_data.readInt32LE();
+
+    if (stream_data.length < msg_length + 4) return; // not enough data, wait for more
+
+    const frame_data = stream_data.toString('utf8', 4, msg_length + 4)
+
+    ClientConnectionAPI.frame(JSON.parse(frame_data));
+
+    stream_data = stream_data.slice(msg_length + 4);
+
+    if (stream_data.length) {
+      // there's more data, check if we can process some more!
+      onData();
+    }
+  }
+
+  conn
+    .on('end', () => {
+      console.log('OCR producer disconnected');
+    })
+    .on('data', data => {
+      stream_data = Buffer.concat([stream_data, data]);
+      onData();
+    });
+});
+
+server.on('error', (err) => {
+  console.error(err);
+});
+
+server.listen(3338, () => {
+  console.log('Ready to receive OCR events');
 });
 
 
