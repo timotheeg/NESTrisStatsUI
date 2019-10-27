@@ -25,10 +25,9 @@ for (const [rating, color] of Object.entries(DAS_COLORS)) {
 
 
 const API = {
-	message:       onMessage,
-	// setPlayer:     setPlayer,
-	// setPastScores: setPastScore,
-	frame:         onFrame,
+	message:     onMessage,
+	player_data: renderPastGamesAndPBs,
+	frame:       onFrame,
 };
 
 const chat_and_pbs_socket = new WebSocket('ws://127.0.0.1:3339');

@@ -4,6 +4,7 @@ const net = require('net');
 const path = require('path');
 const AutoLoad = require('fastify-autoload');
 const config = require('./config');
+const TetrisDAO = require('./daos/tetris');
 
 module.exports = function (fastify, opts, next) {
   // Place here your custom code!
@@ -135,3 +136,8 @@ server.listen(3338, () => {
 });
 
 
+// Listen for player change to force score update immediately
+
+TetrisDAO.onScoreUpdate = function(data) {
+  ClientConnectionAPI.player_data(data);
+}
