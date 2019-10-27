@@ -102,34 +102,47 @@ function onMessage(entry) {
 	dom.chat.element.scrollTop = dom.chat.element.scrollHeight - dom.chat.element.clientHeight;
 }
 
+function splitField(field) {
+	let rows = [], idx=0;
+
+	do {
+		row = field.substr(idx, 10);
+		rows.push(row);
+		idx += 10
+	}
+	while(idx<200);
+
+	return rows.join('\n');
+}
+
 function oneFrame(debug=false) {
 	const
 		frame1_copy = {...frames[timeline_idx]},
-		stage1 = frame1_copy.stage,
+		field1 = frame1_copy.field,
 
 		frame2_copy = {...frames[timeline_idx+1]},
-		stage2 = frame2_copy.stage;
+		field2 = frame2_copy.field;
 
-	delete frame1_copy.stage;
-	delete frame2_copy.stage;
+	delete frame1_copy.field;
+	delete frame2_copy.field;
 
 	frame1_txt = ''
 		+ timeline_idx
 		+ ' '
-		+ stage1[0]
+		+ field1.replace(/0+/g, '').length
 		+ '\n'
 		+ JSON.stringify(frame1_copy)
 		+ ' '
-		+ stage1[1].join('\n');
+		+ splitField(field1);
 
 	frame2_txt = ''
 		+ (timeline_idx + 1)
 		+ ' '
-		+ stage2[0]
+		+ field2.replace(/0+/g, '').length
 		+ '\n'
 		+ JSON.stringify(frame2_copy)
 		+ ' '
-		+ stage2[1].join('\n');
+		+ splitField(field2);
 
 	document.querySelector('#cur_frame').value = frame1_txt;
 	document.querySelector('#next_frame').value = frame2_txt;
@@ -216,7 +229,7 @@ function onFrame(event, debug) {
 		cur_piece:     event.cur_piece,
 		next_piece:    event.preview,
 		stage: {
-			num_blocks: event.field.replace(/[^0]+/g, '').length,
+			num_blocks: event.field.replace(/0+/g, '').length,
 			field:      event.field
 		}
 	};
@@ -290,7 +303,7 @@ function onFrame(event, debug) {
 	}
 
 	// check if a change to cur_piece_stats
-	if (pending_piece || diff.cur_piece_das || diff.cur_piece || diff.next_piece) {
+	if (pending_piece) {
 		if (transformed.cur_piece && transformed.next_piece && !isNaN(transformed.cur_piece_das) && transformed.cur_piece_das <= 16) {
 			new_piece_cooldown_frames = PIECE_COOLDOWN_FRAMES;
 			game.onPiece(transformed);
@@ -340,6 +353,7 @@ function onFrame(event, debug) {
 
 	if (!isNaN(transformed.level) && transformed.level != null) {
 		renderStage(transformed.level, transformed.stage.field);
+		renderNextPiece(transformed.level, transformed.next_piece);
 	}
 
 	if (transformed.stage.num_blocks % 2 == 1) return;
@@ -417,6 +431,9 @@ function clearStage() {
 
 	dom.pieces.element.classList.remove('l0', 'l1', 'l2', 'l3', 'l4', 'l5', 'l6', 'l7', 'l8', 'l9');
 	dom.next.element.classList.remove('l0', 'l1', 'l2', 'l3', 'l4', 'l5', 'l6', 'l7', 'l8', 'l9');
+
+	stage_currently_rendered = null;
+	next_piece_currently_rendered = null;
 }
 
 function renderPastGamesAndPBs(data) {
@@ -822,7 +839,16 @@ function renderBlock(level, block_index, ctx, pos_x, pos_y) {
 	}
 }
 
-function renderStage(level, stageString) {
+let stage_currently_rendered = null;
+
+function renderStage(level, stage_string) {
+	const
+		stage_id = `${level}${stage_string}`;
+
+	if (stage_id === stage_currently_rendered) return;
+
+	stage_currently_rendered = stage_id;
+
 	const
 		ctx = dom.stage.ctx,
 		pixels_per_block = BLOCK_PIXEL_SIZE * (7 + 1);
@@ -833,7 +859,7 @@ function renderStage(level, stageString) {
 		for (let y = 0; y < 20; y++) {
 			renderBlock(
 				level,
-				parseInt(stageString[y * 10 + x], 10),
+				parseInt(stage_string[y * 10 + x], 10),
 				ctx, 
 				x * pixels_per_block,
 				y * pixels_per_block
@@ -842,9 +868,16 @@ function renderStage(level, stageString) {
 	}
 }
 
-
+let next_piece_currently_rendered = null;
 
 function renderNextPiece(level, next_piece) {
+	const
+		piece_id = `${level}${next_piece}`;
+
+	if (piece_id === next_piece_currently_rendered) return;
+
+	next_piece_currently_rendered = piece_id;
+
 	const
 		ctx              = dom.next.ctx,
 		col_index        = PIECE_COLORS[next_piece],
