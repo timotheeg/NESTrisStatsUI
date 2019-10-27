@@ -216,10 +216,10 @@ function onFrame(event, debug) {
 		level:         parseInt(event.level, 10),
 		cur_piece_das: parseInt(event.cur_piece_das, 10),
 		cur_piece:     event.cur_piece,
-		next_piece:    event.next_piece,
+		next_piece:    event.preview,
 		stage: {
-			num_blocks: event.stage[0],
-			top_row:    event.stage[1][0].join('')
+			num_blocks: event.field.replace(/[^0]+/g, '').length,
+			top_row:    event.field.substr(0, 10)
 		}
 	};
 
