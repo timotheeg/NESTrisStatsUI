@@ -749,3 +749,98 @@ function renderPiece() {
 		);
 	}
 }
+
+function renderStageBlock(level, block_index, x, y) {
+	const
+		ctx = dom.stage.ctx,
+		pos_x = x * STAGE_BLOCK_PIXEL_SIZE * (7 + 1),
+		pos_y = y * STAGE_BLOCK_PIXEL_SIZE * (7 + 1);
+
+	let color;
+
+	switch (block_index) {
+		case 1:
+			// inefficient because it draws the area twice
+			// check speed and optimize if necessary
+			color = LEVEL_COLORS[level % 10][0];
+
+			ctx.fillStyle = color;
+			ctx.fillRect(
+				pos_x,
+				pos_y,
+				STAGE_BLOCK_PIXEL_SIZE * 7,
+				STAGE_BLOCK_PIXEL_SIZE * 7
+			);
+
+			ctx.fillStyle = 'white';
+			ctx.fillRect(
+				pos_x,
+				pos_y,
+				STAGE_BLOCK_PIXEL_SIZE,
+				STAGE_BLOCK_PIXEL_SIZE
+			);
+
+			ctx.fillRect(
+				pos_x + STAGE_BLOCK_PIXEL_SIZE,
+				pos_y + STAGE_BLOCK_PIXEL_SIZE,
+				STAGE_BLOCK_PIXEL_SIZE * 5,
+				STAGE_BLOCK_PIXEL_SIZE * 5
+			);
+
+			break;
+
+		case 2:
+		case 3:
+			color = LEVEL_COLORS[level % 10][block_index - 2];
+
+			ctx.fillStyle = color;
+			ctx.fillRect(
+				pos_x,
+				pos_y,
+				STAGE_BLOCK_PIXEL_SIZE * 7,
+				STAGE_BLOCK_PIXEL_SIZE * 7
+			);
+
+			ctx.fillStyle = 'white';
+			ctx.fillRect(
+				pos_x,
+				pos_y,
+				STAGE_BLOCK_PIXEL_SIZE,
+				STAGE_BLOCK_PIXEL_SIZE
+			);
+			ctx.fillRect(
+				pos_x + STAGE_BLOCK_PIXEL_SIZE,
+				pos_y + STAGE_BLOCK_PIXEL_SIZE,
+				STAGE_BLOCK_PIXEL_SIZE * 2,
+				STAGE_BLOCK_PIXEL_SIZE
+			);
+			ctx.fillRect(
+				pos_x + STAGE_BLOCK_PIXEL_SIZE,
+				pos_y + STAGE_BLOCK_PIXEL_SIZE * 2,
+				STAGE_BLOCK_PIXEL_SIZE,
+				STAGE_BLOCK_PIXEL_SIZE
+			);
+
+			break;
+
+		default:
+			/*
+			ctx.clearRect(
+				pos_x,
+				pos_y,
+				STAGE_BLOCK_PIXEL_SIZE * 7,
+				STAGE_BLOCK_PIXEL_SIZE * 7
+			);
+			/**/
+	}
+}
+
+function renderStage(level, stageString) {
+	dom.stage.ctx.clear();
+
+	for (let x = 0; x < 10; x++) {
+		for (let y = 0; y < 20; y++) {
+			renderStageBlock(level, parseInt(stageString[y * 10 + x], 10), x, y);
+		}
+	}
+}

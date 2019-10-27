@@ -37,6 +37,21 @@ const
 
 	DROUGHT_PANIC_THRESHOLD = 13,
 
-	SCORE_BASES = [0, 40, 100, 300, 1200]
-	
+	SCORE_BASES = [0, 40, 100, 300, 1200],
+
+	// arrays of color 1 and color 2
+	LEVEL_COLORS = [
+	    [ '#4A32FF', '#4AAFFE' ],
+	    [ '#009600', '#6ADC00' ],
+	    [ '#B000D4', '#FF56FF' ],
+	    [ '#4A32FF', '#00E900' ],
+	    [ '#C8007F', '#00E678' ],
+	    [ '#00E678', '#968DFF' ],
+	    [ '#C41E0E', '#666666' ],
+	    [ '#8200FF', '#780041' ],
+	    [ '#4A32FF', '#C41E0E' ],
+	    [ '#C41E0E', '#F69B00' ],
+	],
+
+	STAGE_BLOCK_PIXEL_SIZE = 3
 ;

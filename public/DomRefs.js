@@ -34,7 +34,12 @@ class DomRefs {
 		this.next = {
 			element: doc.querySelector('#next_piece'),
 			piece:   doc.querySelector('#next_piece .content .piece')
-		}
+		};
+
+		this.stage = {
+			element: doc.querySelector('#tetris_stage'),
+			ctx:     doc.querySelector('#tetris_stage canvas').getContext('2d')
+		};
 
 		// ===============================================================
 		// ===============================================================
