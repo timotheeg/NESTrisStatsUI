@@ -31,6 +31,11 @@ class DomRefs {
 			count:   doc.querySelector('#lines .content')
 		};
 
+		this.next = {
+			element: doc.querySelector('#next_piece'),
+			piece:   doc.querySelector('#next_piece .content .piece')
+		}
+
 		// ===============================================================
 		// ===============================================================
 

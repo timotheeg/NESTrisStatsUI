@@ -21,7 +21,7 @@ html, body, table, tr, th, td {
 
 .box {
 	position: absolute;
-	width: 86px;
+	width: 105px;
 	height: 39px;
 	padding: 10px;
 
@@ -52,23 +52,23 @@ html, body, table, tr, th, td {
 }
 
 #tetris_rate {
-	left: 1168px;
-	top: 135px;
+	left: 1150px;
+	top: 158px;
 }
 
 #level {
-	left: 1059px;
-	top: 198px;
+	left: 1021px;
+	top: 221px;
 }
 
 #burn {
-	left: 1168px;
-	top: 198px;
+	left: 1150px;
+	top: 221px;
 }
 
 #lines {
-	left: 1059px;
-	top: 135px;
+	left: 1021px;
+	top: 158px;
 }
 
 #score {
@@ -76,6 +76,7 @@ html, body, table, tr, th, td {
 	top: 6px;
 	width: 124px;
 	height: 68px;
+	padding: 10px 8px;
 }
 
 #score .header {
@@ -91,22 +92,16 @@ html, body, table, tr, th, td {
 	padding-right: 4px;
 }
 
-#controls {
-	width: 196px;
-	height: 65px;
-	left: 1059px;
-	top: 261px;
-}
-
 #droughts {
 	left: 760px;
-	top: 604px;
-	width: 275px;
-	height: 90px;
+	top: 599px;
+	width: 241px;
+	height: 95px;
+	padding: 10px 8px;
 }
 
 #droughts .header {
-	padding-bottom: 6px;
+	padding-bottom: 8px;
 }
 
 #droughts .content {
@@ -115,11 +110,10 @@ html, body, table, tr, th, td {
 
 .hgauge th {
 	font-size: 8px;
-	padding-right: 4px;
 }
 
 .hgauge .value {
-	padding-left: 4px;
+	padding-left: 2px;
 }
 
 .panic .current .value {
@@ -381,22 +375,23 @@ html, body, table, tr, th, td {
 #tetris_stage {
 	top: 98px;
 	left: 760px;
-	width: 275px;
-	height: 482px;
+	width: 237px;
+	height: 477px;
 }
 
 #next_piece {
-	width: 127px;
+	width: 97px;
 	height: 68px;
 	top: 6px;
-	left: 908px;
+	left: 904px;
+	padding: 10px 8px;
 }
 
 #video {
 	top: 6px;
-	left: 1059px;
-	width: 196px;
-	height: 105px;
+	left: 1021px;
+	width: 234px;
+	height: 128px;
 }
 
 #pbs {
@@ -455,18 +450,22 @@ html, body, table, tr, th, td {
 }
 
 #chat {
-	top: 350px;
-	left: 1059px;
-	width: 196px;
-	height: 344px;
+	top: 284px;
+	left: 1021px;
+	width: 234px;
+	height: 410px;
 	overflow: hidden;
+}
+
+#chat .header {
+	padding-bottom: 6px;
 }
 
 #chat .content {
 	font-size: 8px;
 	line-height: 8px;
 	width: 100%;
-	height: 100%;
+	height: 386px;
 	overflow: hidden;
 	text-align: left;
 }
@@ -499,11 +498,12 @@ html, body, table, tr, th, td {
 
 <div class="box external" id="video">PLAYER VIDEO FEED<br />GOES HERE</div>
 
-<div class="box external" id="tetris_stage">TETRIS STAGE<br />GOES HERE</div>
-
-<div class="box external" id="controls">CONTROLS<br />GO HERE</div>
+<div class="box" id="tetris_stage">
+	<canvas width="237" height="477" />
+</div>
 
 <div class="box" id="chat">
+	<div class="header">CHAT</div>
 	<div class="content"></div>
 </div>
 
@@ -659,7 +659,9 @@ html, body, table, tr, th, td {
 
 <div class="box" id="next_piece">
 	<div class="header">NEXT</div>
-	<div class="content"></div>
+	<div class="content">
+		<div class="piece"></div>
+	</div>
 </div>
 
 <div class="box" id="tetris_rate">
@@ -701,17 +703,17 @@ html, body, table, tr, th, td {
 	<table class="content">
 		<tr class="hgauge current">
 			<th>Cur</th>
-			<td class="gauge"><canvas width="198" height="16" /></td>
+			<td class="gauge"><canvas width="168" height="16" /></td>
 			<td class="value">00</td>
 		</tr>
 		<tr class="hgauge last">
 			<th>Last</th>
-			<td class="gauge"><canvas width="198" height="16" /></td>
+			<td class="gauge"><canvas width="168" height="16" /></td>
 			<td class="value">00</td>
 		</tr>
 		<tr class="hgauge max">
 			<th>Max</th>
-			<td class="gauge"><canvas width="198" height="16" /></td>
+			<td class="gauge"><canvas width="168" height="16" /></td>
 			<td class="value">00</td>
 		</tr>
 	</table>
@@ -855,7 +857,6 @@ html, body, table, tr, th, td {
 				<td class="percent">00%</td>
 			</tr>
 		</table>
-		<div class="ppl"><canvas width="284" height="51" /></div>
 	</div>
 </div>
 

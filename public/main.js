@@ -540,6 +540,9 @@ function renderLine() {
 	// set piece colors for piece distribution
 	dom.pieces.element.classList.remove(`l${(game.data.level - 1) % 10}`)
 	dom.pieces.element.classList.add(`l${game.data.level % 10}`)
+
+	dom.next.element.classList.remove(`l${(game.data.level - 1) % 10}`)
+	dom.next.element.classList.add(`l${game.data.level % 10}`)
 }
 
 function renderPiece() {
@@ -648,7 +651,7 @@ function renderPiece() {
 	dom.droughts.last.value.textContent = game.data.i_droughts.last.toString().padStart(2, '0');
 	dom.droughts.max.value.textContent = game.data.i_droughts.max.toString().padStart(2, '0');
 
-	pixel_size = 3;
+	pixel_size = 2;
 	max_pixels = Math.floor(dom.droughts.cur.ctx.canvas.width / (pixel_size + 1));
 	color = 'orange';
 
