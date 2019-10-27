@@ -33,7 +33,7 @@ class DomRefs {
 
 		this.next = {
 			element: doc.querySelector('#next_piece'),
-			piece:   doc.querySelector('#next_piece .content .piece')
+			ctx:     doc.querySelector('#next_piece canvas').getContext('2d')
 		};
 
 		this.stage = {

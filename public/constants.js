@@ -53,5 +53,15 @@ const
 	    [ '#C41E0E', '#F69B00' ],
 	],
 
-	STAGE_BLOCK_PIXEL_SIZE = 3
+	BLOCK_PIXEL_SIZE = 3,
+
+	PIECE_COLORS = {
+		T: 1,
+		J: 2,
+		Z: 3,
+		O: 1,
+		S: 2,
+		L: 3,
+		I: 1
+	}
 ;

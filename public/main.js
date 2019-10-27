@@ -207,7 +207,6 @@ function onFrame(event, debug) {
 			cur_piece_das: false,
 			cur_piece:     false,
 			next_piece:    false,
-			stage_top_row: false,
 			stage_blocks:  false
 		},
 
@@ -219,7 +218,7 @@ function onFrame(event, debug) {
 		next_piece:    event.preview,
 		stage: {
 			num_blocks: event.field.replace(/[^0]+/g, '').length,
-			top_row:    event.field.substr(0, 10)
+			field:      event.field
 		}
 	};
 
@@ -272,7 +271,6 @@ function onFrame(event, debug) {
 	diff.cur_piece_das = transformed.cur_piece_das !== last_valid_state.cur_piece_das;
 	diff.cur_piece     = transformed.cur_piece !== last_valid_state.cur_piece;
 	diff.next_piece    = transformed.next_piece !== last_valid_state.next_piece;
-	diff.stage_top_row = transformed.stage.top_row !== last_valid_state.stage.top_row;
 	diff.stage_blocks  = transformed.stage.num_blocks - last_valid_state.stage.num_blocks;
 
 	if (diff.score && transformed.score === 0) {
@@ -297,7 +295,7 @@ function onFrame(event, debug) {
 		if (transformed.cur_piece && transformed.next_piece && !isNaN(transformed.cur_piece_das) && transformed.cur_piece_das <= 16) {
 			new_piece_cooldown_frames = PIECE_COOLDOWN_FRAMES;
 			game.onPiece(transformed);
-			renderPiece();
+			renderPiece(transformed);
 			pending_piece = false;
 
 			Object.assign(last_valid_state, {
@@ -339,6 +337,10 @@ function onFrame(event, debug) {
 		else {
 			pending_line = true;
 		}
+	}
+
+	if (!isNaN(transformed.level) && transformed.level != null) {
+		renderStage(transformed.level, transformed.stage.field);
 	}
 
 	if (transformed.stage.num_blocks % 2 == 1) return;
@@ -415,6 +417,7 @@ function clearStage() {
 	dom.droughts.max.ctx.clear();
 
 	dom.pieces.element.classList.remove('l0', 'l1', 'l2', 'l3', 'l4', 'l5', 'l6', 'l7', 'l8', 'l9');
+	dom.next.element.classList.remove('l0', 'l1', 'l2', 'l3', 'l4', 'l5', 'l6', 'l7', 'l8', 'l9');
 }
 
 function renderPastGamesAndPBs(data) {
@@ -533,7 +536,7 @@ function renderLine() {
 	dom.next.element.classList.add(`l${game.data.level % 10}`)
 }
 
-function renderPiece() {
+function renderPiece(event) {
 	dom.pieces.count.textContent = game.data.pieces.count.toString().padStart(3, '0');
 
 	PIECES.forEach(name => {
@@ -736,14 +739,11 @@ function renderPiece() {
 			pixel_size
 		);
 	}
+
+	renderNextPiece(event.level, event.next_piece);
 }
 
-function renderStageBlock(level, block_index, x, y) {
-	const
-		ctx = dom.stage.ctx,
-		pos_x = x * STAGE_BLOCK_PIXEL_SIZE * (7 + 1),
-		pos_y = y * STAGE_BLOCK_PIXEL_SIZE * (7 + 1);
-
+function renderBlock(level, block_index, ctx, pos_x, pos_y) {
 	let color;
 
 	switch (block_index) {
@@ -756,23 +756,23 @@ function renderStageBlock(level, block_index, x, y) {
 			ctx.fillRect(
 				pos_x,
 				pos_y,
-				STAGE_BLOCK_PIXEL_SIZE * 7,
-				STAGE_BLOCK_PIXEL_SIZE * 7
+				BLOCK_PIXEL_SIZE * 7,
+				BLOCK_PIXEL_SIZE * 7
 			);
 
 			ctx.fillStyle = 'white';
 			ctx.fillRect(
 				pos_x,
 				pos_y,
-				STAGE_BLOCK_PIXEL_SIZE,
-				STAGE_BLOCK_PIXEL_SIZE
+				BLOCK_PIXEL_SIZE,
+				BLOCK_PIXEL_SIZE
 			);
 
 			ctx.fillRect(
-				pos_x + STAGE_BLOCK_PIXEL_SIZE,
-				pos_y + STAGE_BLOCK_PIXEL_SIZE,
-				STAGE_BLOCK_PIXEL_SIZE * 5,
-				STAGE_BLOCK_PIXEL_SIZE * 5
+				pos_x + BLOCK_PIXEL_SIZE,
+				pos_y + BLOCK_PIXEL_SIZE,
+				BLOCK_PIXEL_SIZE * 5,
+				BLOCK_PIXEL_SIZE * 5
 			);
 
 			break;
@@ -785,28 +785,28 @@ function renderStageBlock(level, block_index, x, y) {
 			ctx.fillRect(
 				pos_x,
 				pos_y,
-				STAGE_BLOCK_PIXEL_SIZE * 7,
-				STAGE_BLOCK_PIXEL_SIZE * 7
+				BLOCK_PIXEL_SIZE * 7,
+				BLOCK_PIXEL_SIZE * 7
 			);
 
 			ctx.fillStyle = 'white';
 			ctx.fillRect(
 				pos_x,
 				pos_y,
-				STAGE_BLOCK_PIXEL_SIZE,
-				STAGE_BLOCK_PIXEL_SIZE
+				BLOCK_PIXEL_SIZE,
+				BLOCK_PIXEL_SIZE
 			);
 			ctx.fillRect(
-				pos_x + STAGE_BLOCK_PIXEL_SIZE,
-				pos_y + STAGE_BLOCK_PIXEL_SIZE,
-				STAGE_BLOCK_PIXEL_SIZE * 2,
-				STAGE_BLOCK_PIXEL_SIZE
+				pos_x + BLOCK_PIXEL_SIZE,
+				pos_y + BLOCK_PIXEL_SIZE,
+				BLOCK_PIXEL_SIZE * 2,
+				BLOCK_PIXEL_SIZE
 			);
 			ctx.fillRect(
-				pos_x + STAGE_BLOCK_PIXEL_SIZE,
-				pos_y + STAGE_BLOCK_PIXEL_SIZE * 2,
-				STAGE_BLOCK_PIXEL_SIZE,
-				STAGE_BLOCK_PIXEL_SIZE
+				pos_x + BLOCK_PIXEL_SIZE,
+				pos_y + BLOCK_PIXEL_SIZE * 2,
+				BLOCK_PIXEL_SIZE,
+				BLOCK_PIXEL_SIZE
 			);
 
 			break;
@@ -816,19 +816,106 @@ function renderStageBlock(level, block_index, x, y) {
 			ctx.clearRect(
 				pos_x,
 				pos_y,
-				STAGE_BLOCK_PIXEL_SIZE * 7,
-				STAGE_BLOCK_PIXEL_SIZE * 7
+				BLOCK_PIXEL_SIZE * 7,
+				BLOCK_PIXEL_SIZE * 7
 			);
 			/**/
 	}
 }
 
 function renderStage(level, stageString) {
-	dom.stage.ctx.clear();
+	const
+		ctx = dom.stage.ctx,
+		pixels_per_block = BLOCK_PIXEL_SIZE * (7 + 1);
+	
+	ctx.clear();
 
 	for (let x = 0; x < 10; x++) {
 		for (let y = 0; y < 20; y++) {
-			renderStageBlock(level, parseInt(stageString[y * 10 + x], 10), x, y);
+			renderBlock(
+				level,
+				parseInt(stageString[y * 10 + x], 10),
+				ctx, 
+				x * pixels_per_block,
+				y * pixels_per_block
+			);
 		}
 	}
+}
+
+
+
+function renderNextPiece(level, next_piece) {
+	const
+		ctx              = dom.next.ctx,
+		col_index        = PIECE_COLORS[next_piece],
+		pixels_per_block = BLOCK_PIXEL_SIZE * (7 + 1);
+		x_offset_3       = Math.floor((ctx.canvas.width - pixels_per_block * 3 + BLOCK_PIXEL_SIZE) / 2),
+		positions        = [];
+
+	ctx.clear();
+
+	let
+		pos_x = 0,
+		pos_y = 0,
+		x_idx = 0;
+
+	switch(next_piece) {
+		case 'I':
+			pos_y = Math.floor((ctx.canvas.height - BLOCK_PIXEL_SIZE * 7) / 2);
+
+			positions.push([x_idx++ * pixels_per_block, pos_y]);
+			positions.push([x_idx++ * pixels_per_block, pos_y]);
+			positions.push([x_idx++ * pixels_per_block, pos_y]);
+			positions.push([x_idx++ * pixels_per_block, pos_y]);
+			break;
+
+		case 'O':
+			pos_x = Math.floor((ctx.canvas.width - pixels_per_block * 2 + BLOCK_PIXEL_SIZE) / 2);
+
+			positions.push([pos_x, pos_y]);
+			positions.push([pos_x, pos_y + pixels_per_block]);
+			positions.push([pos_x + pixels_per_block, pos_y]);
+			positions.push([pos_x + pixels_per_block, pos_y + pixels_per_block]);
+			break;
+
+		case 'T':
+		case 'J':
+		case 'L':
+			// top line is the same for both pieces
+			positions.push([x_offset_3 + x_idx++ * pixels_per_block, pos_y]);
+			positions.push([x_offset_3 + x_idx++ * pixels_per_block, pos_y]);
+			positions.push([x_offset_3 + x_idx++ * pixels_per_block, pos_y]);
+
+			if (next_piece == 'L') {
+				x_idx = 0;
+			}
+			else if (next_piece == 'T') {
+				x_idx = 1;
+			}
+			else {
+				x_idx = 2;
+			}
+
+			positions.push([x_offset_3 + x_idx * pixels_per_block, pos_y + pixels_per_block]);
+			break;
+
+		case 'Z':
+		case 'S':
+			positions.push([x_offset_3 + pixels_per_block, pos_y]);
+			positions.push([x_offset_3 + pixels_per_block, pos_y + pixels_per_block]);
+
+			if (next_piece == 'Z') {
+				positions.push([x_offset_3, pos_y]);
+				positions.push([x_offset_3 + pixels_per_block * 2, pos_y + pixels_per_block]);
+			}
+			else {
+				positions.push([x_offset_3, pos_y + pixels_per_block]);
+				positions.push([x_offset_3 + pixels_per_block * 2, pos_y]);
+			}
+	}
+
+	positions.forEach(([pos_x, pos_y]) => {
+		renderBlock(level, col_index, ctx, pos_x, pos_y);
+	});
 }
