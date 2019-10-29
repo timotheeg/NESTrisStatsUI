@@ -1,3 +1,5 @@
+config = require('../config');
+
 'use strict'
 
 const
@@ -45,7 +47,7 @@ const
 	)
 ;
 
-let current_player = 'TIM';
+let current_player = config.default_player;
 
 module.exports = {
 	getStats() {
