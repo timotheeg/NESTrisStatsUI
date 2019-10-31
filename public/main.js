@@ -555,101 +555,73 @@ function renderLine() {
 function renderPiece(event) {
 	dom.pieces.count.textContent = game.data.pieces.count.toString().padStart(3, '0');
 
-	PIECES.forEach(name => {
-		dom.pieces[name].count.textContent = game.data.pieces[name].count.toString().padStart(3, '0');
-		dom.pieces[name].drought.textContent = game.data.pieces[name].drought.toString().padStart(2, '0');
-		dom.pieces[name].percent.textContent = getPercent(game.data.pieces[name].percent);
-
-		dom.pieces[name].ctx.resetTransform();
-		dom.pieces[name].ctx.clear();
-	});
-
 	let
-		last_i_piece_idx = -1,
-		idx,
 		pixel_size = 4,
 		max_pixels = Math.floor(dom.pieces.T.ctx.canvas.width / (pixel_size + 1)),
-		cur_x = 0,
-		draw_start = Math.max(0, game.pieces.length - max_pixels),
-		i_piece_indexes = [];
+		draw_start = Math.max(0, game.pieces.length - max_pixels);
 
-	// handle all pieces except I pieces
-	for (idx = 0; idx < game.pieces.length; idx++) {
-		const p = game.pieces[idx].cur_piece;
-
-		if (p === 'I') {
-			i_piece_indexes.push(idx);
-			continue;
-		}
-		else if (idx < draw_start) {
-			continue;
-		}
-
+	PIECES.forEach(name => {
 		const
-			das =   game.pieces[idx].cur_piece_das,
-			color = DAS_COLORS[ DAS_THRESHOLDS[das] ],
-			ctx =   dom.pieces[p].ctx;
+			piece_data    = game.data.pieces[name],
+			ctx           = dom.pieces[name].ctx,
+			indexes       = piece_data.indexes,
+			drought_color = name == 'I' ? 'orange' : '#747474';
 
-		ctx.fillStyle = color;
-		ctx.fillRect(
-			(idx - draw_start) * (pixel_size + 1),
-			0,
-			pixel_size,
-			pixel_size
-		);
-	}
+		dom.pieces[name].count.textContent   = piece_data.count.toString().padStart(3, '0');
+		dom.pieces[name].drought.textContent = piece_data.drought.toString().padStart(2, '0');
+		dom.pieces[name].percent.textContent = getPercent(piece_data.percent);
 
-	// handle I pieces and drought display
-	dom.pieces.I.ctx.resetTransform();
-	dom.pieces.I.ctx.transform(1, 0, 0, 1, - draw_start * (pixel_size + 1), 0);
+		ctx.resetTransform();
+		ctx.clear();
+		ctx.transform(1, 0, 0, 1, - draw_start * (pixel_size + 1), 0);
 
-	for (let i_idx = 0; i_idx < i_piece_indexes.length; i_idx++) {
-		const
-			i_piece_idx = i_piece_indexes[i_idx],
-			das =         game.pieces[i_piece_idx].cur_piece_das,
-			color =       DAS_COLORS[ DAS_THRESHOLDS[das] ],
-			ctx =         dom.pieces.I.ctx;
+		for (let idx = 0; idx < indexes.length; idx++) {
+			const
+				piece_idx = indexes[idx].index,
+				das       = indexes[idx].das,
+				color     = DAS_COLORS[ DAS_THRESHOLDS[das] ];
 
-			ctx.fillStyle = color;
-			ctx.fillRect(
-				i_piece_idx * (pixel_size + 1),
-				0,
-				pixel_size,
-				pixel_size
-			);
+				ctx.fillStyle = color;
+				ctx.fillRect(
+					piece_idx * (pixel_size + 1),
+					0,
+					pixel_size,
+					pixel_size
+				);
 
-			const last_i_piece_idx = i_idx > 0 ? i_piece_indexes[i_idx - 1] : -1;
+				const last_piece_idx = idx > 0 ? indexes[idx - 1].index : -1;
 
-			if (i_piece_idx - last_i_piece_idx - 1 < DROUGHT_PANIC_THRESHOLD) {
-				continue;
+				if (piece_idx - last_piece_idx - 1 < DROUGHT_PANIC_THRESHOLD) {
+					continue;
+				}
+
+				ctx.fillStyle = drought_color;
+				ctx.fillRect(
+					(last_piece_idx + 1) * (pixel_size + 1),
+					0,
+					(piece_idx - last_piece_idx - 1) * (pixel_size + 1) - 1,
+					pixel_size
+				);
+		};
+
+		// handle current drought if necessary
+		if (piece_data.drought >= DROUGHT_PANIC_THRESHOLD) {
+			// TODO: animate drought bar from 0 to DROUGHT_PANIC_THRESHOLD
+			let start_x = 0;
+
+			if (indexes.length) {
+				start_x = (indexes[indexes.length - 1].index + 1) * (pixel_size + 1);
 			}
 
-			ctx.fillStyle = 'orange';
+			ctx.fillStyle = drought_color;
 			ctx.fillRect(
-				(last_i_piece_idx + 1) * (pixel_size + 1),
+				start_x,
 				0,
-				(i_piece_idx - last_i_piece_idx - 1) * (pixel_size + 1) - 1,
+				piece_data.drought * (pixel_size + 1) - 1,
 				pixel_size
 			);
-	};
-
-	// handle current drought if necessary
-	if (game.data.i_droughts.cur >= DROUGHT_PANIC_THRESHOLD) {
-		// TODO: animate drought bar from 0 to DROUGHT_PANIC_THRESHOLD
-		let start_x = 0;
-
-		if (i_piece_indexes.length) {
-			start_x = (i_piece_indexes.pop() + 1) * (pixel_size + 1);
 		}
-
-		dom.pieces.I.ctx.fillStyle = 'orange';
-		dom.pieces.I.ctx.fillRect(
-			start_x,
-			0,
-			game.data.i_droughts.cur * (pixel_size + 1) - 1,
-			pixel_size
-		);
-	}
+	});
 
 	// droughts
 	// TODO: Use Canvas rather than span
@@ -660,7 +632,7 @@ function renderPiece(event) {
 
 	pixel_size = 2;
 	max_pixels = Math.floor(dom.droughts.cur.ctx.canvas.width / (pixel_size + 1));
-	color = 'orange';
+	color     = 'orange';
 
 	const
 		cur_drought  = game.data.i_droughts.cur,

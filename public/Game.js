@@ -53,7 +53,8 @@ class Game {
 			this.data.pieces[name] = {
 				count:   0,
 				percent: 0,
-				drought: 0
+				drought: 0,
+				indexes: []
 			}
 		});
 
@@ -112,19 +113,23 @@ class Game {
 		const das_stats = this.data.das;
 		das_stats.cur   =  event.cur_piece_das;
 		das_stats.total += event.cur_piece_das;
-		das_stats.avg   =  das_stats.total / (this.pieces.length + 1);
+		das_stats.avg   =  das_stats.total / this.data.pieces.count;
 		das_stats[DAS_THRESHOLDS[das_stats.cur]]++; // great, ok, bad
 
-		this.pieces.push({
-			cur_piece:     event.cur_piece,
-			cur_piece_das: event.cur_piece_das
-		});
+		const piece_data = {
+			piece: p,
+			das:   event.cur_piece_das,
+			index: this.pieces.length
+		};
+
+		this.pieces.push(piece_data);
+		this.data.pieces[p].indexes.push(piece_data);
 	}
 
 	onLine(event) {
 		const
-			num_lines =    event.lines - this.data.lines.count,
-			lines_score =  this.getScore(event.level, num_lines),
+			num_lines    = event.lines - this.data.lines.count,
+			lines_score  = this.getScore(event.level, num_lines),
 			actual_score = event.score - this.data.score.current;
 
 		// update total lines and points
