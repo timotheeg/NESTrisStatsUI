@@ -716,7 +716,7 @@ function renderPiece(event) {
 
 	for (let idx = to_draw.length; idx--;) {
 		const
-			das = to_draw[idx].cur_piece_das,
+			das = to_draw[idx].das,
 			color = DAS_COLORS[ DAS_THRESHOLDS[das] ];
 
 		dom.das.ctx.fillStyle = color;
