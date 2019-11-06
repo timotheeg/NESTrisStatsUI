@@ -486,7 +486,12 @@ function renderLine() {
 	dom.tetris_rate.value.textContent = getPercent(game.data.lines[4].percent);
 	dom.level.value.textContent = game.data.level.toString().padStart(2, '0');
 	dom.burn.count.textContent = game.data.burn.toString().padStart(2, '0');
-	dom.lines.count.textContent = game.data.lines.count.toString().padStart(3, '0');
+
+	const line_count = game.data.lines.count.toString().padStart(3, '0');
+
+	if (dom.lines) {
+		dom.lines.count.textContent = line_count
+	}
 
 	dom.score.current.textContent = game.data.score.current.toString().padStart(6, '0');
 
@@ -498,7 +503,7 @@ function renderLine() {
 	}
 
 	// lines and points
-	dom.lines_stats.count.textContent = dom.lines.count.textContent;
+	dom.lines_stats.count.textContent = line_count;
 	dom.points.count.textContent = game.data.score.current.toString().padStart(6, '0');
 
 	for (const [num_lines, values] of Object.entries(LINES)) {
@@ -695,31 +700,32 @@ function renderPiece(event) {
 	}
 
 	// das
-	dom.das.avg.textContent = game.data.das.avg.toFixed(1).padStart(4, '0');
-	dom.das.great.textContent = game.data.das.great.toString().padStart(3, '0');
-	dom.das.ok.textContent = game.data.das.ok.toString().padStart(3, '0');
-	dom.das.bad.textContent = game.data.das.bad.toString().padStart(3, '0');
+	if (dom.das) {
+		dom.das.avg.textContent = game.data.das.avg.toFixed(1).padStart(4, '0');
+		dom.das.great.textContent = game.data.das.great.toString().padStart(3, '0');
+		dom.das.ok.textContent = game.data.das.ok.toString().padStart(3, '0');
+		dom.das.bad.textContent = game.data.das.bad.toString().padStart(3, '0');
 
-	// clear
-	dom.das.ctx.clear();
+		dom.das.ctx.clear();
 
-	pixel_size = 4;
-	max_pixels = Math.floor(dom.das.ctx.canvas.width / (pixel_size + 1));
-	cur_x = 0;
-	to_draw = game.pieces.slice(-1 * max_pixels);
+		pixel_size = 4;
+		max_pixels = Math.floor(dom.das.ctx.canvas.width / (pixel_size + 1));
+		cur_x = 0;
+		to_draw = game.pieces.slice(-1 * max_pixels);
 
-	for (let idx = to_draw.length; idx--;) {
-		const
-			das = to_draw[idx].das,
-			color = DAS_COLORS[ DAS_THRESHOLDS[das] ];
+		for (let idx = to_draw.length; idx--;) {
+			const
+				das = to_draw[idx].das,
+				color = DAS_COLORS[ DAS_THRESHOLDS[das] ];
 
-		dom.das.ctx.fillStyle = color;
-		dom.das.ctx.fillRect(
-			idx * (pixel_size + 1),
-			(16 - das) * pixel_size,
-			pixel_size,
-			pixel_size
-		);
+			dom.das.ctx.fillStyle = color;
+			dom.das.ctx.fillRect(
+				idx * (pixel_size + 1),
+				(16 - das) * pixel_size,
+				pixel_size,
+				pixel_size
+			);
+		}
 	}
 
 	renderNextPiece(event.level, event.next_piece);

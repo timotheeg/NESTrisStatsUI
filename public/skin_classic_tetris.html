@@ -21,7 +21,7 @@ html, body, table, tr, th, td {
 
 .box {
 	position: absolute;
-	width: 105px;
+	width: 113px;
 	height: 39px;
 	padding: 10px;
 
@@ -52,23 +52,20 @@ html, body, table, tr, th, td {
 }
 
 #tetris_rate {
-	left: 1150px;
-	top: 158px;
+	left: 486px;
+	top: 311px;
 }
 
 #level {
-	left: 1021px;
-	top: 221px;
+	left: 486px;
+	top: 6px;
+	width: 250px;
+	height: 19px;
 }
 
 #burn {
-	left: 1150px;
-	top: 221px;
-}
-
-#lines {
-	left: 1021px;
-	top: 158px;
+	left: 623px;
+	top: 311px;
 }
 
 #score {
@@ -136,7 +133,7 @@ html, body, table, tr, th, td {
 
 #piece_stats {
 	left: 6px;
-	top: 400px;
+	top: 534px;
 	width: 730px;
 	height: 160px;
 }
@@ -249,28 +246,11 @@ html, body, table, tr, th, td {
 	text-align: center;
 }
 
-#das {
-	left: 6px;
-	top: 584px;
-	width: 730px;
-	height: 110px;
-}
-
-#das .header {
-	padding-bottom: 15px;
-}
-
-#das canvas {
-	border-style: dashed;
-	border-color: #505050;
-	border-width: 1px 0;
-}
-
 #lines_stats {
-	top: 6px;
+	top: 49px;
 	left: 486px;
 	width: 250px;
-	height: 210px;
+	height: 238px;
 }
 
 #lines_stats .header {
@@ -298,7 +278,7 @@ html, body, table, tr, th, td {
 }
 
 #points {
-	top: 240px;
+	top: 374px;
 	left: 486px;
 	width: 250px;
 	height: 136px;
@@ -424,7 +404,7 @@ html, body, table, tr, th, td {
 	top: 140px;
 	left: 6px;
 	width: 456px;
-	height: 236px;
+	height: 370px;
 }
 
 #high_scores .header {
@@ -454,10 +434,10 @@ html, body, table, tr, th, td {
 }
 
 #chat {
-	top: 284px;
+	top: 158px;
 	left: 1021px;
 	width: 234px;
-	height: 410px;
+	height: 536px;
 	overflow: hidden;
 }
 
@@ -674,13 +654,7 @@ html, body, table, tr, th, td {
 </div>
 
 <div class="box" id="level">
-	<div class="header">LEVEL</div>
-	<div class="content value">00</div>
-</div>
-
-<div class="box" id="lines">
-	<div class="header">LINES</div>
-	<div class="content">000</div>
+	<div class="header">LEVEL <span class="value">00</span></div>
 </div>
 
 <div class="box" id="burn">
@@ -785,19 +759,6 @@ html, body, table, tr, th, td {
 	</table>
 </div>
 
-<div class="box" id="das">
-	<div class="header">
-		<span class="label">DAS</span>
-		-
-		<span class="avg"><span class="label">AVG </span><span class="count">00.0</span></span>
-		-
-		<span class="bad"><span class="label">&#338;</span><span class="count">000</span></span>
-		<span class="ok"><span class="label">&#338;</span><span class="count">000</span></span>
-		<span class="great"><span class="label">&#338;</span><span class="count">000</span></span>
-	</div>
-	<div class="content"><canvas width="730" height="68" /></div>
-</div>
-
 <div class="box" id="lines_stats">
 	<div class="header">LINES <span class="count">000</span></div>
 	<div class="content">
@@ -827,7 +788,7 @@ html, body, table, tr, th, td {
 				<td class="percent">00%</td>
 			</tr>
 		</table>
-		<div class="tetris_rate"><canvas width="250" height="85" /></div>
+		<div class="tetris_rate"><canvas width="250" height="113" /></div>
 	</div>
 </div>
 

@@ -23,13 +23,17 @@ class DomRefs {
 
 		this.level = {
 			element: doc.querySelector('#level'),
-			value:   doc.querySelector('#level .content')
+			value:   doc.querySelector('#level .value')
 		};
 
-		this.lines = {
-			element: doc.querySelector('#lines'),
-			count:   doc.querySelector('#lines .content')
-		};
+		const lines = doc.querySelector('#lines');
+
+		if (lines) {
+			this.lines = {
+				element: lines,
+				count:   lines.querySelector('.content')
+			};
+		}
 
 		this.next = {
 			element: doc.querySelector('#next_piece'),
@@ -118,17 +122,19 @@ class DomRefs {
 
 		const das = doc.querySelector('#das');
 
-		this.das = {
-			element: das, 
+		if (das) {
+			this.das = {
+				element: das,
 
-			avg:   das.querySelector('.avg .count'),
+				avg:   das.querySelector('.avg .count'),
 
-			great: das.querySelector('.great .count'),
-			ok:    das.querySelector('.ok .count'),
-			bad:   das.querySelector('.bad .count'),
+				great: das.querySelector('.great .count'),
+				ok:    das.querySelector('.ok .count'),
+				bad:   das.querySelector('.bad .count'),
 
-			ctx:   das.querySelector('.content canvas').getContext('2d'),
-		};
+				ctx:   das.querySelector('.content canvas').getContext('2d'),
+			};
+		}
 
 		// ===============================================================
 		// ===============================================================
