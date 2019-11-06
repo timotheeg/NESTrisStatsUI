@@ -10,9 +10,10 @@ const
 	},
 
 	DAS_COLORS = {
-		great: 'limegreen',
-		ok:    'orange',
-		bad:   'red'
+		absent: 'white',
+		great:  'limegreen',
+		ok:     'orange',
+		bad:    'red'
 	},
 
 	DAS_THRESHOLDS = {
@@ -32,7 +33,8 @@ const
 		13: 'ok',
 		14: 'ok',
 		15: 'great',
-		16: 'great'
+		16: 'great',
+		99: 'absent'
 	}, 
 
 	DROUGHT_PANIC_THRESHOLD = 13,

@@ -20,7 +20,11 @@ for (const {name, color} of Object.values(LINES)) {
 }
 
 for (const [rating, color] of Object.entries(DAS_COLORS)) {
-	document.querySelector(`#das .${rating} .label `).style.color = color;
+	const das_label = document.querySelector(`#das .${rating} .label `);
+
+	if (!das_label) continue;
+
+	das_label.style.color = color;
 }
 
 
@@ -234,6 +238,10 @@ function onFrame(event, debug) {
 		}
 	};
 
+	if (isNaN(transformed.cur_piece_das)) {
+		transformed.cur_piece_das = 99;
+	}
+
 	if (debug) {
 		debugger;
 	}
@@ -356,7 +364,7 @@ function onFrame(event, debug) {
 		renderNextPiece(transformed.level, transformed.next_piece);
 	}
 
-	if (transformed.stage.num_blocks % 2 == 1) return;
+	if (transformed.stage.num_blocks % 2 == 1) return; // early exit for interleaving
 
 	if (diff.stage_blocks === 4) {
 		last_valid_state.stage = transformed.stage;
