@@ -196,20 +196,14 @@ document.querySelector('#skip .btn').addEventListener('click', () => {
 });
 
 
-const
-	dom = new DomRefs(document),
+const dom = new DomRefs(document);
 
-	PIECE_COOLDOWN_FRAMES  = 10;
-
-
-
-var
+let
 	game = null,
 	last_valid_state = null,
 	pending_game = false,
 	pending_piece = false,
 	pending_line = false,
-	new_piece_cooldown_frames = 0,
 	clear_animation = [];
 
 function onFrame(event, debug) {
@@ -278,10 +272,6 @@ function onFrame(event, debug) {
 		}
 	}
 
-	// TODO: game end state, and reset last_valid_state
-
-	new_piece_cooldown_frames--;
-
 	// populate diff
 	const diff = transformed.diff;
 
@@ -313,7 +303,6 @@ function onFrame(event, debug) {
 	// check if a change to cur_piece_stats
 	if (pending_piece) {
 		if (transformed.cur_piece && transformed.next_piece && !isNaN(transformed.cur_piece_das) && transformed.cur_piece_das <= 16) {
-			new_piece_cooldown_frames = PIECE_COOLDOWN_FRAMES;
 			game.onPiece(transformed);
 			renderPiece(transformed);
 			pending_piece = false;
@@ -368,10 +357,7 @@ function onFrame(event, debug) {
 
 	if (diff.stage_blocks === 4) {
 		last_valid_state.stage = transformed.stage;
-
-		if (new_piece_cooldown_frames <= 0) {
-			pending_piece = true;
-		}
+		pending_piece = true;
 	}
 	else if (diff.stage_blocks < 0) {
 		// reduction could be an interleaving artefact of the moving piece OR a clear animation
