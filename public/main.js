@@ -438,11 +438,11 @@ function renderPastGamesAndPBs(data) {
 
 		const row = dom.pbs[`s${record.start_level}`];
 
-		row.end_level.textContent =    record.end_level.toString().padStart(2, '0');
-		row.score.textContent =        record.score.toString().padStart(6, '0');
-		row.lines.textContent =        record.lines.toString().padStart(3, '0');
-		row.das_avg.textContent =      record.das_avg.toFixed(1).padStart(4, '0');
-		row.tetris_rate.textContent = `${Math.round(record.tetris_rate * 100).toString().padStart(2, '0')}%`;
+		row.end_level.textContent =   record.end_level.toString().padStart(2, '0');
+		row.score.textContent =       record.score.toString().padStart(6, '0');
+		row.lines.textContent =       record.lines.toString().padStart(3, '0');
+		row.das_avg.textContent =     record.das_avg.toFixed(1).padStart(4, '0');
+		row.tetris_rate.textContent = getPercent(record.tetris_rate);
 	});
 
 	// high scores
@@ -463,7 +463,7 @@ function renderPastGamesAndPBs(data) {
 			return '<tr>' + [
 				record.start_level.toString().padStart(2, '0'),
 				record.score.toString().padStart(6, '0'),
-				`${Math.round(record.tetris_rate * 100).toString().padStart(2, '0')}%`
+				getPercent(record.tetris_rate)
 			].map(content => `<td>${content}</td>`).join('') + '</tr>';
 
 		}).join('');
