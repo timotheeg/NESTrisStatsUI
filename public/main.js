@@ -204,7 +204,7 @@ let
 	pending_game = false,
 	pending_piece = false,
 	pending_line = false,
-	clear_animation = [];
+	line_animation_remaining_frames = 0;
 
 function onFrame(event, debug) {
 	// TODO: detect a reset to zero and setup a new Game
@@ -217,7 +217,7 @@ function onFrame(event, debug) {
 			cur_piece_das: false,
 			cur_piece:     false,
 			next_piece:    false,
-			stage_blocks:  false
+			stage_blocks:  0
 		},
 
 		score:         parseInt(event.score, 10),
@@ -260,6 +260,7 @@ function onFrame(event, debug) {
 			renderPiece(transformed);
 			renderLine(transformed);
 			last_valid_state = { ...transformed };
+			line_animation_remaining_frames = 0
 			pending_piece = pending_line = true;
 		}
 		else {
@@ -298,6 +299,7 @@ function onFrame(event, debug) {
 		renderLine(transformed);
 		last_valid_state = { ...transformed };
 		pending_piece = true;
+		line_animation_remaining_frames = 0;
 	}
 
 	// check if a change to cur_piece_stats
@@ -353,34 +355,30 @@ function onFrame(event, debug) {
 		renderNextPiece(transformed.level, transformed.next_piece);
 	}
 
-	if (transformed.stage.num_blocks % 2 == 1) return; // early exit for interleaving
+	last_valid_state.stage.field = transformed.stage.field
+
+	if (line_animation_remaining_frames-- > 0) return;
 
 	if (diff.stage_blocks === 4) {
 		last_valid_state.stage = transformed.stage;
 		pending_piece = true;
 	}
-	else if (diff.stage_blocks < 0) {
-		// reduction could be an interleaving artefact of the moving piece OR a clear animation
-		// a reduction <= 4 could be either, so we have to ignore. reduction >= 6 is a clear animation
-		// sequence of clear for tetris are 8, 16, 24, 32, 40. We can detect as early as 16
-		const last_diff = peek(clear_animation);
+	else {
+		// assuming we aren't dropping any frame, the number of blocks only reduces when the
+		// line animation starts, the diff is twice the number of lines being cleared.
+		//
+		// Note: diff.stage_blocks can be negative at weird amounts when the piece is rotated
+		// while still being at the top of the field with some block moved out of view
 
-		if (diff.stage_blocks !== last_diff) {
-			if (diff.stage_blocks === -16 && last_diff === -8) {
+		switch(diff.stage_blocks) {
+			case -8:
 				onTetris();
-			}
-
-			switch(diff.stage_blocks) {
-				case -8:
-				case -12:
-				case -16:
-					clear_animation.push(diff.stage_blocks);
-			}
-		}
-
-		if (diff.stage_blocks % 10 === 0) { // works no matter how many lines are cleared!
-			last_valid_state.stage = transformed.stage;
-			clear_animation.length = 0;
+			case -6:
+			case -4:
+			case -2:
+				// indicate animation
+				line_animation_remaining_frames = 6;
+				last_valid_state.stage.num_blocks += (diff.stage_blocks * 5); // equivalent to fast forward on how many blocks will have gone after the animation
 		}
 	}
 }
