@@ -22,6 +22,7 @@
     "fastify-formbody": "^3.1.0",
     "fastify-plugin": "^1.5.0",
     "fastify-static": "^2.5.0",
+    "lodash": "^4.17.15",
     "twitch-bot": "^1.3.5",
     "ws": "^7.2.0"
   },
