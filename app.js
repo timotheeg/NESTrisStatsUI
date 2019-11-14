@@ -8,6 +8,8 @@ const config = require('./config');
 const TetrisDAO = require('./daos/tetris');
 const _ = require('lodash');
 
+const speak = require('./voiceover');
+
 module.exports = function (fastify, opts, next) {
   // Place here your custom code!
   // for static assets
@@ -39,7 +41,7 @@ module.exports = function (fastify, opts, next) {
 
 // set up twitch bot
 const WebSocket = require('ws');
- 
+
 const wss = new WebSocket.Server({ port: 3339 });
 
 const connections = new Set();
@@ -72,77 +74,6 @@ const ClientConnectionAPI = new Proxy({}, {
 });
 
 
-// Voice Management for OSX
-// TODO: Use Google Text-To-Speech API and generate a broader range of voices
-const
-  // all the en_XX voices
-  voices = _.shuffle([
-    'Alex',
-    'Fred',
-    'Moira',
-    'Samantha',
-    'Tessa',
-    'Veena',
-    'Victoria'
-  ]),
-  voice_map = new Map(), // to track which user has which voice
-  say_queue = []; // ensure only one message is spoken at a time
-
-let
-  saying = false,
-  voice_index = 0;
-
-// hardcode known stream visitors
-voice_map.set('puffy2303', 'Karen');
-voice_map.set('yobi9',     'Daniel');
-
-// Add the assigned voices to the mix again, but as last entries
-// I wish there was more choices
-voices.push('Daniel', 'Karen');
-
-
-function getVoice(username) {
-  if (!voice_map.has(username)) {
-    voice_map.set(username, voices[voice_index++]);
-  }
-
-  return voice_map.get(username);
-}
-
-function _sayNextMessage(from_previous_message_complete) {
-  if (!from_previous_message_complete && saying) return;
-
-  if (!say_queue.length) {
-    saying = false;
-    return;
-  }
-
-  saying = true;
-
-  const chatter = say_queue.shift();
-
-  // Using spawn to have guaranteed arg safety (no command injection)
-  // see: https://www.owasp.org/index.php/Command_Injection
-  // doc: https://nodejs.org/api/child_process.html#child_process_asynchronous_process_creation
-  const say = spawn('say', [
-    '-v',
-    getVoice(chatter.username),
-    chatter.message
-  ]);
-
-  say.stderr.on('error', console.error);
-
-  say.on('close', (code) => {
-    console.log(`[${chatter.username}] said [${chatter.message}] with exit code [${code}]`);
-    setTimeout(_sayNextMessage, 1500, true); // force 1.5s pause between messages
-  });
-}
-
-function sayMessage(chatter) {
-  say_queue.push(chatter);
-  _sayNextMessage();
-}
-
 // Connect to Twitch and forward chgat messages to client
 const TwitchBot = require('twitch-bot')
 
@@ -160,7 +91,7 @@ Bot.on('join', channel => {
 
 Bot.on('message', chatter => {
   if (chatter.username && chatter.message) {
-    sayMessage(chatter);
+    speak(chatter);
   }
 
   ClientConnectionAPI.message(chatter);

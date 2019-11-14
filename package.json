@@ -15,7 +15,9 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@google-cloud/text-to-speech": "^1.4.1",
     "better-sqlite3": "^5.4.1",
+    "bluebird": "^3.7.1",
     "fastify": "^2.0.0",
     "fastify-autoload": "^1.0.0",
     "fastify-cli": "^1.1.0",
@@ -23,6 +25,7 @@
     "fastify-plugin": "^1.5.0",
     "fastify-static": "^2.5.0",
     "lodash": "^4.17.15",
+    "play-sound": "^1.1.3",
     "twitch-bot": "^1.3.5",
     "ws": "^7.2.0"
   },
