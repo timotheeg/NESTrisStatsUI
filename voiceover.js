@@ -82,6 +82,10 @@ for (const [username, voice] of Object.entries(config.chat_voice.twitch_mappings
 }
 
 
+function log(...args) {
+	console.log('voice', ...args);
+}
+
 function getVoice(username) {
 	if (!voice_map.has(username)) {
 		const voices = ordered_voices[config.chat_voice.provider];
@@ -123,12 +127,21 @@ function _sayNextMessageOSX(from_previous_message_complete) {
 }
 
 function _sayNextMessageGoogle(from_previous_message_complete) {
+	log('_sayNextMessageGoogle', { from_previous_message_complete, saying });
+
 	if (!from_previous_message_complete && saying) return;
 
 	if (!say_queue.length) {
+		log('_sayNextMessageGoogle queue is empty');
 		saying = false;
 		return;
 	}
+
+	log('_sayNextMessageGoogle', {
+		fulfilled: say_queue[0].isFulfilled(),
+		rejected: say_queue[0].isRejected(),
+		pending: say_queue[0].isPending()
+	});
 
 	if (!say_queue[0].isFulfilled()) return;
 
@@ -141,12 +154,14 @@ function _sayNextMessageGoogle(from_previous_message_complete) {
 
 	promise
 		.then(filename => {
+			log('_sayNextMessageGoogle', 'preparring to say', filename);
+
 			path = filename;
 			return playAsync(filename);
 		})
 		.catch(console.error)
 		.then(() => unlinkAsync(path))
-		.catch(_.noop)
+		.catch(console.error)
 		.delay(1500)
 		.then(() => _sayNextMessageGoogle(true));
 }
@@ -166,10 +181,16 @@ function say_google(chatter) {
 		},
 
 		promise = new Promise((resolve, reject) => {
+			log('synthesizeSpeech', filename, request);
 			ttsClient.synthesizeSpeech(request)
-				.then(resolve, reject)
+				.catch(err => {
+					console.error(err);
+					throw err;
+				})
+				.then(resolve);
 		})
 			.then(([response]) => {
+				log('synthesizeSpeech response', filename);
 				return writeFileAsync(filename, response.audioContent, 'binary');
 			})
 			.then(() => filename)
