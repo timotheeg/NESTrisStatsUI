@@ -204,10 +204,12 @@ let
 	pending_game = false,
 	pending_piece = false,
 	pending_line = false,
-	line_animation_remaining_frames = 0;
+	line_animation_remaining_frames = 0,
+	pending_single = false,
+	game_frames = [];
 
 function onFrame(event, debug) {
-	// TODO: detect a reset to zero and setup a new Game
+	// game_frames.push({ ...event });
 
 	// transformation
 	const transformed = {
@@ -256,6 +258,7 @@ function onFrame(event, debug) {
 			&& transformed.stage.num_blocks != 200
 		) {
 			game = new Game(transformed);
+			// game_frames = [{...event}];
 			clearStage();
 			renderPiece(transformed);
 			renderLine(transformed);
@@ -295,6 +298,7 @@ function onFrame(event, debug) {
 		}
 
 		game = new Game(transformed);
+		// game_frames = [{...event}];
 		clearStage();
 		renderLine(transformed);
 		last_valid_state = { ...transformed };
@@ -374,11 +378,37 @@ function onFrame(event, debug) {
 			case -8:
 				onTetris();
 			case -6:
-			case -4:
-			case -2:
-				// indicate animation
+				// indicate animation for triples and tetris
 				line_animation_remaining_frames = 6;
 				last_valid_state.stage.num_blocks += (diff.stage_blocks * 5); // equivalent to fast forward on how many blocks will have gone after the animation
+
+				break;
+
+			case -4:
+				if (pending_single) {
+					// verified single (second frame of clear animation)
+					line_animation_remaining_frames = 6 - 1;
+					last_valid_state.stage.num_blocks -= 10;
+				}
+				else
+				{
+					// genuine double
+					line_animation_remaining_frames = 6;
+					last_valid_state.stage.num_blocks -= 20;
+				}
+
+				pending_single = false;
+				break;
+
+			case -2:
+				// -2 can happen on the first clear animation frame of a single
+				// -2 can also happen when the piece is at the top of the field and gets rotated and is then partially off field
+				// to differentiate the 2, we must wait for the next frame, if it goes to -4, then it is the clear animation continuing
+				pending_single = true;
+				break;
+
+			default:
+				pending_single = false;
 		}
 	}
 }
@@ -822,7 +852,7 @@ function renderStage(level, stage_string) {
 	const
 		ctx = dom.stage.ctx,
 		pixels_per_block = BLOCK_PIXEL_SIZE * (7 + 1);
-	
+
 	ctx.clear();
 
 	for (let x = 0; x < 10; x++) {
@@ -830,7 +860,7 @@ function renderStage(level, stage_string) {
 			renderBlock(
 				level,
 				parseInt(stage_string[y * 10 + x], 10),
-				ctx, 
+				ctx,
 				x * pixels_per_block,
 				y * pixels_per_block
 			);
