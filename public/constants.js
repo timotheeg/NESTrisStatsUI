@@ -13,7 +13,7 @@ const
 		absent: 'white',
 		great:  'limegreen',
 		ok:     'orange',
-		bad:    'red'
+		bad:    'red',
 	},
 
 	DAS_THRESHOLDS = {
@@ -34,8 +34,7 @@ const
 		14: 'ok',
 		15: 'great',
 		16: 'great',
-		99: 'absent'
-	}, 
+	},
 
 	DROUGHT_PANIC_THRESHOLD = 13,
 
@@ -67,3 +66,5 @@ const
 		I: 1
 	}
 ;
+
+DAS_THRESHOLDS[-1] = 'absent';

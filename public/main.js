@@ -19,14 +19,15 @@ for (const {name, color} of Object.values(LINES)) {
 	document.querySelector(`#lines_stats tr.${name} th`).style.color = color;
 }
 
-for (const [rating, color] of Object.entries(DAS_COLORS)) {
-	const das_label = document.querySelector(`#das .${rating} .label `);
+if (dom.das) {
+	for (const [rating, color] of Object.entries(DAS_COLORS)) {
+		const das_label = document.querySelector(`#das .${rating} .label `);
 
-	if (!das_label) continue;
+		if (!das_label) continue;
 
-	das_label.style.color = color;
+		das_label.style.color = color;
+	}
 }
-
 
 const API = {
 	message:     onMessage,
@@ -225,7 +226,7 @@ function onFrame(event, debug) {
 		score:         parseInt(event.score, 10),
 		lines:         parseInt(event.lines, 10),
 		level:         parseInt(event.level, 10),
-		cur_piece_das: parseInt(event.cur_piece_das, 10),
+		cur_piece_das: dom.das ? parseInt(event.cur_piece_das, 10) : -1,
 		cur_piece:     event.cur_piece,
 		next_piece:    event.preview,
 		stage: {
@@ -233,10 +234,6 @@ function onFrame(event, debug) {
 			field:      event.field
 		}
 	};
-
-	if (isNaN(transformed.cur_piece_das)) {
-		transformed.cur_piece_das = 99;
-	}
 
 	if (debug) {
 		debugger;
