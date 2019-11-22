@@ -1,6 +1,5 @@
 'use strict'
 
-const { spawn } = require('child_process');
 const net = require('net');
 const path = require('path');
 const AutoLoad = require('fastify-autoload');
