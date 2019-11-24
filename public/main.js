@@ -1,3 +1,5 @@
+const dom = new DomRefs(document);
+
 if (!CanvasRenderingContext2D.prototype.clear) {
 	CanvasRenderingContext2D.prototype.clear = function (preserveTransform) {
 		if (preserveTransform) {
@@ -12,7 +14,6 @@ if (!CanvasRenderingContext2D.prototype.clear) {
 		}
 	};
 }
-
 
 // initial setup for colors based con constants.js
 for (const {name, color} of Object.values(LINES)) {
@@ -196,8 +197,6 @@ document.querySelector('#skip .btn').addEventListener('click', () => {
 	}
 });
 
-
-const dom = new DomRefs(document);
 
 let
 	game = null,
