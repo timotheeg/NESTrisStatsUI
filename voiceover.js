@@ -126,14 +126,13 @@ function _sayNextMessageOSX(from_previous_message_complete) {
   });
 }
 
-function _sayNextMessageGoogle(from_previous_message_complete) {
-	log('_sayNextMessageGoogle', { from_previous_message_complete, saying });
+function _sayNextMessageGoogle() {
+	log('_sayNextMessageGoogle', { saying });
 
-	if (!from_previous_message_complete && saying) return;
+	if (saying) return;
 
 	if (!say_queue.length) {
 		log('_sayNextMessageGoogle queue is empty');
-		saying = false;
 		return;
 	}
 
@@ -143,9 +142,10 @@ function _sayNextMessageGoogle(from_previous_message_complete) {
 		pending: say_queue[0].isPending()
 	});
 
+	// say_queue[0] cannot be rejected because the promise chain is always caught
 	if (!say_queue[0].isFulfilled()) return;
 
-	// first message is ready to be said, let's go!
+	// message is ready to be said, let's go!
 	saying = true;
 
 	const promise = say_queue.shift();
@@ -163,7 +163,8 @@ function _sayNextMessageGoogle(from_previous_message_complete) {
 		.then(() => unlinkAsync(path))
 		.catch(console.error)
 		.delay(1500)
-		.then(() => _sayNextMessageGoogle(true));
+		.then(() => { saying = false })
+		.then(_sayNextMessageGoogle);
 }
 
 function say_google(chatter) {
@@ -178,17 +179,13 @@ function say_google(chatter) {
 				name: voice
 			},
 			audioConfig: {audioEncoding: 'OGG_OPUS'},
-		},
+		};
 
-		promise = new Promise((resolve, reject) => {
-			log('synthesizeSpeech', filename, request);
-			ttsClient.synthesizeSpeech(request)
-				.catch(err => {
-					console.error(err);
-					throw err;
-				})
-				.then(resolve);
-		})
+	log('synthesizeSpeech', filename, request);
+
+	// Wrap with a bluebird Promise to have introspectionn later on
+	const
+		promise = new Promise((resolve, reject) => ttsClient.synthesizeSpeech(request).then(resolve, reject))
 			.then(([response]) => {
 				log('synthesizeSpeech response', filename);
 				return writeFileAsync(filename, response.audioContent, 'binary');
@@ -198,7 +195,7 @@ function say_google(chatter) {
 
 	say_queue.push(promise);
 
-	promise.then(() => _sayNextMessageGoogle());
+	promise.then(_sayNextMessageGoogle);
 }
 
 function say_osx(chatter) {
