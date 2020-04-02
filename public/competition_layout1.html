@@ -11,14 +11,24 @@
 .score {
 	width: 180px;
 	height: 54px;
-	right: 42px;
+	right: 34px;
+	font-size: 24px;
+	text-align: right;
+	padding-right: 30px;
 }
 .score .header {
-	font-size: 24px;
 	padding-top: 6px;
 }
 .score .content {
 	padding-top: 8px;
+}
+
+.score.winning .content {
+	color: #0eff0e;
+}
+
+.score.losing .content {
+	color: #fd0009;
 }
 
 .next_piece {
@@ -69,7 +79,7 @@
 }
 
 .p2.score {
-	left: 42px;
+	left: 34px;
 }
 
 .p2.next_piece {
@@ -112,13 +122,6 @@
 	text-align: center;
 }
 
-.winning {
-	color: green;
-}
-
-.losing {
-	color: red;
-}
 </style>
 </head>
 <body>
@@ -132,7 +135,7 @@
 
 <!-- Player 1 -->
 
-<div class="box score p1">
+<div class="box score p1 winning">
 	<div class="header">000000</div>
 	<div class="content">-000000</div>
 </div>
@@ -163,7 +166,7 @@
 
 <!-- Player 2 -->
 
-<div class="box score p2">
+<div class="box score p2 losing">
 	<div class="header">000000</div>
 	<div class="content">-000000</div>
 </div>
