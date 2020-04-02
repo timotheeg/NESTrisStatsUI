@@ -4,6 +4,7 @@ const net = require('net');
 const path = require('path');
 const AutoLoad = require('fastify-autoload');
 const config = require('./config');
+const NEStrisServer = require('./NesTrisServer');
 const TetrisDAO = require('./daos/tetris');
 const _ = require('lodash');
 
@@ -97,50 +98,11 @@ Bot.on('message', chatter => {
 });
 
 
-// Open server to receive OCR events and forward them to client
-// OCR client sends data in the form <BYTELENGTH32LE><DATA>, so we must extract the header first
-// Below is the minimum code to do that
-const server = net.createServer((conn) => {
-  // 'connection' listener.
-  console.log('OCR producer connected');
 
-  let stream_data = Buffer.from([]);
+const server = new NEStrisServer(3338, 'default');
 
-  function onData() {
-    // check if ready to process:
-    const msg_length = stream_data.readInt32LE();
+server.on('frame', data => ClientConnectionAPI.frame(data));
 
-    if (stream_data.length < msg_length + 4) return; // not enough data, wait for more
-
-    const frame_data = stream_data.toString('utf8', 4, msg_length + 4)
-
-    ClientConnectionAPI.frame(JSON.parse(frame_data));
-
-    stream_data = stream_data.slice(msg_length + 4);
-
-    if (stream_data.length) {
-      // there's more data, check if we can process some more!
-      onData();
-    }
-  }
-
-  conn
-    .on('end', () => {
-      console.log('OCR producer disconnected');
-    })
-    .on('data', data => {
-      stream_data = Buffer.concat([stream_data, data]);
-      onData();
-    });
-});
-
-server.on('error', (err) => {
-  console.error(err);
-});
-
-server.listen(3338, () => {
-  console.log('Ready to receive OCR events');
-});
 
 
 // Listen for player change to force score update immediately
