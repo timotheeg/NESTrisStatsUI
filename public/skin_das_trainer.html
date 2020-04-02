@@ -1,46 +1,17 @@
 <!DOCTYPE html>
 <html>
 <head>
+<link rel="stylesheet" type="text/css" href="tetris.css">
 <style>
-@font-face {
-	font-family: "Press Start";
-	src: url("./prstart.ttf");
-}
-
-@font-face {
-	font-family: "Press Start K";
-	src: url("./prstartk_nes_tetris_8.ttf");
-}
-
-html, body, table, tr, th, td {
-	margin: 0;
-	padding: 0;
-	border: 0;
-	font: inherit;
-}
 
 .box {
-	position: absolute;
 	width: 105px;
 	height: 39px;
 	padding: 10px;
 
-	color: white;
-	font-size: 16px;
-	font-family: "Press Start K", monospace;
-	line-height: 20px;
-
 	border-image: url('./border_no_black.png');
 	border-image-slice: 8 8 8 8 fill;
 	border-image-width: 8px 8px;
-}
-
-.box .header {
-	text-align: center;
-}
-
-.box .content {
-	text-align: center;
 }
 
 .external {
@@ -364,11 +335,6 @@ html, body, table, tr, th, td {
 }
 
 #stream_bg {
-	position: absolute;
-	top:0;
-	left:0;
-	width: 1280px;
-	height: 720px;
 	background-color: #000;
 }
 

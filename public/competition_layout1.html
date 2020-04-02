@@ -1,88 +1,49 @@
 <!DOCTYPE html>
 <html>
 <head>
+<link rel="stylesheet" type="text/css" href="tetris.css">
 <style>
-@font-face {
-	font-family: "Press Start";
-	src: url("./prstart.ttf");
-}
-
-@font-face {
-	font-family: "Press Start K";
-	src: url("./prstartk.ttf");
-}
-
-html, body, table, tr, th, td {
-	margin: 0;
-	padding: 0;
-	border: 0;
-	font-family: "Press Start K", "Lucida Console", Monaco, monospace;
-}
-
-#stream_bg {
-	position: absolute;
-	top: 0;
-	left: 0;
-	width: 1280px;
-	height: 720px;
-	border-bottom: 1px solid black;
-	border-right: 1px solid black;
-}
-
 #playing_fields {
 	position: absolute;
 	left: 640px;
-	top: 24px;
+	top: 8px;
 }
-
-.box {
-	position: absolute;
-	padding: 12px;
-	height: 40px;
-
-	color: white;
-	font-size: 16px;
-	line-height: 20px;
-	text-align: center;
-
-	border-image: url('./border.png');
-	border-image-slice: 10 10 10 10 fill;
-	border-image-width: 10px 10px;
-}
-
 .score {
-	width: 178px;
+	width: 180px;
 	height: 54px;
-	right: 34px;
+	right: 42px;
+}
+.score .header {
+	font-size: 24px;
+	padding-top: 6px;
 }
 .score .content {
 	padding-top: 8px;
-	font-size: 24px;
 }
 
 .next_piece {
-	width: 99px;
+	width: 108px;
+	top: 76px;
+	right: 144px;
+}
+
+.lines {
+	width: 107px;
 	top: 76px;
 	right: 15px;
 }
 
-.lines {
-	width: 99px;
-	top: 76px;
-	right: 136px;
-}
-
 .board {
-	width: 220px;
-	height: 440px;
+	width: 237px;
+	height: 477px;
 	right: 15px;
 	top: 138px;
 }
 
 .name {
-	width: 220px;
+	width: 237px;
 	right: 15px;
-	top: 600px;
+	top: 637px;
 }
 
 .name .content {
@@ -97,22 +58,22 @@ html, body, table, tr, th, td {
 
 .tetris_rate {
 	width: 50px;
-	top: 600px;
-	right: 257px;
+	top: 637px;
+	right: 274px;
 }
 
 .level {
 	width: 34px;
-	top: 538px;
-	right: 257px;
+	top: 575px;
+	right: 274px;
 }
 
 .p2.score {
-	left: 34px;
+	left: 42px;
 }
 
 .p2.next_piece {
-	left: 136px;
+	left: 144px;
 }
 
 .p2.lines {
@@ -128,11 +89,11 @@ html, body, table, tr, th, td {
 }
 
 .p2.tetris_rate {
-	left: 257px;
+	left: 274px;
 }
 
 .p2.level {
-	left: 257px;
+	left: 274px;
 }
 
 .divider {
@@ -140,7 +101,7 @@ html, body, table, tr, th, td {
 	left: -15px;
 	width: 30px;
 	top: 76px;
-	height: 587px;
+	height: 625px;
 	background-color: #000;
 	color: #f8e889;
 	font-size: 16px;
@@ -150,8 +111,6 @@ html, body, table, tr, th, td {
 	justify-content: center;
 	text-align: center;
 }
-
-
 </style>
 </head>
 <body>
@@ -166,8 +125,8 @@ html, body, table, tr, th, td {
 <!-- Player 1 -->
 
 <div class="box score p1">
-	<div class="header">SCORE</div>
-	<div class="content">000000</div>
+	<div class="header">000000</div>
+	<div class="content">-000000</div>
 </div>
 
 <div class="box lines p1">
@@ -184,7 +143,7 @@ html, body, table, tr, th, td {
 
 <div class="box tetris_rate p1">
 	<div class="header">TRT</div>
-	<div class="content">100</div>
+	<div class="content">---</div>
 </div>
 
 <div class="box name p1">
@@ -197,8 +156,8 @@ html, body, table, tr, th, td {
 <!-- Player 2 -->
 
 <div class="box score p2">
-	<div class="header">SCORE</div>
-	<div class="content">000000</div>
+	<div class="header">000000</div>
+	<div class="content">-000000</div>
 </div>
 
 <div class="box lines p2">
@@ -215,7 +174,7 @@ html, body, table, tr, th, td {
 
 <div class="box tetris_rate p2">
 	<div class="header">TRT</div>
-	<div class="content">100</div>
+	<div class="content">---</div>
 </div>
 
 <div class="box name p2">
