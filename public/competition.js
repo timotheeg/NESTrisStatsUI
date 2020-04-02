@@ -26,6 +26,13 @@ class TetrisCompetitionAPI {
 		this._repaintVictories(2);
 	}
 
+	setBestOf(num_games) {
+		this.first_to = Math.ceil(num_games / 2);
+
+		this._repaintVictories(1);
+		this._repaintVictories(2);
+	}
+
 	setVictories(player_num, num_victories) {
 		this.victories[player_num] = num_victories;
 
@@ -61,12 +68,16 @@ class TetrisCompetitionAPI {
 			hearts.appendChild(heart);
 		}
 	}
+
+	frame(player_num, data) {
+
+	}
 };
 
 
 const API = new TetrisCompetitionAPI();
 
-const socket = new WebSocket('ws://127.0.0.1:3338');
+const socket = new WebSocket('ws://127.0.0.1:4003');
 
 socket.addEventListener('message', (frame => {
 	try{
