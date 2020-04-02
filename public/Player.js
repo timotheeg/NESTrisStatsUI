@@ -40,12 +40,8 @@ class Player {
 		this.lines = parseInt(data.lines, 10);
 		this.level = parseInt(data.level, 10);
 
-		this.renderField();
-
-		if (data.preview != this.preview) {
-			this.preview = data.preview;
-			this.renderPreview()
-		}
+		this.renderField(this.level, data.field);
+		this.renderPreview(this.level, data.preview);
 	}
 
 	renderPreview() {
