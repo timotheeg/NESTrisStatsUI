@@ -60,8 +60,6 @@ const ViewAPI = new Proxy({}, {
 });
 
 
-console.log('Setting up NesTris server for player 1');
-
 const server_p1 = new NEStrisServer(player1_port, 'player 1');
 const server_p2 = new NEStrisServer(player2_port, 'player 2');
 
