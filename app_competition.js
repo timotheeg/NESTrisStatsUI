@@ -63,8 +63,8 @@ const ViewAPI = new Proxy({}, {
 const server_p1 = new NEStrisServer(player1_port, 'player 1');
 const server_p2 = new NEStrisServer(player2_port, 'player 2');
 
-server_p1.on('frame', data => RPCToViewers(['frame', 1, data]));
-server_p2.on('frame', data => RPCToViewers(['frame', 2, data]));
+server_p1.on('frame', data => RPCToViewers('frame', 1, data));
+server_p2.on('frame', data => RPCToViewers('frame', 2, data));
 
 
 module.exports = ViewAPI;

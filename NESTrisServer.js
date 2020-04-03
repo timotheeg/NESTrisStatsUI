@@ -22,7 +22,7 @@ class NESTrisServer extends EventEmitter {
 
 		let stream_data = Buffer.from([]);
 
-		function onData() {
+		const onData = () => {
 			// check if ready to process:
 			const msg_length = stream_data.readInt32LE();
 
