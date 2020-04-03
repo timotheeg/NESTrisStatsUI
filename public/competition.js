@@ -1,35 +1,20 @@
 // very simple RPC system to allow server to send data to client
 
-const player1 = new Player(
+const players = [1, 2].map(num => new CompetitionPlayer(
 	{
-		score:   document.querySelector('.score.p1 .header'),
-		level:   document.querySelector('.level.p1 .content'),
-		lines:   document.querySelector('.lines.p1 .content'),
-		preview: document.querySelector('.next_piece.p1'),
-		field:   document.querySelector('.board.p1')
+		score:   document.querySelector(`.score.p${num} .header`),
+		diff:    document.querySelector(`.score.p${num} .content`),
+		level:   document.querySelector(`.level.p${num} .content`),
+		lines:   document.querySelector(`.lines.p${num} .content`),
+		trt:     document.querySelector(`.tetris_rate.p${num} .content`),
+		preview: document.querySelector(`.next_piece.p${num}`),
+		field:   document.querySelector(`.board.p${num}`)
 	},
 	{
 		field_pixel_size: 3,
 		preview_pixel_size: 2
 	}
-);
-
-const player2 = new Player(
-	{
-		score:   document.querySelector('.score.p2 .header'),
-		level:   document.querySelector('.level.p2 .content'),
-		lines:   document.querySelector('.lines.p2 .content'),
-		preview: document.querySelector('.next_piece.p2'),
-		field:   document.querySelector('.board.p2')
-	},
-	{
-		field_pixel_size: 3,
-		preview_pixel_size: 2
-	}
-);
-
-const players = [player1, player2];
-
+));
 
 class TetrisCompetitionAPI {
 	constructor() {
@@ -100,7 +85,20 @@ class TetrisCompetitionAPI {
 	}
 
 	frame(player_num, data) {
-		const player = players[player_num - 1].setFrame(data);
+		const
+			index       = player_num - 1,
+			player      = players[index],
+			otherPlayer = players[(index+1) % 2],
+			otherScore  = otherPlayer.getScore();
+
+		player.setFrame(data);
+
+		const
+			score = player.getScore(),
+			diff  = score - otherScore;
+
+		player.setDiff(diff);
+		otherPlayer.setDiff(-diff);
 	}
 };
 

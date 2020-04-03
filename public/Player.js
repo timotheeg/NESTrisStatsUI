@@ -97,19 +97,20 @@ function renderBlock(level, block_index, pixel_size, ctx, pos_x, pos_y) {
 
 
 /*
-  dom: {
-  	score:   text element
-	level:   text element
-	lines:   text element
-	preview: div for canva
-	field:   div for canva
-  }
+	dom: {
+		score:   text element
+		level:   text element
+		lines:   text element
+		trt:     text element
+		preview: div for canva
+		field:   div for canva
+	}
 
-  options: {
-	preview_pixel_size: int
-	field_pixel_size: int
-  }
- */
+	options: {
+		preview_pixel_size: int
+		field_pixel_size: int
+	}
+*/
 
 class Player {
 	constructor(dom, options) {
@@ -141,7 +142,7 @@ class Player {
 		this.score = 0;
 		this.lines = 0;
 		this.level = 0;
-		this.rtr = 0;
+		this.trt = 0;
 
 		this.preview_ctx.clear();
 		this.field_ctx.clear();
@@ -175,20 +176,20 @@ class Player {
 			ctx              = this.preview_ctx,
 			col_index        = PIECE_COLORS[preview],
 			pixels_per_block = this.preview_pixel_size * (7 + 1),
-			x_offset_3       = Math.floor((ctx.canvas.width - pixels_per_block * 3) / 2),
+			x_offset_3       = Math.ceil((ctx.canvas.width - pixels_per_block * 3) / 2),
 			positions        = [];
 
 		ctx.clear();
 
 		let
 			pos_x = 0,
-			pos_y = Math.floor((ctx.canvas.height - pixels_per_block * 2) / 2),
+			pos_y = Math.ceil((ctx.canvas.height - pixels_per_block * 2) / 2),
 			x_idx = 0;
 
 		switch(preview) {
 			case 'I':
-				pos_x = Math.floor((ctx.canvas.width - pixels_per_block * 4) / 2);
-				pos_y = Math.floor((ctx.canvas.height - pixels_per_block) / 2);
+				pos_x = Math.ceil((ctx.canvas.width - pixels_per_block * 4) / 2);
+				pos_y = Math.ceil((ctx.canvas.height - pixels_per_block) / 2);
 
 				positions.push([pos_x + pixels_per_block * 0, pos_y]);
 				positions.push([pos_x + pixels_per_block * 1, pos_y]);
@@ -197,7 +198,7 @@ class Player {
 				break;
 
 			case 'O':
-				pos_x = Math.floor((ctx.canvas.width - pixels_per_block * 2 + this.preview_pixel_size) / 2);
+				pos_x = Math.ceil((ctx.canvas.width - pixels_per_block * 2 + this.preview_pixel_size) / 2);
 
 				positions.push([pos_x, pos_y]);
 				positions.push([pos_x, pos_y + pixels_per_block]);

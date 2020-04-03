@@ -23,11 +23,11 @@
 	padding-top: 8px;
 }
 
-.score.winning .content {
+.winning {
 	color: #0eff0e;
 }
 
-.score.losing .content {
+.losing {
 	color: #fd0009;
 }
 
@@ -135,9 +135,9 @@
 
 <!-- Player 1 -->
 
-<div class="box score p1 winning">
+<div class="box score p1">
 	<div class="header">000000</div>
-	<div class="content">-000000</div>
+	<div class="content winning">-000000</div>
 </div>
 
 <div class="box lines p1">
@@ -166,9 +166,9 @@
 
 <!-- Player 2 -->
 
-<div class="box score p2 losing">
+<div class="box score p2">
 	<div class="header">000000</div>
-	<div class="content">-000000</div>
+	<div class="content losing">-000000</div>
 </div>
 
 <div class="box lines p2">
@@ -201,6 +201,7 @@
 
 <script src="constants.js"></script>
 <script src="Player.js"></script>
+<script src="CompetitionPlayer.js"></script>
 <script src="competition.js"></script>
 
 </body>
