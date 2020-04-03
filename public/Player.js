@@ -101,8 +101,8 @@ function renderBlock(level, block_index, pixel_size, ctx, pos_x, pos_y) {
   	score:   text element
 	level:   text element
 	lines:   text element
-	preview: canva element
-	field:   canva element
+	preview: div for canva
+	field:   div for canva
   }
 
   options: {
@@ -112,16 +112,26 @@ function renderBlock(level, block_index, pixel_size, ctx, pos_x, pos_y) {
  */
 
 class Player {
-	constructor(name, dom, options) {
-		this.name = name;
+	constructor(dom, options) {
 		this.dom = dom;
 		this.options = options;
 
 		this.field_pixel_size = this.options.field_pixel_size || this.options.pixel_size;
 		this.preview_pixel_size = this.options.preview_pixel_size || this.options.pixel_size;
 
-		this.preview_ctx = this.dom.preview.getContext('2d');
-		this.field_ctx = this.dom.field.getContext('2d');
+		// set up canvas
+		['field', 'preview']
+			.forEach(name => {
+				const styles = getComputedStyle(dom[name]);
+				const canvas = document.createElement('canvas');
+
+				canvas.setAttribute('width', styles.width);
+				canvas.setAttribute('height', styles.height);
+
+				dom[name].appendChild(canvas);
+
+				this[`${name}_ctx`] = canvas.getContext('2d');
+			})
 
 		this.reset();
 	}
@@ -141,7 +151,7 @@ class Player {
 		return this.score;
 	}
 
-	onFrame(data) {
+	setFrame(data) {
 		this.dom.score.textContent = data.score;
 		this.dom.lines.textContent = data.lines;
 		this.dom.level.textContent = data.level;
@@ -163,30 +173,31 @@ class Player {
 
 		const
 			ctx              = this.preview_ctx,
-			col_index        = PIECE_COLORS[next_piece],
-			pixels_per_block = this.preview_pixel_size * (7 + 1);
-			x_offset_3       = Math.floor((ctx.canvas.width - pixels_per_block * 3 + BLOCK_PIXEL_SIZE) / 2),
+			col_index        = PIECE_COLORS[preview],
+			pixels_per_block = this.preview_pixel_size * (7 + 1),
+			x_offset_3       = Math.floor((ctx.canvas.width - pixels_per_block * 3) / 2),
 			positions        = [];
 
 		ctx.clear();
 
 		let
 			pos_x = 0,
-			pos_y = 0,
+			pos_y = Math.floor((ctx.canvas.height - pixels_per_block * 2) / 2),
 			x_idx = 0;
 
-		switch(next_piece) {
+		switch(preview) {
 			case 'I':
-				pos_y = Math.floor((ctx.canvas.height - BLOCK_PIXEL_SIZE * 7) / 2);
+				pos_x = Math.floor((ctx.canvas.width - pixels_per_block * 4) / 2);
+				pos_y = Math.floor((ctx.canvas.height - pixels_per_block) / 2);
 
-				positions.push([x_idx++ * pixels_per_block, pos_y]);
-				positions.push([x_idx++ * pixels_per_block, pos_y]);
-				positions.push([x_idx++ * pixels_per_block, pos_y]);
-				positions.push([x_idx++ * pixels_per_block, pos_y]);
+				positions.push([pos_x + pixels_per_block * 0, pos_y]);
+				positions.push([pos_x + pixels_per_block * 1, pos_y]);
+				positions.push([pos_x + pixels_per_block * 2, pos_y]);
+				positions.push([pos_x + pixels_per_block * 3, pos_y]);
 				break;
 
 			case 'O':
-				pos_x = Math.floor((ctx.canvas.width - pixels_per_block * 2 + BLOCK_PIXEL_SIZE) / 2);
+				pos_x = Math.floor((ctx.canvas.width - pixels_per_block * 2 + this.preview_pixel_size) / 2);
 
 				positions.push([pos_x, pos_y]);
 				positions.push([pos_x, pos_y + pixels_per_block]);
@@ -202,10 +213,10 @@ class Player {
 				positions.push([x_offset_3 + x_idx++ * pixels_per_block, pos_y]);
 				positions.push([x_offset_3 + x_idx++ * pixels_per_block, pos_y]);
 
-				if (next_piece == 'L') {
+				if (preview == 'L') {
 					x_idx = 0;
 				}
-				else if (next_piece == 'T') {
+				else if (preview == 'T') {
 					x_idx = 1;
 				}
 				else {
@@ -220,7 +231,7 @@ class Player {
 				positions.push([x_offset_3 + pixels_per_block, pos_y]);
 				positions.push([x_offset_3 + pixels_per_block, pos_y + pixels_per_block]);
 
-				if (next_piece == 'Z') {
+				if (preview == 'Z') {
 					positions.push([x_offset_3, pos_y]);
 					positions.push([x_offset_3 + pixels_per_block * 2, pos_y + pixels_per_block]);
 				}
@@ -257,7 +268,7 @@ class Player {
 			for (let y = 0; y < 20; y++) {
 				renderBlock(
 					level,
-					parseInt(stage_string[y * 10 + x], 10),
+					parseInt(field_string[y * 10 + x], 10),
 					this.field_pixel_size,
 					this.field_ctx,
 					x * pixels_per_block,
