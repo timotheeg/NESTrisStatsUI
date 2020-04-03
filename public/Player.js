@@ -13,6 +13,11 @@ if (!CanvasRenderingContext2D.prototype.clear) {
 	};
 }
 
+function getPercent(ratio) {
+	const percent = Math.round(ratio * 100);
+
+	return percent >= 100 ? '100' : (percent).toString().padStart(2, '0') + '%';
+}
 
 function renderBlock(level, block_index, pixel_size, ctx, pos_x, pos_y) {
 	let color;
@@ -144,6 +149,8 @@ class Player {
 		this.level = 0;
 		this.trt = 0;
 
+		this.lines_trt = 0;
+
 		this.preview_ctx.clear();
 		this.field_ctx.clear();
 	}
@@ -153,16 +160,34 @@ class Player {
 	}
 
 	setFrame(data) {
-		this.dom.score.textContent = data.score;
-		this.dom.lines.textContent = data.lines;
-		this.dom.level.textContent = data.level;
+		this.dom.score.textContent = data.score || '000000';
+		this.dom.lines.textContent = data.lines || '000';
+		this.dom.level.textContent = data.level || '00';
 
 		this.score = parseInt(data.score, 10);
-		this.lines = parseInt(data.lines, 10);
 		this.level = parseInt(data.level, 10);
+
+		const lines = parseInt(data.lines, 10);
 
 		this.renderField(this.level, data.field);
 		this.renderPreview(this.level, data.preview);
+
+		if (isNaN(lines) || lines === this.lines) return;
+
+		if (lines == 0) {
+			this.lines_trt = 0;
+			this.trt = '---';
+		}
+		else {
+			if (lines - this.lines === 4) {
+				this.lines_trt += 4;
+			}
+
+			this.trt = getPercent(this.lines_trt / lines);
+		}
+
+		this.dom.trt.textContent = this.trt;
+		this.lines = lines;
 	}
 
 	renderPreview(level, preview) {

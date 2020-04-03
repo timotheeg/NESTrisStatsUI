@@ -17,8 +17,19 @@ class NESTrisServer extends EventEmitter {
 		});
 	}
 
+	clearConn() {
+		if (this.conn) {
+			this.conn.removeAllListeners();
+			this.conn.end();
+		}
+	}
+
 	handleConnection(conn) {
 		console.log(`OCR producer ${this.server_id} connected`);
+
+		this.clearConn(); // incoming connection kicks old one out... TODO: IMplement safeguard to be be controlled by API
+
+		this.conn = conn;
 
 		let stream_data = Buffer.from([]);
 

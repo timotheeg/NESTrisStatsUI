@@ -93,9 +93,11 @@ class TetrisCompetitionAPI {
 
 		player.setFrame(data);
 
-		const
-			score = player.getScore(),
-			diff  = score - otherScore;
+		const score = player.getScore();
+
+		if (isNaN(score) || isNaN(otherScore)) return;
+
+		const diff  = score - otherScore;
 
 		player.setDiff(diff);
 		otherPlayer.setDiff(-diff);
