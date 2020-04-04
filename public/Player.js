@@ -99,6 +99,9 @@ function renderBlock(level, block_index, pixel_size, ctx, pos_x, pos_y) {
 	}
 }
 
+function css_size(css_pixel_width) {
+	return parseInt(css_pixel_width.replace(/px$/, ''), 10)
+}
 
 
 /*
@@ -125,7 +128,17 @@ class Player {
 		this.field_pixel_size = this.options.field_pixel_size || this.options.pixel_size;
 		this.preview_pixel_size = this.options.preview_pixel_size || this.options.pixel_size;
 
-		// set up canvas
+		// field background canvas
+		const styles = getComputedStyle(dom.field);
+		const canvas = document.createElement('canvas');
+
+		canvas.classList.add('background');
+		canvas.setAttribute('width', css_size(styles.width) + this.field_pixel_size * 2);
+		canvas.setAttribute('height', css_size(styles.height) + this.field_pixel_size * 2);
+		dom.field.appendChild(canvas);
+		this.field_bg_ctx = canvas.getContext('2d');
+
+		// set up field and preview canvas
 		['field', 'preview']
 			.forEach(name => {
 				const styles = getComputedStyle(dom[name]);
@@ -137,9 +150,38 @@ class Player {
 				dom[name].appendChild(canvas);
 
 				this[`${name}_ctx`] = canvas.getContext('2d');
-			})
+			});
 
 		this.reset();
+	}
+
+	onTetris() {
+		let remaining_frames = 12;
+
+		const steps = () => {
+			const color = (--remaining_frames % 2) ? 'white' : 'black';
+
+			this.field_bg_ctx.fillStyle = color;
+			this.field_bg_ctx.fillRect(
+				0,
+				0,
+				this.field_bg_ctx.canvas.width,
+				this.field_bg_ctx.canvas.height
+			);
+
+			if (remaining_frames <= 0) {
+				this.clearTetrisAnimation();
+			}
+			else {
+				this.tetris_animation_ID = window.requestAnimationFrame(steps);
+			}
+		}
+
+		this.tetris_animation_ID = window.requestAnimationFrame(steps);
+	}
+
+	clearTetrisAnimation() {
+		window.cancelAnimationFrame(this.tetris_animation);
 	}
 
 	reset() {
@@ -153,6 +195,9 @@ class Player {
 
 		this.preview_ctx.clear();
 		this.field_ctx.clear();
+
+		this.clearTetrisAnimation();
+		this.field_bg_ctx.clear();
 	}
 
 	getScore() {
@@ -160,17 +205,19 @@ class Player {
 	}
 
 	setFrame(data) {
-		this.dom.score.textContent = data.score || '000000';
-		this.dom.lines.textContent = data.lines || '000';
-		this.dom.level.textContent = data.level || '00';
-
 		this.score = parseInt(data.score, 10);
 		this.level = parseInt(data.level, 10);
 
 		const lines = parseInt(data.lines, 10);
 
-		this.renderField(this.level, data.field);
-		this.renderPreview(this.level, data.preview);
+		if (!isNaN(this.level)) {
+			this.renderField(this.level, data.field);
+			this.renderPreview(this.level, data.preview);
+
+			this.dom.score.textContent = data.score || '000000';
+			this.dom.lines.textContent = data.lines || '000';
+			this.dom.level.textContent = data.level || '00';
+		}
 
 		if (isNaN(lines) || lines === this.lines) return;
 
