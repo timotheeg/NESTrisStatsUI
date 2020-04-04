@@ -1,20 +1,5 @@
 const dom = new DomRefs(document);
 
-if (!CanvasRenderingContext2D.prototype.clear) {
-	CanvasRenderingContext2D.prototype.clear = function (preserveTransform) {
-		if (preserveTransform) {
-			this.save();
-			this.setTransform(1, 0, 0, 1, 0, 0);
-		}
-
-		this.clearRect(0, 0, this.canvas.width, this.canvas.height);
-
-		if (preserveTransform) {
-			this.restore();
-		}
-	};
-}
-
 // initial setup for colors based con constants.js
 for (const {name, color} of Object.values(LINES)) {
 	document.querySelector(`#lines_stats tr.${name} th`).style.color = color;
@@ -407,10 +392,6 @@ function onFrame(event, debug) {
 				pending_single = false;
 		}
 	}
-}
-
-function peek(arr) {
-	return arr[arr.length - 1];
 }
 
 function getStats() {
