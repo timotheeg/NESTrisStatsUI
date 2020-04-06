@@ -180,6 +180,10 @@ class Player {
 	}
 
 	setFrame(data) {
+		['score', 'lines', 'level'].forEach(field => {
+			this.dom[field].textContent = data[field];
+		});
+
 		this.score = parseInt(data.score, 10);
 		this.level = parseInt(data.level, 10);
 
