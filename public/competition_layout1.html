@@ -6,15 +6,15 @@
 #playing_fields {
 	position: absolute;
 	left: 640px;
-	top: 8px;
+	top: 4px;
 }
 .score {
-	width: 180px;
+	width: 200px;
 	height: 54px;
-	right: 34px;
+	right: 15px;
 	font-size: 24px;
 	text-align: right;
-	padding-right: 30px;
+	padding-right: 49px;
 }
 .score .header {
 	padding-top: 6px;
@@ -33,21 +33,20 @@
 
 .next_piece {
 	width: 108px;
-	top: 76px;
-	right: 144px;
+	top: 62px;
+	right: 274px;
 }
 
 .lines {
 	width: 107px;
-	top: 76px;
-	right: 15px;
+	right: 274px;
 }
 
 .board {
 	width: 237px;
 	height: 477px;
 	right: 15px;
-	top: 138px;
+	top: 76px;
 }
 
 .board canvas {
@@ -64,7 +63,7 @@
 .name {
 	width: 237px;
 	right: 15px;
-	top: 637px;
+	top: 575px;
 }
 
 .name .content {
@@ -79,26 +78,33 @@
 
 .tetris_rate {
 	width: 50px;
+	height: 50px;
 	top: 637px;
 	right: 274px;
 }
 
+.running_trt {
+	width: 237px;
+	height: 50px;
+	top: 637px;
+	right: 15px;
+}
+
 .level {
-	width: 34px;
-	top: 575px;
-	right: 274px;
+	width: 40px;
+	right: 403px;
 }
 
 .p2.score {
-	left: 34px;
+	left: 15px;
 }
 
 .p2.next_piece {
-	left: 144px;
+	left: 274px;
 }
 
 .p2.lines {
-	left: 15px;
+	left: 274px;
 }
 
 .p2.board {
@@ -113,16 +119,19 @@
 	left: 274px;
 }
 
+.p2.running_trt {
+	left: 15px;
+}
+
 .p2.level {
-	left: 274px;
+	left: 403px;
 }
 
 .divider {
 	position: absolute;
 	left: -15px;
 	width: 30px;
-	top: 76px;
-	height: 625px;
+	height: 710px;
 	background-color: #000;
 	color: #f8e889;
 	font-size: 16px;
@@ -168,10 +177,14 @@
 	<div class="content">---</div>
 </div>
 
+<div class="box running_trt p1"></div>
+
 <div class="box name p1">
 	<div class="header">PLAYER 1</div>
 	<div class="content">&#338;&#338;&#338;</div>
 </div>
+
+<div class="box running_trt p1"></div>
 
 <div class="box board p1"></div>
 
@@ -198,6 +211,8 @@
 	<div class="header">TRT</div>
 	<div class="content">---</div>
 </div>
+
+<div class="box running_trt p2"></div>
 
 <div class="box name p2">
 	<div class="header">PLAYER 2</div>
