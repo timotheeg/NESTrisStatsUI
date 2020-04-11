@@ -13,7 +13,7 @@ ws.addEventListener('open', function (event) {
 });
 
 const state = {
-	maxBestof: 11,
+	maxBestof: 13,
 	bestof: 3,
 
 	victories: {
