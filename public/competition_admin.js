@@ -48,7 +48,7 @@ function setBestOfOptions(n, selected) {
 function setBestOf(n) {
 	state.bestof = n;
 
-	const heart = 'W';
+	const heart = '&#338';
 	const num_heart = Math.ceil(n / 2);
 
 	[1, 2].forEach(player_num => {
@@ -58,12 +58,12 @@ function setBestOf(n) {
 
 		const items = new Array(num_heart + 1).join('.').split('').map(_ => heart);
 
-		items.unshift(0);
+		items.unshift('-');
 
 		items.forEach((val, idx) => {
 			const span = document.createElement('span');
 
-			span.textContent = val;
+			span.innerHTML = val;
 
 			span.onclick = function() {
 				setPlayerNumWins(player_num, idx);
