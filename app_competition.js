@@ -39,7 +39,10 @@ let admin_conn;
 admin_wss.on('connection', function connection(ws) {
 	if (admin_conn) {
 		admin_conn.removeAllListeners('message');
+		admin_conn.close();
 	}
+
+	console.log('admin connected');
 
 	admin_conn = ws;
 
