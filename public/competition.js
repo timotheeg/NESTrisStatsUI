@@ -31,7 +31,7 @@ class TetrisCompetitionAPI {
 	}
 
 	setName(player_num, name) {
-		document.querySelector(`.name.p${player_num} .header`).textContent = name;
+		document.querySelector(`.name.p${player_num} .header`).textContent = name || `Player ${player_num}`;
 	}
 
 	setFirstTo(num_games_to_win) {

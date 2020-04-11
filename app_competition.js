@@ -14,6 +14,8 @@ const viewer_wss = new WebSocket.Server({ port: view_port });
 const viewer_conns = new Set();
 
 viewer_wss.on('connection', function connection(ws) {
+	console.log('view connected');
+
 	viewer_conns.add(ws);
 
 	ws.on('close', () => {
