@@ -2,17 +2,19 @@
 
 const players = [1, 2].map(num => new CompetitionPlayer(
 	{
-		score:   document.querySelector(`.score.p${num} .header`),
-		diff:    document.querySelector(`.score.p${num} .content`),
-		level:   document.querySelector(`.level.p${num} .content`),
-		lines:   document.querySelector(`.lines.p${num} .content`),
-		trt:     document.querySelector(`.tetris_rate.p${num} .content`),
-		preview: document.querySelector(`.next_piece.p${num}`),
-		field:   document.querySelector(`.board.p${num}`)
+		score:       document.querySelector(`.score.p${num} .header`),
+		diff:        document.querySelector(`.score.p${num} .content`),
+		level:       document.querySelector(`.level.p${num} .content`),
+		lines:       document.querySelector(`.lines.p${num} .content`),
+		trt:         document.querySelector(`.tetris_rate.p${num} .content`),
+		running_trt: document.querySelector(`.running_trt.p${num}`),
+		preview:     document.querySelector(`.next_piece.p${num}`),
+		field:       document.querySelector(`.board.p${num}`)
 	},
 	{
 		field_pixel_size: 3,
-		preview_pixel_size: 2
+		preview_pixel_size: 2,
+		running_trt_rtl: num == 1
 	}
 ));
 

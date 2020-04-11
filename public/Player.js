@@ -102,6 +102,7 @@ class Player {
 
 		this.field_pixel_size = this.options.field_pixel_size || this.options.pixel_size;
 		this.preview_pixel_size = this.options.preview_pixel_size || this.options.pixel_size;
+		this.render_running_trt_rtl = !!this.options.running_trt_rtl;
 
 		// field background canvas
 		const styles = getComputedStyle(dom.field);
@@ -114,8 +115,10 @@ class Player {
 		this.field_bg_ctx = canvas.getContext('2d');
 
 		// set up field and preview canvas
-		['field', 'preview']
+		['field', 'preview', 'running_trt']
 			.forEach(name => {
+				console.log(name);
+
 				const styles = getComputedStyle(dom[name]);
 				const canvas = document.createElement('canvas');
 
@@ -181,38 +184,49 @@ class Player {
 
 	setFrame(data) {
 		['score', 'lines', 'level'].forEach(field => {
-			this.dom[field].textContent = data[field];
+			if (data[field]) {
+				this.dom[field].textContent = data[field];
+			}
 		});
 
-		this.score = parseInt(data.score, 10);
-		this.level = parseInt(data.level, 10);
+		if (data.score) {
+			this.score = parseInt(data.score, 10);
+		}
 
-		const lines = parseInt(data.lines, 10);
+		const level = parseInt(data.level, 10);
 
 		if (!isNaN(this.level)) {
+			this.level = level;
+
 			this.renderField(this.level, data.field);
 			this.renderPreview(this.level, data.preview);
-
-			this.dom.score.textContent = data.score || '000000';
-			this.dom.lines.textContent = data.lines || '000';
-			this.dom.level.textContent = data.level || '00';
 		}
+		
+		const lines = parseInt(data.lines, 10);
 
 		if (isNaN(lines) || lines === this.lines) return;
 
 		if (lines == 0) {
 			this.lines_trt = 0;
 			this.trt = '---';
+			this.running_trt = [];
 		}
 		else {
-			if (lines - this.lines === 4) {
+			const cleared = lines - this.lines;
+
+			if (cleared === 4) {
 				this.lines_trt += 4;
 			}
 
-			this.trt = getPercent(this.lines_trt / lines);
+			const trt = this.lines_trt / lines;
+
+			this.running_trt.push({ trt, cleared });
+
+			this.dom.trt.textContent = getPercent(trt);
+
+			this.renderRunningTRT();
 		}
 
-		this.dom.trt.textContent = this.trt;
 		this.lines = lines;
 	}
 
@@ -327,6 +341,33 @@ class Player {
 					y * pixels_per_block
 				);
 			}
+		}
+	}
+
+	renderRunningTRT() {
+		const
+			ctx = this.running_trt_ctx,
+			rtl = this.render_running_trt_rtl,
+			pixel_size = 4,
+			max_pixels = Math.floor(ctx.canvas.width / (pixel_size + 1)),
+			y_scale = (ctx.canvas.height - pixel_size) / pixel_size,
+			to_draw = this.running_trt.slice(-1 * max_pixels),
+			len = to_draw.length;
+
+		ctx.clear();
+
+		for (let idx = len; idx--;) {
+			const { cleared, trt } = to_draw[idx];
+			const lines_data = LINES[cleared]
+			const color = LINES[cleared] ? LINES[cleared].color : 'grey';
+
+			ctx.fillStyle = LINES[cleared].color;
+			ctx.fillRect(
+				(rtl ? len - idx : idx) * (pixel_size + 1),
+				Math.round((1 - trt) * y_scale * pixel_size),
+				pixel_size,
+				pixel_size
+			);
 		}
 	}
 }
