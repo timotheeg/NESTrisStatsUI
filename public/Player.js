@@ -104,6 +104,8 @@ class Player {
 		this.preview_pixel_size = this.options.preview_pixel_size || this.options.pixel_size;
 		this.render_running_trt_rtl = !!this.options.running_trt_rtl;
 
+		this.running_trt = [];
+
 		// field background canvas
 		const styles = getComputedStyle(dom.field);
 		const canvas = document.createElement('canvas');
@@ -129,6 +131,10 @@ class Player {
 
 				this[`${name}_ctx`] = canvas.getContext('2d');
 			});
+
+		if (this.render_running_trt_rtl) {
+			this.running_trt_ctx.canvas.style.transform = 'scale(-1, 1)';
+		}
 
 		this.reset();
 	}
@@ -173,6 +179,7 @@ class Player {
 
 		this.preview_ctx.clear();
 		this.field_ctx.clear();
+		this.running_trt_ctx.clear();
 
 		this.clearTetrisAnimation();
 		this.field_bg_ctx.clear();
@@ -195,7 +202,7 @@ class Player {
 
 		const level = parseInt(data.level, 10);
 
-		if (!isNaN(this.level)) {
+		if (!isNaN(level)) {
 			this.level = level;
 
 			this.renderField(this.level, data.field);
@@ -206,10 +213,13 @@ class Player {
 
 		if (isNaN(lines) || lines === this.lines) return;
 
+		// console.log('line event', lines, this.lines);
+
 		if (lines == 0) {
 			this.lines_trt = 0;
 			this.trt = '---';
-			this.running_trt = [];
+			this.running_trt.length = 0;
+			this.running_trt_ctx.clear();
 		}
 		else {
 			const cleared = lines - this.lines;
@@ -361,9 +371,9 @@ class Player {
 			const lines_data = LINES[cleared]
 			const color = LINES[cleared] ? LINES[cleared].color : 'grey';
 
-			ctx.fillStyle = LINES[cleared].color;
+			ctx.fillStyle = color;
 			ctx.fillRect(
-				(rtl ? len - idx : idx) * (pixel_size + 1),
+				idx * (pixel_size + 1),
 				Math.round((1 - trt) * y_scale * pixel_size),
 				pixel_size,
 				pixel_size
