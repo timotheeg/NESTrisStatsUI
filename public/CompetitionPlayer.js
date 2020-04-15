@@ -30,6 +30,8 @@ class CompetitionPlayer extends Player {
 		// compute a proper vvisual of the diff
 		const absDiff = Math.abs(diff).toString().padStart(6, '0');
 
-		this.dom.diff.textContent = `${diff < 0 ? '-' : ''}${absDiff}`;
+		console.log(absDiff)
+
+		this.dom.diff.textContent = this.numberFormatter.format(absDiff);
 	}
 }

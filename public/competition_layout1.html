@@ -8,25 +8,24 @@
 	left: 640px;
 	top: 4px;
 }
+
 .score {
-	width: 200px;
+	width: 237px;
 	height: 54px;
 	right: 15px;
 	font-size: 24px;
-	text-align: right;
-	padding-right: 49px;
-}
-.score .header {
-	padding-top: 6px;
-}
-.score .content {
-	padding-top: 8px;
 }
 
+.score .aligner {
+	display: inline-block;
+}
+.score .aligner div {
+	text-align: right;
+	padding-top: 6px;
+}
 .winning {
 	color: #0eff0e;
 }
-
 .losing {
 	color: #fd0009;
 }
@@ -161,8 +160,10 @@
 <!-- Player 1 -->
 
 <div class="box score p1">
-	<div class="header">000000</div>
-	<div class="content winning">-000000</div>
+	<div class="aligner">
+		<div class="main">000,000</div>
+		<div class="diff winning">000,000</div>
+	</div>
 </div>
 
 <div class="box lines p1">
@@ -194,8 +195,10 @@
 <!-- Player 2 -->
 
 <div class="box score p2">
-	<div class="header">000000</div>
-	<div class="content losing">-000000</div>
+	<div class="aligner">
+		<div class="main">000,000</div>
+		<div class="diff losing">000,000</div>
+	</div>
 </div>
 
 <div class="box lines p2">

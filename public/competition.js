@@ -2,8 +2,8 @@
 
 const players = [1, 2].map(num => new CompetitionPlayer(
 	{
-		score:       document.querySelector(`.score.p${num} .header`),
-		diff:        document.querySelector(`.score.p${num} .content`),
+		score:       document.querySelector(`.score.p${num} .main`),
+		diff:        document.querySelector(`.score.p${num} .diff`),
 		level:       document.querySelector(`.level.p${num} .content`),
 		lines:       document.querySelector(`.lines.p${num} .content`),
 		trt:         document.querySelector(`.tetris_rate.p${num} .content`),

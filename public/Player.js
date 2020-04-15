@@ -106,6 +106,8 @@ class Player {
 
 		this.running_trt = [];
 
+		this.numberFormatter = new Intl.NumberFormat();
+
 		// field background canvas
 		const styles = getComputedStyle(dom.field);
 		const canvas = document.createElement('canvas');
@@ -189,15 +191,23 @@ class Player {
 		return this.score;
 	}
 
+	getScoreFromScoreString(score_str) {
+		const lead = parseInt(score_str.charAt(0), 16);
+		const tail = parseInt(score_str.slice(1), 10);
+
+		return (lead * 100000) + tail;
+	}
+
 	setFrame(data) {
-		['score', 'lines', 'level'].forEach(field => {
+		['lines', 'level'].forEach(field => {
 			if (data[field]) {
 				this.dom[field].textContent = data[field];
 			}
 		});
 
 		if (data.score) {
-			this.score = parseInt(data.score, 10);
+			this.score = this.getScoreFromScoreString(data.score);
+			this.dom.score.textContent = this.numberFormatter.format(this.score);
 		}
 
 		const level = parseInt(data.level, 10);
