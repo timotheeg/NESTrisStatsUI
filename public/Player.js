@@ -368,13 +368,46 @@ class Player {
 		const
 			ctx = this.running_trt_ctx,
 			rtl = this.render_running_trt_rtl,
-			pixel_size = 4,
-			max_pixels = Math.floor(ctx.canvas.width / (pixel_size + 1)),
-			y_scale = (ctx.canvas.height - pixel_size) / pixel_size,
-			to_draw = this.running_trt.slice(-1 * max_pixels),
-			len = to_draw.length;
+			current_trt = this.running_trt[this.running_trt.length - 1].trt,
+			pixel_size_line_clear = 4,
+			pixel_size_baseline = 2;
+
+		let pixel_size, max_pixels, y_scale;
 
 		ctx.clear();
+
+		// show the current tetris rate baseline
+		// always vertically centered on the line clear event dot
+		pixel_size = pixel_size_baseline;
+		max_pixels = Math.floor(ctx.canvas.width / (pixel_size + 1));
+		y_scale = (ctx.canvas.height - pixel_size_line_clear) / pixel_size;
+
+		const pos_y = Math.round(
+			((1 - current_trt) * y_scale * pixel_size)
+			+
+			(pixel_size_line_clear - pixel_size_baseline) / 2
+		);
+
+		ctx.fillStyle = 'grey'; // '#686868';
+
+		for (let idx = max_pixels; idx--; ) {
+			ctx.fillRect(
+				idx * (pixel_size + 1),
+				pos_y,
+				pixel_size,
+				pixel_size
+			);
+		}
+
+
+		// Show the individual line clear events
+		pixel_size = pixel_size_line_clear;
+		max_pixels = Math.floor(ctx.canvas.width / (pixel_size + 1));
+		y_scale = (ctx.canvas.height - pixel_size) / pixel_size;
+
+		let
+			to_draw = this.running_trt.slice(-1 * max_pixels),
+			len = to_draw.length;
 
 		for (let idx = len; idx--;) {
 			const { cleared, trt } = to_draw[idx];
