@@ -138,6 +138,11 @@ class Player {
 			this.running_trt_ctx.canvas.style.transform = 'scale(-1, 1)';
 		}
 
+		// buils audio objects
+		this.sounds = {
+			tetris: new Audio('./Tetris_Clear.mp3')
+		};
+
 		this.reset();
 	}
 
@@ -159,6 +164,7 @@ class Player {
 		}
 
 		this.tetris_animation_ID = window.requestAnimationFrame(steps);
+		this.sounds.tetris.play();
 	}
 
 	clearTetrisAnimation() {
