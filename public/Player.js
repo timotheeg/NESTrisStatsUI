@@ -350,8 +350,8 @@ class Player {
 		if (field_string == this.field_string) return;
 		if (this.clear_animation_remaining_frames-- > 0) return;
 
-		const num_block = field_string.replace(/0+/g, '').length;
-		const block_diff = num_block - this.field_num_blocks;
+		const num_blocks = field_string.replace(/0+/g, '').length;
+		const block_diff = num_blocks - this.field_num_blocks;
 
 		// state is considered valid, track data
 		this.field_string = field_string;
