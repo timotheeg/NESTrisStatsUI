@@ -183,6 +183,8 @@ document.querySelector('#skip .btn').addEventListener('click', () => {
 });
 
 
+const LINE_CLEAR_IGNORE_FRAMES = 7;
+
 let
 	game = null,
 	last_valid_state = null,
@@ -194,7 +196,7 @@ let
 	game_frames = [];
 
 function onFrame(event, debug) {
-	// game_frames.push({ ...event });
+	game_frames.push({ ...event });
 
 	// transformation
 	const transformed = {
@@ -340,6 +342,8 @@ function onFrame(event, debug) {
 		renderNextPiece(transformed.level, transformed.next_piece);
 	}
 
+	if (last_valid_state.stage.field == transformed.stage.field) return;
+
 	last_valid_state.stage.field = transformed.stage.field
 
 	if (line_animation_remaining_frames-- > 0) return;
@@ -359,8 +363,8 @@ function onFrame(event, debug) {
 			case -8:
 				onTetris();
 			case -6:
-				// indicate animation for triples and tetris
-				line_animation_remaining_frames = 6;
+				// indicate animation for triples and tetris_rate
+				line_animation_remaining_frames = LINE_CLEAR_IGNORE_FRAMES - 1;
 				last_valid_state.stage.num_blocks += (diff.stage_blocks * 5); // equivalent to fast forward on how many blocks will have gone after the animation
 
 				break;
@@ -368,13 +372,13 @@ function onFrame(event, debug) {
 			case -4:
 				if (pending_single) {
 					// verified single (second frame of clear animation)
-					line_animation_remaining_frames = 6 - 1;
+					line_animation_remaining_frames = LINE_CLEAR_IGNORE_FRAMES - 2;
 					last_valid_state.stage.num_blocks -= 10;
 				}
 				else
 				{
 					// genuine double
-					line_animation_remaining_frames = 6;
+					line_animation_remaining_frames = LINE_CLEAR_IGNORE_FRAMES - 1;
 					last_valid_state.stage.num_blocks -= 20;
 				}
 
