@@ -355,9 +355,9 @@ class Player {
 
 		// state is considered valid, track data
 		this.field_string = field_string;
-		this.field_num_blocks = num_blocks;
 
 		if (block_diff === 4) {
+			this.field_num_blocks = num_blocks;
 			this.onPiece(); // read piece data on next frame if needed
 			return;
 		}
@@ -384,13 +384,13 @@ class Player {
 				if (this.pending_single) {
 					// verified single (second frame of clear animation)
 					this.clear_animation_remaining_frames = CLEAR_ANIMATION_NUM_FRAMES - 2;
-					last_valid_state.stage.num_blocks -= 10;
+					this.field_num_blocks -= 10;
 				}
 				else
 				{
 					// genuine double
 					this.clear_animation_remaining_frames = CLEAR_ANIMATION_NUM_FRAMES - 1;
-					last_valid_state.stage.num_blocks -= 20;
+					this.field_num_blocks -= 20;
 				}
 
 				this.pending_single = false;
