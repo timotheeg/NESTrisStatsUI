@@ -8,7 +8,7 @@
 	src: url("./prstartk_nes_tetris_8.ttf");
 }
 
-html, body, table, tr, th, td, button, input, select, option {
+html, body, table, tr, th, td {
 	margin: 0;
 	padding: 0;
 	border: 0;
