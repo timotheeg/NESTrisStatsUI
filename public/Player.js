@@ -110,13 +110,13 @@ class Player {
 
 		// field background canvas
 		const styles = getComputedStyle(dom.field);
-		const canvas = document.createElement('canvas');
 
-		canvas.classList.add('background');
-		canvas.setAttribute('width', css_size(styles.width) + this.field_pixel_size * 2);
-		canvas.setAttribute('height', css_size(styles.height) + this.field_pixel_size * 2);
-		dom.field.appendChild(canvas);
-		this.field_bg_ctx = canvas.getContext('2d');
+		this.field_bg = document.createElement('div');
+
+		this.field_bg.classList.add('background');
+		this.field_bg.style.width = `${css_size(styles.width) + this.field_pixel_size * 2}px`;
+		this.field_bg.style.height = `${css_size(styles.height) + this.field_pixel_size * 2}px`;
+		dom.field.appendChild(this.field_bg);
 
 		// set up field and preview canvas
 		['field', 'preview', 'running_trt']
@@ -145,20 +145,11 @@ class Player {
 		let remaining_frames = 12;
 
 		const steps = () => {
-			const color = (--remaining_frames % 2) ? 'white' : 'black';
+			const action = (--remaining_frames % 2) ? 'add' : 'remove';
 
-			this.field_bg_ctx.fillStyle = color;
-			this.field_bg_ctx.fillRect(
-				0,
-				0,
-				this.field_bg_ctx.canvas.width,
-				this.field_bg_ctx.canvas.height
-			);
+			this.field_bg.classList[action]('flash');
 
-			if (remaining_frames <= 0) {
-				this.clearTetrisAnimation();
-			}
-			else {
+			if (remaining_frames > 0) {
 				this.tetris_animation_ID = window.requestAnimationFrame(steps);
 			}
 		}
@@ -167,7 +158,7 @@ class Player {
 	}
 
 	clearTetrisAnimation() {
-		window.cancelAnimationFrame(this.tetris_animation);
+		window.cancelAnimationFrame(this.tetris_animation_ID);
 	}
 
 	reset() {
@@ -184,7 +175,7 @@ class Player {
 		this.running_trt_ctx.clear();
 
 		this.clearTetrisAnimation();
-		this.field_bg_ctx.clear();
+		this.field_bg.classList.remove('flash')
 	}
 
 	getScore() {
@@ -218,7 +209,7 @@ class Player {
 			this.renderField(this.level, data.field);
 			this.renderPreview(this.level, data.preview);
 		}
-		
+
 		const lines = parseInt(data.lines, 10);
 
 		if (isNaN(lines) || lines === this.lines) return;
