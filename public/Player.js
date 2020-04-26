@@ -141,6 +141,10 @@ class Player {
 		this.reset();
 	}
 
+	onPiece() {
+
+	}
+
 	onTetris() {
 		let remaining_frames = 12;
 
@@ -167,6 +171,8 @@ class Player {
 		this.lines = 0;
 		this.level = 0;
 		this.trt = 0;
+		this.field_num_blocks = 0;
+		this.field_string = '';
 
 		this.lines_trt = 0;
 
@@ -208,19 +214,23 @@ class Player {
 
 			this.renderField(this.level, data.field);
 			this.renderPreview(this.level, data.preview);
+			this.updateField(data.field);
 		}
 
 		const lines = parseInt(data.lines, 10);
 
 		if (isNaN(lines) || lines === this.lines) return;
 
-		// console.log('line event', lines, this.lines);
-
 		if (lines == 0) {
+			// New game - is this a stable detector?
 			this.lines_trt = 0;
 			this.trt = '---';
 			this.running_trt.length = 0;
 			this.running_trt_ctx.clear();
+
+			// assume clean field for this frame - urgh, is sthis safe?
+			this.field_num_blocks = 0;
+			this.field_string = ''
 		}
 		else {
 			const cleared = lines - this.lines;
@@ -328,6 +338,68 @@ class Player {
 				pos_y
 			);
 		});
+	}
+
+	updateField(field_string) {
+		if (field_string == this.field_string) return;
+		if (this.clear_animation_remaining_frames-- > 0) return;
+
+		const num_block = field_string.replace(/0+/g, '').length;
+		const block_diff = num_block - this.field_num_blocks;
+
+		// state is considered valid, track data
+		this.field_string = field_string;
+		this.field_num_blocks = num_blocks;
+
+		if (block_diff === 4) {
+			this.onPiece(); // read piece data on next frame if needed
+			return;
+		}
+
+		const CLEAR_ANIMATION_NUM_FRAMES = 7;
+
+		// assuming we aren't dropping any frame, the number of blocks only reduces when the
+		// line animation starts, the diff is twice the number of lines being cleared.
+		//
+		// Note: diff.stage_blocks can be negative at weird amounts when the piece is rotated
+		// while still being at the top of the field with some block moved out of view
+
+		switch(block_diff) {
+			case -8:
+				this.onTetris();
+			case -6:
+				// indicate animation for triples and tetris
+				this.clear_animation_remaining_frames = CLEAR_ANIMATION_NUM_FRAMES - 1;
+				this.field_num_blocks += (block_diff * 5); // equivalent to fast forward on how many blocks will have gone after the animation
+
+				break;
+
+			case -4:
+				if (this.pending_single) {
+					// verified single (second frame of clear animation)
+					this.clear_animation_remaining_frames = CLEAR_ANIMATION_NUM_FRAMES - 2;
+					last_valid_state.stage.num_blocks -= 10;
+				}
+				else
+				{
+					// genuine double
+					this.clear_animation_remaining_frames = CLEAR_ANIMATION_NUM_FRAMES - 1;
+					last_valid_state.stage.num_blocks -= 20;
+				}
+
+				this.pending_single = false;
+				break;
+
+			case -2:
+				// -2 can happen on the first clear animation frame of a single
+				// -2 can also happen when the piece is at the top of the field and gets rotated and is then partially off field
+				// to differentiate the 2, we must wait for the next frame, if it goes to -4, then it is the clear animation continuing
+				this.pending_single = true;
+				break;
+
+			default:
+				this.pending_single = false;
+		}
 	}
 
 	renderField(level, field_string) {
