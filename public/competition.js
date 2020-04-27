@@ -1,23 +1,5 @@
 // very simple RPC system to allow server to send data to client
 
-const players = [1, 2].map(num => new CompetitionPlayer(
-	{
-		score:       document.querySelector(`.score.p${num} .main`),
-		diff:        document.querySelector(`.score.p${num} .diff`),
-		level:       document.querySelector(`.level.p${num} .content`),
-		lines:       document.querySelector(`.lines.p${num} .content`),
-		trt:         document.querySelector(`.tetris_rate.p${num} .content`),
-		running_trt: document.querySelector(`.running_trt.p${num}`),
-		preview:     document.querySelector(`.next_piece.p${num}`),
-		field:       document.querySelector(`.board.p${num}`)
-	},
-	{
-		field_pixel_size: 3,
-		preview_pixel_size: 2,
-		running_trt_rtl: num == 1
-	}
-));
-
 class TetrisCompetitionAPI {
 	constructor() {
 		this.first_to = 3; // defaults to Best of 5
@@ -105,9 +87,6 @@ class TetrisCompetitionAPI {
 		otherPlayer.setDiff(-diff);
 	}
 };
-
-
-const API = new TetrisCompetitionAPI();
 
 const socket = new WebSocket('ws://127.0.0.1:4003');
 

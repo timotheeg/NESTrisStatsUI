@@ -194,6 +194,10 @@ class Player {
 		return this.score;
 	}
 
+	setDiff() {
+		// noop
+	}
+
 	getScoreFromScoreString(score_str) {
 		const lead = parseInt(score_str.charAt(0), 16);
 		const tail = parseInt(score_str.slice(1), 10);
