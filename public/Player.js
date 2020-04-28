@@ -225,7 +225,7 @@ class Player {
 		this.running_trt_ctx.clear();
 
 		this.clearTetrisAnimation();
-		this.field_bg.classList.remove('flash')
+		this.field_bg.style.background = 'rbga(0,0,0,0)';
 	}
 
 	getScore() {
