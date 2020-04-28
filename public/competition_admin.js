@@ -38,6 +38,9 @@ const remoteAPI = {
 	setName: function(player_num, name) {
 		send('setName', player_num, name);
 	},
+	setAvatar: function(player_num, url) {
+		send('setAvatar', player_num, url);
+	},
 	resetVictories: function() {
 		send('resetVictories');
 	}
@@ -147,6 +150,16 @@ function bootstrap() {
 			= pName.onblur
 			= function() {
 				remoteAPI.setName(player_num, this.value.trim());
+			};
+
+		const pAvatar = document.querySelector(`#avatars .p${player_num} input`);
+
+		pAvatar.onchange
+			= pAvatar.onkeyup
+			= pAvatar.onkeydown
+			= pAvatar.onblur
+			= function() {
+				remoteAPI.setAvatar(player_num, this.value.trim());
 			};
 
 		const winBtn = document.querySelector(`#wins .p${player_num} button`);

@@ -1,5 +1,9 @@
 // very simple RPC system to allow server to send data to client
 
+function getPlayer(num) {
+	return players[num -1];
+}
+
 class TetrisCompetitionAPI {
 	constructor() {
 		this.first_to = 3; // defaults to Best of 5
@@ -15,11 +19,11 @@ class TetrisCompetitionAPI {
 	}
 
 	setName(player_num, name) {
-		const
-			index  = player_num - 1,
-			player = players[index];
+		getPlayer(player_num).setName(name);
+	}
 
-		player.setName(name);
+	setAvatar(player_num, avatar_url) {
+		getPlayer(player_num).setAvatar(avatar_url);
 	}
 
 	setFirstTo(num_games_to_win) {

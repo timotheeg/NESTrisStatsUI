@@ -108,18 +108,34 @@ class Player {
 
 		this.numberFormatter = new Intl.NumberFormat();
 
-		// field background canvas
 		const styles = getComputedStyle(dom.field);
 
+		// Avatar Block
+		this.avatar = document.createElement('div');
+		this.avatar.classList.add('avatar');
+		Object.assign(this.avatar.style, {
+			position:           'absolute',
+			top:                `${this.field_pixel_size * 8 * 2}px`,
+			left:               `${css_size(styles.padding) - this.field_pixel_size}px`,
+			width:              `${css_size(styles.width) + this.field_pixel_size * 2}px`,
+			height:             `${css_size(styles.width) + this.field_pixel_size * 2}px`,
+			backgroundRepeat:   'no-repeat',
+			backgroundSize:     'cover',
+			backgroundPosition: '50% 50%',
+			opacity:            0.3
+		});
+		dom.field.appendChild(this.avatar);
+
+		// Field Flash
 		this.field_bg = document.createElement('div');
-
 		this.field_bg.classList.add('background');
-
-		this.field_bg.style.position = 'absolute';
-		this.field_bg.style.top = `${css_size(styles.padding) - this.field_pixel_size}px`;
-		this.field_bg.style.left = `${css_size(styles.padding) - this.field_pixel_size}px`;
-		this.field_bg.style.width = `${css_size(styles.width) + this.field_pixel_size * 2}px`;
-		this.field_bg.style.height = `${css_size(styles.height) + this.field_pixel_size * 2}px`;
+		Object.assign(this.field_bg.style, {
+			position: 'absolute',
+			top:      `${css_size(styles.padding) - this.field_pixel_size}px`,
+			left:     `${css_size(styles.padding) - this.field_pixel_size}px`,
+			width:    `${css_size(styles.width) + this.field_pixel_size * 2}px`,
+			height:   `${css_size(styles.height) + this.field_pixel_size * 2}px`
+		});
 		dom.field.appendChild(this.field_bg);
 
 		// set up field and preview canvas
@@ -211,6 +227,10 @@ class Player {
 		const tail = parseInt(score_str.slice(1), 10);
 
 		return (lead * 100000) + tail;
+	}
+
+	setAvatar(url) {
+		this.avatar.style.backgroundImage = `url('${url}')`;
 	}
 
 	setName(name) {
