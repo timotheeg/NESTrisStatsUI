@@ -43,6 +43,9 @@ const remoteAPI = {
 	},
 	resetVictories: function() {
 		send('resetVictories');
+	},
+	setLogo: function(url) {
+		send('setLogo', url);
 	}
 };
 
@@ -168,6 +171,17 @@ function bootstrap() {
 			setVictories(player_num, state.victories[player_num] + 1);
 		};
 	});
+
+	const logo = document.querySelector(`#logo input`);
+
+	logo.onchange
+		= logo.onkeyup
+		= logo.onkeydown
+		= logo.onblur
+		= function() {
+			remoteAPI.setLogo(this.value.trim());
+		};
+
 
 	document.querySelector('#clear_victories').onclick = resetVictories;
 	document.querySelector('#reset').onclick = reset;

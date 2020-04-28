@@ -17,7 +17,6 @@ html {
 }
 
 #logo {
-	display: none;
 	position: absolute;
 	left: -75px;
 	top: 411px;
@@ -26,9 +25,9 @@ html {
 	padding: 0;
 	margin: 0;
 
-	background-image: url('./CTSC.png');
-    background-repeat: no-repeat;
-    background-size: cover;
+	background-position: '50% 50%';
+	background-repeat: no-repeat;
+	background-size: cover;
 }
 
 .box .header {
@@ -268,6 +267,12 @@ class TetrisCompetitionAPI_CTJS extends TetrisCompetitionAPI {
 		document
 			.querySelector(`.victories`)
 			.textContent = `${p1}/${max} - ${p2}/${max}`;
+	}
+
+	setLogo(url) {
+		document
+			.querySelector(`#logo`)
+			.style.backgroundImage = `url(${url})`;
 	}
 
 	frame(player_num, data) {
