@@ -114,6 +114,10 @@ class Player {
 		this.field_bg = document.createElement('div');
 
 		this.field_bg.classList.add('background');
+
+		this.field_bg.style.position = 'absolute';
+		this.field_bg.style.top = `${css_size(styles.padding) - this.field_pixel_size}px`;
+		this.field_bg.style.left = `${css_size(styles.padding) - this.field_pixel_size}px`;
 		this.field_bg.style.width = `${css_size(styles.width) + this.field_pixel_size * 2}px`;
 		this.field_bg.style.height = `${css_size(styles.height) + this.field_pixel_size * 2}px`;
 		dom.field.appendChild(this.field_bg);
@@ -125,6 +129,10 @@ class Player {
 
 				const styles = getComputedStyle(dom[name]);
 				const canvas = document.createElement('canvas');
+
+				canvas.style.position = 'background';
+				canvas.style.top = styles.padding;
+				canvas.style.left = styles.padding;
 
 				canvas.setAttribute('width', styles.width);
 				canvas.setAttribute('height', styles.height);
@@ -154,9 +162,9 @@ class Player {
 		let remaining_frames = 12;
 
 		const steps = () => {
-			const action = (--remaining_frames % 2) ? 'add' : 'remove';
+			const bg_color = (--remaining_frames % 2) ? 'white' : 'rgba(0,0,0,0)';
 
-			this.field_bg.classList[action]('flash');
+			this.field_bg.style.background = bg_color;
 
 			if (remaining_frames > 0) {
 				this.tetris_animation_ID = window.requestAnimationFrame(steps);
@@ -203,6 +211,10 @@ class Player {
 		const tail = parseInt(score_str.slice(1), 10);
 
 		return (lead * 100000) + tail;
+	}
+
+	setName(name) {
+		this.dom.name.textContent = name;
 	}
 
 	setFrame(data) {

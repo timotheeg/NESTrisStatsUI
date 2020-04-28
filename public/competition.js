@@ -15,7 +15,11 @@ class TetrisCompetitionAPI {
 	}
 
 	setName(player_num, name) {
-		document.querySelector(`.name.p${player_num} .header`).textContent = name || `Player ${player_num}`;
+		const
+			index  = player_num - 1,
+			player = players[index];
+
+		player.setName(name);
 	}
 
 	setFirstTo(num_games_to_win) {

@@ -48,25 +48,6 @@
 	top: 76px;
 }
 
-.board canvas {
-	position: absolute;
-	top: 12px;
-	left: 12px;
-}
-
-.board .background {
-	position: absolute;
-	margin: 0;
-	padding: 0;
-	top: 9px;
-	left: 9px;
-}
-
-
-.board .background.flash {
-	background: white;
-}
-
 .name {
 	width: 237px;
 	right: 15px;
@@ -248,9 +229,10 @@
 <script src="utils.js"></script>
 <script src="Player.js"></script>
 <script src="CompetitionPlayer.js"></script>
-<script >
+<script>
 const players = [1, 2].map(num => new CompetitionPlayer(
 	{
+		name:        document.querySelector(`.name.p${num} .header`),
 		score:       document.querySelector(`.score.p${num} .main`),
 		diff:        document.querySelector(`.score.p${num} .diff`),
 		level:       document.querySelector(`.level.p${num} .content`),

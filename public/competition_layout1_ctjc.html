@@ -112,25 +112,6 @@
 	top: 76px;
 }
 
-.board canvas {
-	position: absolute;
-	top: 17px;
-	left: 17px;
-}
-
-.board .background {
-	position: absolute;
-	margin: 0;
-	padding: 0;
-	top: 14px;
-	left: 14px;
-}
-
-
-.board .background.flash {
-	background: white;
-}
-
 .name {
 	width: 730px;
 	height: 20px;
@@ -250,6 +231,7 @@
 <script >
 const players = [1, 2].map(num => new Player(
 	{
+		name:        document.querySelector(`.name .p${num}`),
 		score:       document.querySelector(`.score .p${num}`),
 		level:       document.querySelector(`.level .p${num}`),
 		lines:       document.querySelector(`.lines .p${num}`),
