@@ -3,6 +3,9 @@
 <head>
 <link rel="stylesheet" type="text/css" href="tetris.css">
 <style>
+html {
+	overflow-y: auto;
+}
 #stream_bg {
 	background: black;
 }
@@ -14,6 +17,7 @@
 }
 
 #logo {
+	display: none;
 	position: absolute;
 	left: -75px;
 	top: 411px;
@@ -84,7 +88,7 @@
 	width: 104px;
 	height: 60px;
 	top: 6px;
-	right: 172px;
+	right: 177px;
 }
 
 .lines {
@@ -141,7 +145,7 @@
 }
 
 .p2.next_piece {
-	left: 172px;
+	left: 177px;
 }
 
 .p2.board {
@@ -255,7 +259,7 @@ class TetrisCompetitionAPI_CTJS extends TetrisCompetitionAPI {
 		const
 			max = this.first_to * 2 - 1,
 			p1 = this.victories[1],
-			p2 = this.victories[1];
+			p2 = this.victories[2];
 
 		document
 			.querySelector(`.victories`)
@@ -277,7 +281,7 @@ class TetrisCompetitionAPI_CTJS extends TetrisCompetitionAPI {
 
 		const
 			diff = player.score - otherScore,
-			fmt = player.numberFormatter.format(diff),
+			fmt = player.numberFormatter.format(Math.abs(diff)),
 			elem = document.querySelector(`.diff`);
 
 		if (diff === 0) {

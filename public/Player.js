@@ -1,6 +1,10 @@
 function renderBlock(level, block_index, pixel_size, ctx, pos_x, pos_y) {
 	let color;
 
+	if (block_index < 1 || block_index > 3) {
+		return;
+	}
+
 	switch (block_index) {
 		case 1:
 			// inefficient because it draws the area twice
@@ -65,17 +69,23 @@ function renderBlock(level, block_index, pixel_size, ctx, pos_x, pos_y) {
 			);
 
 			break;
-
-		default:
-			/*
-			ctx.clearRect(
-				pos_x,
-				pos_y,
-				pixel_size * 7,
-				pixel_size * 7
-			);
-			/**/
 	}
+
+	/*
+	ctx.fillStyle = 'black';
+	ctx.fillRect(
+		pos_x,
+		pos_y + pixel_size * 7,
+		pixel_size * 7,
+		pixel_size
+	);
+	ctx.fillRect(
+		pos_x + pixel_size * 7,
+		pos_y,
+		pixel_size,
+		pixel_size * 8
+	);
+	/**/
 }
 
 
@@ -122,7 +132,7 @@ class Player {
 			backgroundRepeat:   'no-repeat',
 			backgroundSize:     'cover',
 			backgroundPosition: '50% 50%',
-			opacity:            0.3
+			filter:              'brightness(0.20)'
 		});
 		dom.field.appendChild(this.avatar);
 
@@ -146,7 +156,6 @@ class Player {
 				const styles = getComputedStyle(dom[name]);
 				const canvas = document.createElement('canvas');
 
-				canvas.style.position = 'background';
 				canvas.style.top = styles.padding;
 				canvas.style.left = styles.padding;
 
@@ -157,6 +166,11 @@ class Player {
 
 				this[`${name}_ctx`] = canvas.getContext('2d');
 			});
+
+
+		this.field_ctx.canvas.style.top = styles.padding;
+		this.field_ctx.canvas.style.left = styles.padding;
+		this.field_bg.appendChild(this.field_ctx.canvas);
 
 		if (this.render_running_trt_rtl) {
 			this.running_trt_ctx.canvas.style.transform = 'scale(-1, 1)';
