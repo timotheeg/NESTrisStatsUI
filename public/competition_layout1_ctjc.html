@@ -3,7 +3,6 @@
 <head>
 <link rel="stylesheet" type="text/css" href="tetris.css">
 <style>
-
 #stream_bg {
 	background: black;
 }
@@ -12,6 +11,20 @@
 	position: absolute;
 	left: 640px;
 	top: -3px;
+}
+
+#logo {
+	position: absolute;
+	left: -75px;
+	top: 411px;
+	width: 150px;
+	height: 150px;
+	padding: 0;
+	margin: 0;
+
+	background-image: url('./CTSC.png');
+    background-repeat: no-repeat;
+    background-size: cover;
 }
 
 .box .header {
@@ -168,6 +181,7 @@
 
 <div id="stream_bg">
 <div id="playing_fields">
+<div id="logo"></div>
 
 <div class="box board p1"></div>
 <div class="box board p2"></div>
@@ -234,8 +248,6 @@
 <script src="utils.js"></script>
 <script src="Player.js"></script>
 <script >
-
-
 const players = [1, 2].map(num => new Player(
 	{
 		score:       document.querySelector(`.score .p${num}`),
@@ -265,7 +277,7 @@ class TetrisCompetitionAPI_CTJS extends TetrisCompetitionAPI {
 
 		document
 			.querySelector(`.victories`)
-			.textContent = `${p1}/${max} ${p2}/${max}`;
+			.textContent = `${p1}/${max} - ${p2}/${max}`;
 	}
 
 	frame(player_num, data) {
