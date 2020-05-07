@@ -71,7 +71,7 @@ function renderBlock(level, block_index, pixel_size, ctx, pos_x, pos_y) {
 			break;
 	}
 
-	/*
+	/**/
 	ctx.fillStyle = 'black';
 	ctx.fillRect(
 		pos_x,
