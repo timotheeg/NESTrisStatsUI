@@ -82,7 +82,7 @@ class DomRefs {
 			name: pbs.querySelector('.header .name')
 		};
 
-		['s15', 's18', 's19'].forEach(level_class => {
+		['s9', 's18', 's19'].forEach(level_class => {
 			this.pbs[level_class] = {
 				start_level: pbs.querySelector(`.${level_class} .start_level`),
 				end_level:   pbs.querySelector(`.${level_class} .end_level`),

@@ -449,6 +449,8 @@ function renderPastGamesAndPBs(data) {
 
 		const row = dom.pbs[`s${record.start_level}`];
 
+		if (!row) return;
+
 		row.end_level.textContent =   record.end_level.toString().padStart(2, '0');
 		row.score.textContent =       record.score.toString().padStart(6, '0');
 		row.lines.textContent =       record.lines.toString().padStart(3, '0');

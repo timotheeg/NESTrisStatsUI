@@ -60,6 +60,7 @@ module.exports = {
 		return {
 			current_player,
 			pbs: [
+				pbs.get(current_player, 9),
 				pbs.get(current_player, 15),
 				pbs.get(current_player, 18),
 				pbs.get(current_player, 19),
