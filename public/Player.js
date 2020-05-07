@@ -156,6 +156,7 @@ class Player {
 				const styles = getComputedStyle(dom[name]);
 				const canvas = document.createElement('canvas');
 
+				canvas.style.position = 'absolute';
 				canvas.style.top = styles.padding;
 				canvas.style.left = styles.padding;
 
@@ -168,8 +169,8 @@ class Player {
 			});
 
 
-		this.field_ctx.canvas.style.top = styles.padding;
-		this.field_ctx.canvas.style.left = styles.padding;
+		this.field_ctx.canvas.style.top = `${this.field_pixel_size}px`;
+		this.field_ctx.canvas.style.left = `${this.field_pixel_size}px`;
 		this.field_bg.appendChild(this.field_ctx.canvas);
 
 		if (this.render_running_trt_rtl) {
