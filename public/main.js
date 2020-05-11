@@ -727,7 +727,18 @@ function renderPiece(event) {
 		for (let idx = to_draw.length; idx--;) {
 			const
 				das = to_draw[idx].das,
+				lost_das = false, // TODO: compute
 				color = DAS_COLORS[ DAS_THRESHOLDS[das] ];
+
+			if (lost_das) {
+				dom.das.ctx.fillStyle = '#550000';
+				dom.das.ctx.fillRect(
+					idx * (pixel_size + 1),
+					0,
+					pixel_size,
+					pixel_size * 17
+				);
+			}
 
 			dom.das.ctx.fillStyle = color;
 			dom.das.ctx.fillRect(
