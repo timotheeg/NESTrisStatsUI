@@ -87,7 +87,9 @@ html {
 	width: 104px;
 	height: 60px;
 	top: 6px;
-	right: 177px;
+
+	--offset: 177px;
+	right: var(--offset)
 }
 
 .lines {
@@ -111,8 +113,10 @@ html {
 	padding: 17px;
 	width: 237px;
 	height: 477px;
-	right: 106px;
 	top: 76px;
+
+	--offset: 106px;
+	right: var(--offset)
 }
 
 .name {
@@ -144,23 +148,13 @@ html {
 	width: 253px;
 	height: 62px;
 	top: 588px;
-	right: 106px;
+
+	--offset: 106px;
+	right: var(--offset)
 }
 
-.p2.next_piece {
-	left: 177px;
-}
-
-.p2.board {
-	left: 106px;
-}
-
-.p2.running_trt {
-	left: 106px;
-}
-
-.p2.level {
-	left: 386px;
+.p2 {
+	left: var(--offset);
 }
 
 </style>
