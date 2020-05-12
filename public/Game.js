@@ -72,6 +72,12 @@ class Game {
 		});
 	}
 
+	onDasLoss() {
+		if (!this.pieces.length) return;
+
+		this.pieces[this.pieces.length - 1].das_loss = true;
+	}
+
 	// event: {score, level, lines, das, cur_piece, next_piece, }
 	onPiece(event) {
 		const p = event.cur_piece;
