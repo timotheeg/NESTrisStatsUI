@@ -325,33 +325,28 @@ function onFrame(event, debug) {
 	}
 
 	// check for score change
-	if (pending_line || diff.score) {
+	if (pending_line) {
 		if (
 			transformed.score
 			&& !isNaN(transformed.lines)
 			&& !isNaN(transformed.level)
-			&& transformed.level < 30
-			&& diff.cleared_lines >= 0
-			&& diff.cleared_lines <= 4
 		) {
-			if (diff.score > 20 && diff.cleared_lines <= 0) {
-				pending_line = true;
-			}
-			else {
-				game.onLine(transformed);
-				renderLine();
-				pending_line = false;
+			pending_line = false;
 
-				Object.assign(last_valid_state, {
-					score: transformed.score,
-					lines: transformed.lines,
-					level: transformed.level
-				});
-			}
+			game.onLine(transformed);
+			renderLine();
+
+			Object.assign(last_valid_state, {
+				score: transformed.score,
+				lines: transformed.lines,
+				level: transformed.level
+			});
 		}
-		else {
-			pending_line = true;
-		}
+	}
+	else if(diff.score) {
+		// always wait one frame to read score and line
+		// this is to protect against transition blur causing incorrect OCR
+		pending_line = true;
 	}
 
 	if (!isNaN(transformed.level) && transformed.level != null) {
