@@ -10,7 +10,7 @@
     "test": "tap test/**/*.test.js",
     "start": "fastify start -l info app.js",
     "dev": "fastify start -l info -P app.js",
-    "competition": "node app_competition.js & open ./public/competition_admin.html"
+    "competition": "open ./public/competition_admin.html & node app_competition.js"
   },
   "keywords": [],
   "author": "",
