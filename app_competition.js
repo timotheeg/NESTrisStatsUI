@@ -1,5 +1,5 @@
 const WebSocket = require('ws');
-const NEStrisServer = require('./NesTrisServer');
+const NEStrisServer = require('./NESTrisServer');
 
 const admin_port   = 4000;
 const player1_port = 4001;
