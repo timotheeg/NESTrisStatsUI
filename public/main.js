@@ -260,9 +260,20 @@ function onFrame(event, debug) {
 		}
 	}
 
+	renderInstantDas(transformed.instant_das);
+
 	// quick check for das loss
-	if (transformed.instant_das < transformed.cur_piece_das) {
-		game.onDasLoss()
+	if (transformed.cur_piece_das && transformed.instant_das === 0) {
+		if (game.pieces.length) {
+			console.log('das loss',
+				game.pieces.length,
+				game.pieces[game.pieces.length -1].das,
+				transformed.instant_das,
+				transformed.cur_piece_das
+			);
+			game.onDasLoss()
+			renderDas()
+		}
 	}
 
 	// populate diff
@@ -718,45 +729,76 @@ function renderPiece(event) {
 
 	// das
 	if (dom.das) {
-		dom.das.avg.textContent = game.data.das.avg.toFixed(1).padStart(4, '0');
-		dom.das.great.textContent = game.data.das.great.toString().padStart(3, '0');
-		dom.das.ok.textContent = game.data.das.ok.toString().padStart(3, '0');
-		dom.das.bad.textContent = game.data.das.bad.toString().padStart(3, '0');
+		renderDas()
 
-		dom.das.ctx.clear();
-
-		pixel_size = 4;
-		max_pixels = Math.floor(dom.das.ctx.canvas.width / (pixel_size + 1));
-		cur_x = 0;
-		to_draw = game.pieces.slice(-1 * max_pixels);
-
-		for (let idx = to_draw.length; idx--;) {
-			const
-				piece = to_draw[idx]
-				das = piece.das,
-				color = DAS_COLORS[ DAS_THRESHOLDS[das] ];
-
-			if (piece.das_loss) {
-				dom.das.ctx.fillStyle = '#550000';
-				dom.das.ctx.fillRect(
-					idx * (pixel_size + 1),
-					0,
-					pixel_size,
-					pixel_size * 17
-				);
-			}
-
-			dom.das.ctx.fillStyle = color;
-			dom.das.ctx.fillRect(
-				idx * (pixel_size + 1),
-				(16 - das) * pixel_size,
-				pixel_size,
-				pixel_size
-			);
-		}
 	}
 
 	renderNextPiece(event.level, event.next_piece);
+}
+
+function renderInstantDas(das) {
+	if (!dom.das) return;
+	if (das < 0) return;
+
+	dom.das.instant.textContent = das.toString().padStart(2, '0');
+
+	const
+		ctx = dom.das.gauge_ctx,
+		pixel_size = 3,
+		height = dom.das.gauge_ctx.canvas.height;
+
+	// TODO: optimize!
+	ctx.clear();
+
+	ctx.fillStyle = 'orange';
+
+	for (let idx = das; idx--; ) {
+		ctx.fillRect(
+			idx * (pixel_size + 1),
+			0,
+			pixel_size,
+			height
+		);
+	}
+}
+
+function renderDas() {
+	dom.das.avg.textContent = game.data.das.avg.toFixed(1).padStart(4, '0');
+	dom.das.great.textContent = game.data.das.great.toString().padStart(3, '0');
+	dom.das.ok.textContent = game.data.das.ok.toString().padStart(3, '0');
+	dom.das.bad.textContent = game.data.das.bad.toString().padStart(3, '0');
+
+	dom.das.ctx.clear();
+
+	pixel_size = 4;
+	max_pixels = Math.floor(dom.das.ctx.canvas.width / (pixel_size + 1));
+	cur_x = 0;
+	to_draw = game.pieces.slice(-1 * max_pixels);
+
+	for (let idx = to_draw.length; idx--;) {
+		const
+			piece = to_draw[idx]
+			das = piece.das,
+			color = DAS_COLORS[ DAS_THRESHOLDS[das] ];
+
+		if (piece.das_loss) {
+			dom.das.ctx.fillStyle = '#550000';
+			dom.das.ctx.fillRect(
+				idx * (pixel_size + 1),
+				0,
+				pixel_size,
+				pixel_size * 17
+			);
+		}
+
+		dom.das.ctx.fillStyle = color;
+		dom.das.ctx.fillRect(
+			idx * (pixel_size + 1),
+			(16 - das) * pixel_size,
+			pixel_size,
+			pixel_size
+		);
+	}
 }
 
 function renderBlock(level, block_index, ctx, pos_x, pos_y) {

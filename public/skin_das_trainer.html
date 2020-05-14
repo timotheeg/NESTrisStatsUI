@@ -237,6 +237,12 @@
 	border-width: 1px 0;
 }
 
+#das .gauge canvas {
+	border-style: solid;
+	border-color: #505050;
+	border-width: 1px 1px;
+}
+
 #lines_stats {
 	top: 6px;
 	left: 486px;
@@ -755,6 +761,9 @@
 	<div class="header">
 		<span class="label">DAS</span>
 		-
+		<span class="instant">00</span>
+		<span class="gauge"><canvas width="63" height="14"></span>
+		-
 		<span class="avg"><span class="label">AVG </span><span class="count">00.0</span></span>
 		-
 		<span class="bad"><span class="label">&#338;</span><span class="count">000</span></span>
@@ -836,7 +845,7 @@
 <script src="utils.js"></script>
 <script src="Game.js"></script>
 <script src="DomRefs.js"></script>
-<script src="sample_frames_10.js"></script>
+<script src="sample_frames_11.js"></script>
 <script src="main.js"></script>
 
 </body>

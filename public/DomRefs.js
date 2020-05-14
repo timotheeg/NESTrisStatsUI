@@ -126,13 +126,15 @@ class DomRefs {
 			this.das = {
 				element: das,
 
-				avg:   das.querySelector('.avg .count'),
+				instant:   das.querySelector('.instant'),
+				gauge_ctx: das.querySelector('.gauge canvas').getContext('2d'),
+				avg:       das.querySelector('.avg .count'),
 
-				great: das.querySelector('.great .count'),
-				ok:    das.querySelector('.ok .count'),
-				bad:   das.querySelector('.bad .count'),
+				great:     das.querySelector('.great .count'),
+				ok:        das.querySelector('.ok .count'),
+				bad:       das.querySelector('.bad .count'),
 
-				ctx:   das.querySelector('.content canvas').getContext('2d'),
+				ctx:       das.querySelector('.content canvas').getContext('2d'),
 			};
 		}
 

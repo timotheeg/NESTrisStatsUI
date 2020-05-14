@@ -24,6 +24,8 @@ viewer_wss.on('connection', function connection(ws) {
 });
 
 function RPCToViewers(...args) {
+	console.log(...args);
+
 	const msg = JSON.stringify(args);
 
 	[...viewer_conns].forEach(ws => {
