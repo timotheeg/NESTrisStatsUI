@@ -733,7 +733,7 @@ function renderPiece(event) {
 
 function renderInstantDas(das) {
 	if (!dom.das) return;
-	if (das < 0) return;
+	if (isNaN(das) || das < 0) return;
 
 	dom.das.instant.textContent = das.toString().padStart(2, '0');
 
