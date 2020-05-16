@@ -215,7 +215,6 @@ class Player {
 		this.score = 0;
 		this.lines = 0;
 		this.level = 0;
-		this.trt = 0;
 		this.field_num_blocks = 0;
 		this.field_string = '';
 
@@ -265,46 +264,43 @@ class Player {
 		}
 
 		const level = parseInt(data.level, 10);
+		const num_blocks = data.field.replace(/0+/g, '').length;
+
+		const lines = parseInt(data.lines, 10);
+
+		if (lines === 0 && (num_blocks === 0 || num_blocks == 4)) {
+			// New game
+			this.lines = 0;
+			this.lines_trt = 0;
+			this.dom.trt.textContent = '---';
+			this.running_trt.length = 0;
+			this.running_trt_ctx.clear();
+			this.field_num_blocks = num_blocks;
+			this.field_string = data.field;
+			this.clear_animation_remaining_frames = 0;
+		}
 
 		if (!isNaN(level)) {
 			this.level = level;
 
 			this.renderField(this.level, data.field);
 			this.renderPreview(this.level, data.preview);
-			this.updateField(data.field);
+			this.updateField(data.field, num_blocks);
 		}
-
-		const lines = parseInt(data.lines, 10);
 
 		if (isNaN(lines) || lines === this.lines) return;
 
-		if (lines == 0) {
-			// New game - is this a stable detector?
-			this.lines_trt = 0;
-			this.trt = '---';
-			this.running_trt.length = 0;
-			this.running_trt_ctx.clear();
+		const cleared = lines - this.lines;
 
-			// assume clean field for this frame - urgh, is sthis safe?
-			this.field_num_blocks = 0;
-			this.field_string = ''
-		}
-		else {
-			const cleared = lines - this.lines;
-
-			if (cleared === 4) {
-				this.lines_trt += 4;
-			}
-
-			const trt = this.lines_trt / lines;
-
-			this.running_trt.push({ trt, cleared });
-
-			this.dom.trt.textContent = getPercent(trt);
-
-			this.renderRunningTRT();
+		if (cleared === 4) {
+			this.lines_trt += 4;
 		}
 
+		const trt = this.lines_trt / lines;
+
+		this.running_trt.push({ trt, cleared });
+		this.dom.trt.textContent = getPercent(trt);
+		this.renderRunningTRT();
 		this.lines = lines;
 	}
 
@@ -397,15 +393,15 @@ class Player {
 		});
 	}
 
-	updateField(field_string) {
+	updateField(field_string, num_blocks) {
 		if (field_string == this.field_string) return;
-		if (this.clear_animation_remaining_frames-- > 0) return;
-
-		const num_blocks = field_string.replace(/0+/g, '').length;
-		const block_diff = num_blocks - this.field_num_blocks;
 
 		// state is considered valid, track data
 		this.field_string = field_string;
+
+		if (this.clear_animation_remaining_frames-- > 0) return;
+
+		const block_diff = num_blocks - this.field_num_blocks;
 
 		if (block_diff === 4) {
 			this.field_num_blocks = num_blocks;

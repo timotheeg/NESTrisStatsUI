@@ -1,3 +1,5 @@
+const fs = require('fs');
+const readline = require('readline');
 const WebSocket = require('ws');
 const NEStrisServer = require('./NESTrisServer');
 
@@ -16,6 +18,17 @@ const viewer_conns = new Set();
 viewer_wss.on('connection', function connection(ws) {
 	console.log('view connected');
 
+	const readInterface = readline.createInterface({
+		input: fs.createReadStream('player1_frames_log_long_play.log'),
+		output: process.stdout,
+		console: false
+	});
+
+	readInterface.on('line', function(line) {
+	    frame = JSON.parse(line);
+	    ws.send(JSON.stringify(['frame', 1, frame]));
+	});
+
 	viewer_conns.add(ws);
 
 	ws.on('close', () => {
@@ -24,7 +37,7 @@ viewer_wss.on('connection', function connection(ws) {
 });
 
 function RPCToViewers(...args) {
-	console.log(...args);
+	// console.log(...args);
 
 	const msg = JSON.stringify(args);
 
@@ -67,7 +80,7 @@ const ViewAPI = new Proxy({}, {
 });
 
 
-const server_p1 = new NEStrisServer(player1_port, 'player 1');
+const server_p1 = new NEStrisServer(player1_port, 'player 1'); // , 'player1_frames_log.js');
 const server_p2 = new NEStrisServer(player2_port, 'player 2');
 
 server_p1.on('frame', data => RPCToViewers('frame', 1, data));

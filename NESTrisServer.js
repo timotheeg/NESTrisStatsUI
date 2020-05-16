@@ -1,12 +1,17 @@
+const fs = require('fs');
 const net = require('net');
 const EventEmitter = require('events');
 
 class NESTrisServer extends EventEmitter {
-	constructor(port, server_id = 'default') {
+	constructor(port, server_id = 'default', log_frames=null) {
 		super();
 
 		this.port = port;
 		this.server_id = server_id;
+
+		if (log_frames) {
+			this.wstream = fs.createWriteStream(log_frames);
+		}
 
 		this.server = net.createServer(this.handleConnection.bind(this));
 
@@ -40,6 +45,10 @@ class NESTrisServer extends EventEmitter {
 			if (stream_data.length < msg_length + 4) return; // not enough data, wait for more
 
 			const frame_data = stream_data.toString('utf8', 4, msg_length + 4)
+
+			if (this.wstream) {
+				this.wstream.write(`${frame_data}\n`);
+			}
 
 			this.emit('frame', JSON.parse(frame_data));
 
