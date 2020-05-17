@@ -1,5 +1,3 @@
-const EFF_LINE_VALUES = [0, 40, 50, 100, 300];
-
 function renderBlock(level, block_index, pixel_size, ctx, pos_x, pos_y) {
 	let color;
 
@@ -306,7 +304,7 @@ class Player {
 			this.lines_trt += 4;
 		}
 
-		const line_value = cleared <=4 ? EFF_LINE_VALUES[cleared] : EFF_LINE_VALUES[1];
+		const line_value = cleared <= 4 ? EFF_LINE_VALUES[cleared] : EFF_LINE_VALUES[1];
 
 
 		this.total_eff += line_value * cleared;
@@ -501,7 +499,7 @@ class Player {
 		const
 			ctx = this.running_trt_ctx,
 			rtl = this.render_running_trt_rtl,
-			current_trt = this.clear_events[this.clear_events.length - 1].trt,
+			current_trt = peek(this.clear_events).trt,
 			pixel_size_line_clear = 4,
 			pixel_size_baseline = 2;
 

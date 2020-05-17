@@ -40,6 +40,8 @@ const
 
 	SCORE_BASES = [0, 40, 100, 300, 1200],
 
+	EFF_LINE_VALUES = [0, 40, 50, 100, 300],
+
 	// arrays of color 1 and color 2
 	LEVEL_COLORS = [
 	    [ '#4A32FF', '#4AAFFE' ],

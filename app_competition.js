@@ -17,7 +17,7 @@ const viewer_conns = new Set();
 
 viewer_wss.on('connection', function connection(ws) {
 	console.log('view connected');
-
+/*
 	const readInterface = readline.createInterface({
 		input: fs.createReadStream('player1_frames_log_long_play.log'),
 		output: process.stdout,
@@ -28,6 +28,7 @@ viewer_wss.on('connection', function connection(ws) {
 	    frame = JSON.parse(line);
 	    ws.send(JSON.stringify(['frame', 1, frame]));
 	});
+/**/
 
 	viewer_conns.add(ws);
 
