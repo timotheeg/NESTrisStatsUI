@@ -186,7 +186,8 @@ class Player {
 	}
 
 	onPiece() {
-
+		// TODO Store piece sequence
+		// TODO Derive drought
 	}
 
 	onTetris() {
