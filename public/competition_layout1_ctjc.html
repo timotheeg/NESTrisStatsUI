@@ -140,6 +140,13 @@ html {
 	top: 588px;
 }
 
+.efficiency {
+	width: 190px;
+	left: -107px;
+	height: 56px;
+	top: 507px;
+}
+
 .tetris_rate .content {
 	padding: 0 5px;
 }
@@ -222,6 +229,15 @@ html {
 </div>
 
 
+<div class="box efficiency">
+	<div class="header">EFFICIENCY</div>
+	<div class="content">
+		<div class="p1">---</div>
+		<div class="p2">---</div>
+	</div>
+</div>
+
+
 <div class="box running_trt p1"></div>
 <div class="box running_trt p2"></div>
 
@@ -252,6 +268,7 @@ const players = [1, 2].map(num => new Player(
 		level:       document.querySelector(`.level .p${num}`),
 		lines:       document.querySelector(`.lines .p${num}`),
 		trt:         document.querySelector(`.tetris_rate .p${num}`),
+		eff:         document.querySelector(`.efficiency .p${num}`),
 		running_trt: document.querySelector(`.running_trt.p${num}`),
 		preview:     document.querySelector(`.next_piece.p${num}`),
 		field:       document.querySelector(`.board.p${num}`)

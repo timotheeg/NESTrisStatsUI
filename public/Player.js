@@ -1,3 +1,5 @@
+const EFF_LINE_VALUES = [0, 40, 50, 100, 300];
+
 function renderBlock(level, block_index, pixel_size, ctx, pos_x, pos_y) {
 	let color;
 
@@ -114,7 +116,7 @@ class Player {
 		this.preview_pixel_size = this.options.preview_pixel_size || this.options.pixel_size;
 		this.render_running_trt_rtl = !!this.options.running_trt_rtl;
 
-		this.running_trt = [];
+		this.clear_events = [];
 
 		this.numberFormatter = new Intl.NumberFormat();
 
@@ -211,6 +213,7 @@ class Player {
 	}
 
 	reset() {
+		this.clear_events.length = 0;
 		this.preview = '';
 		this.score = 0;
 		this.lines = 0;
@@ -219,6 +222,7 @@ class Player {
 		this.field_string = '';
 
 		this.lines_trt = 0;
+		this.total_eff = 0;
 
 		this.preview_ctx.clear();
 		this.field_ctx.clear();
@@ -272,12 +276,14 @@ class Player {
 			// New game
 			this.lines = 0;
 			this.lines_trt = 0;
+			this.total_eff = 0;
 			this.dom.trt.textContent = '---';
-			this.running_trt.length = 0;
+			this.dom.eff.textContent = '---';
+			this.clear_events.length = 0;
 			this.running_trt_ctx.clear();
 			this.field_num_blocks = num_blocks;
 			this.field_string = data.field;
-			this.clear_animation_remaining_frames = 0;
+			this.clear_animation_remaining_frames = -1;
 		}
 
 		if (!isNaN(level)) {
@@ -288,7 +294,11 @@ class Player {
 			this.updateField(data.field, num_blocks);
 		}
 
-		if (isNaN(lines) || lines === this.lines) return;
+		if (isNaN(lines)
+			|| lines === 0
+			|| lines === this.lines
+			|| this.clear_animation_remaining_frames >= 0
+		) return;
 
 		const cleared = lines - this.lines;
 
@@ -296,10 +306,17 @@ class Player {
 			this.lines_trt += 4;
 		}
 
-		const trt = this.lines_trt / lines;
+		const line_value = cleared <=4 ? EFF_LINE_VALUES[cleared] : EFF_LINE_VALUES[1];
 
-		this.running_trt.push({ trt, cleared });
+
+		this.total_eff += line_value * cleared;
+
+		const trt = this.lines_trt / lines;
+		const eff = this.total_eff / lines;
+
+		this.clear_events.push({ trt, eff, cleared });
 		this.dom.trt.textContent = getPercent(trt);
+		this.dom.eff.textContent = Math.round(eff).toString().padStart(3, '0');
 		this.renderRunningTRT();
 		this.lines = lines;
 	}
@@ -484,7 +501,7 @@ class Player {
 		const
 			ctx = this.running_trt_ctx,
 			rtl = this.render_running_trt_rtl,
-			current_trt = this.running_trt[this.running_trt.length - 1].trt,
+			current_trt = this.clear_events[this.clear_events.length - 1].trt,
 			pixel_size_line_clear = 4,
 			pixel_size_baseline = 2;
 
@@ -522,7 +539,7 @@ class Player {
 		y_scale = (ctx.canvas.height - pixel_size) / pixel_size;
 
 		let
-			to_draw = this.running_trt.slice(-1 * max_pixels),
+			to_draw = this.clear_events.slice(-1 * max_pixels),
 			len = to_draw.length;
 
 		for (let idx = len; idx--;) {
