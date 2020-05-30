@@ -4,7 +4,7 @@ const net = require('net');
 const path = require('path');
 const AutoLoad = require('fastify-autoload');
 const config = require('./config');
-const NEStrisServer = require('./NesTrisServer');
+const NEStrisServer = require('./NESTrisServer');
 const TetrisDAO = require('./daos/tetris');
 const _ = require('lodash');
 
