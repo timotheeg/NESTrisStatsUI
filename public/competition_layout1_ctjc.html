@@ -72,15 +72,16 @@ html {
 
 .score {
 	top: 76px;
-	height: 117px;
+	height: 144px;
 	left: -107px;
 }
 
-.score .diff {
+.score .diff,
+.score .tetris_diff {
 	text-align: center;
 }
 
-.winning, .diff {
+.winning, .diff, .tetris_diff {
 	color: #0eff0e;
 }
 
@@ -99,12 +100,12 @@ html {
 
 .lines {
 	left: -107px;
-	top: 223px;
+	top: 250px;
 }
 
 .level {
 	left: -107px;
-	top: 309px;
+	top: 336px;
 }
 
 .board {
@@ -196,6 +197,7 @@ html {
 	<div class="data">
 		<div class="p1">000000</div>
 		<div class="diff">0000</div>
+		<div class="tetris_diff">0000</div>
 		<div class="p2">000000</div>
 	</div>
 </div>
@@ -310,32 +312,45 @@ class TetrisCompetitionAPI_CTJS extends TetrisCompetitionAPI {
 
 		player.setFrame(data);
 
-		const score = player.getScore();
+		const
+			score_p1 = players[0].getScore(),
+			score_p2 = players[1].getScore();
 
-		if (isNaN(score) || isNaN(otherScore)) return;
+		if (isNaN(score_p1) || isNaN(score_p2)) return;
 
 		const
-			diff = player.score - otherScore,
-			fmt = player.numberFormatter.format(Math.abs(diff)),
-			elem = document.querySelector(`.diff`);
+			diff = score_p1 - score_p2,
+			abs_diff = Math.abs(diff),
+			level_p1 = players[0].level,
+			level_p2 = players[1].level,
+			fmt = player.numberFormatter.format(abs_diff),
+			diff_elem = document.querySelector(`.diff`),
+			tdiff_elem = document.querySelector(`.tetris_diff`);
 
 		if (diff === 0) {
-			elem.textContent = '<>';
-		}
-		else if (player_num == 1) {
-			if (diff > 0) {
-				elem.textContent = `<${fmt}`;
-			}
-			else {
-				elem.textContent = `${fmt}>`;
-			}
+			diff_elem.textContent = '<0>';
+			tdiff_elem.textContent = '<0T>';
 		}
 		else {
-			if (diff > 0) {
-				elem.textContent = `${fmt}>`;
+			const player1_leading = diff > 0;
+			let tetris_value;
+
+			if (player1_leading) { // player 1 leading
+				tetris_value = SCORE_BASES[4] * (level_p2 + 1);
 			}
 			else {
-				elem.textContent = `<${fmt}`;
+				tetris_value = SCORE_BASES[4] * (level_p2 + 1);
+			}
+
+			const tfmt = (abs_diff / tetris_value).toFixed(1);
+
+			if (player1_leading) {
+				diff_elem.textContent = `<${fmt}`;
+				tdiff_elem.textContent = `<${tfmt}T`;
+			}
+			else {
+				diff_elem.textContent = `${fmt}>`;
+				tdiff_elem.textContent = `${tfmt}T>`;
 			}
 		}
 	}
