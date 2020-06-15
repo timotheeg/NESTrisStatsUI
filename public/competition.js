@@ -53,13 +53,14 @@ class TetrisCompetitionAPI {
 	}
 
 	_repaintVictories(player_num) {
-		const hearts = document.querySelector(`.name.p${player_num} .content`);
+		const hearts = document.querySelector(`.wins .p${player_num}`);
 
 		// clear all the hearts
 		while (hearts.childNodes.length) {
 			hearts.removeChild(hearts.childNodes[0]);
 		}
 
+		const player = getPlayer(player_num);
 		const victories = this.victories[player_num]
 
 		// reset to specified value
@@ -72,7 +73,9 @@ class TetrisCompetitionAPI {
 				heart.classList.add('win');
 			}
 
-			hearts.appendChild(heart);
+			hearts
+				[player.render_wins_rtl ? 'prepend' : 'appendChild']
+				(heart);
 		}
 	}
 

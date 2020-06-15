@@ -100,8 +100,10 @@ function renderBlock(level, block_index, pixel_size, ctx, pos_x, pos_y) {
 	}
 
 	options: {
-		preview_pixel_size: int
-		field_pixel_size: int
+		preview_pixel_size: int,
+		field_pixel_size: int,
+		running_trt_rtl: bool,
+		wins_rtl: bool,
 	}
 */
 
@@ -113,6 +115,7 @@ class Player {
 		this.field_pixel_size = this.options.field_pixel_size || this.options.pixel_size;
 		this.preview_pixel_size = this.options.preview_pixel_size || this.options.pixel_size;
 		this.render_running_trt_rtl = !!this.options.running_trt_rtl;
+		this.render_wins_rtl = !!this.options.wins_rtl;
 
 		this.clear_events = [];
 

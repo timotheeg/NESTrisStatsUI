@@ -129,8 +129,11 @@ html {
 	padding: 16px 12px;
 }
 
+.name .wins {
+	color: grey;
+}
 
-.name .content .win {
+.name .wins .win {
 	color: #fb0204;
 }
 
@@ -241,9 +244,7 @@ html {
 
 <div class="box name">
 	<div class="p1">Player 1</div>
-	<div class="wins">
-		<span class="heart">&#338;</span><span class="victories"></span><span class="heart">&#338;</span>
-	</div>
+	<div class="wins"><span class="p1"></span> <span class="p2"></span></div>
 	<div class="p2">Player 2</div>
 </div>
 
@@ -261,7 +262,7 @@ html {
 <script >
 const players = [1, 2].map(num => new Player(
 	{
-		name:        document.querySelector(`.name .p${num}`),
+		name:        document.querySelector(`.name > .p${num}`),
 		score:       document.querySelector(`.score .p${num}`),
 		level:       document.querySelector(`.level .p${num}`),
 		lines:       document.querySelector(`.lines .p${num}`),
@@ -274,7 +275,8 @@ const players = [1, 2].map(num => new Player(
 	{
 		field_pixel_size: 3,
 		preview_pixel_size: 3,
-		running_trt_rtl: 0
+		running_trt_rtl: 0,
+		wins_rtl: num === 1,
 	}
 ));
 </script>
@@ -282,17 +284,6 @@ const players = [1, 2].map(num => new Player(
 <script>
 
 class TetrisCompetitionAPI_CTJS extends TetrisCompetitionAPI {
-	_repaintVictories(player_num) {
-		const
-			max = this.first_to,
-			p1 = this.victories[1],
-			p2 = this.victories[2];
-
-		document
-			.querySelector(`.victories`)
-			.textContent = `${p1}/${max} - ${p2}/${max}`;
-	}
-
 	setLogo(url) {
 		document
 			.querySelector(`#logo`)
