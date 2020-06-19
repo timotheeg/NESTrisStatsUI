@@ -23,24 +23,38 @@
 	color: grey;
 }
 
-#tetris_rate {
-	left: 1150px;
-	top: 158px;
+.bounded {
+	border-style: dashed;
+	border-color: #505050;
+	border-width: 1px 0;
+}
+
+#trt_brn, #eff {
+	left: 1021px;
+	top: 451px;
+	width: 238px;
+	height: 110px;
+	padding-right: 8px;
+	padding-left: 8px;
+}
+
+#trt_brn .header,
+#eff .header {
+	padding-bottom: 4px;
+}
+
+#eff {
+	top: 585px;
 }
 
 #level {
-	left: 1021px;
-	top: 221px;
-}
-
-#burn {
 	left: 1150px;
-	top: 221px;
+	top: 6px;
 }
 
 #lines {
 	left: 1021px;
-	top: 158px;
+	top: 6px;
 }
 
 #score {
@@ -108,9 +122,9 @@
 
 #piece_stats {
 	left: 6px;
-	top: 400px;
+	top: 316px;
 	width: 730px;
-	height: 160px;
+	height: 144px;
 }
 
 #piece_stats .content {
@@ -118,8 +132,14 @@
 	line-height: 8px;
 }
 
+#piece_stats .headers .header {
+	font-size: 16px;
+	line-height: 20px;
+	padding-bottom: 2px;
+}
+
 #piece_stats .content .headers th {
-	padding: 4px 0px;
+	vertical-align: bottom;
 }
 
 #piece_stats .content .piece th {
@@ -223,19 +243,14 @@
 
 #das {
 	left: 6px;
-	top: 584px;
+	top: 484px;
 	width: 730px;
 	height: 78px;
 }
 
-#das .header {
+#das .header,
+#board_stats .header {
 	padding-bottom: 6px;
-}
-
-#das canvas {
-	border-style: dashed;
-	border-color: #505050;
-	border-width: 1px 0;
 }
 
 #das .gauge canvas {
@@ -244,11 +259,24 @@
 	border-width: 1px 1px;
 }
 
+#board_stats {
+	left: 6px;
+	top: 586px;
+	width: 730px;
+	height: 108px;
+}
+
+#board_stats .header .info_labels {
+	font-size: 8px;
+}
+
+
+
 #lines_stats {
 	top: 6px;
 	left: 486px;
 	width: 250px;
-	height: 210px;
+	height: 120px;
 }
 
 #lines_stats .header {
@@ -276,10 +304,10 @@
 }
 
 #points {
-	top: 240px;
+	top: 150px;
 	left: 486px;
 	width: 250px;
-	height: 136px;
+	height: 142px;
 }
 
 #points .header {
@@ -289,6 +317,10 @@
 #points th {
 	text-align: left;
 	font-size: 8px;
+}
+
+#points .drops th {
+	color: #747474;
 }
 
 #points td {
@@ -320,7 +352,7 @@
 }
 
 #video {
-	top: 6px;
+	top: 69px;
 	left: 1021px;
 	width: 234px;
 	height: 128px;
@@ -330,7 +362,7 @@
 	top: 6px;
 	left: 6px;
 	width: 456px;
-	height: 86px;
+	height: 85px;
 }
 
 #pbs .content {
@@ -349,10 +381,10 @@
 }
 
 #high_scores {
-	top: 116px;
+	top: 115px;
 	left: 6px;
 	width: 456px;
-	height: 210px;
+	height: 177px;
 }
 
 #high_scores .header {
@@ -368,8 +400,10 @@
 	padding-right: 18px;
 }
 
-#high_scores td th {
+#high_scores th {
+	line-height: 18px;
 	font-size: 8px;
+	vertical-align: bottom;
 }
 
 #high_scores td td {
@@ -382,10 +416,10 @@
 }
 
 #chat {
-	top: 284px;
+	top: 221px;
 	left: 1021px;
 	width: 234px;
-	height: 410px;
+	height: 206px;
 	overflow: hidden;
 }
 
@@ -477,8 +511,8 @@
 	<div class="header">HIGH SCORES (<span class="name">TIM</span>)</div>
 	<table class="content">
 		<tr>
-			<th>Today</th>
-			<th>Overall</th>
+			<th>TODAY</th>
+			<th>OVERALL</th>
 		</tr>
 		<tr>
 			<td class="today">
@@ -491,11 +525,6 @@
 						</tr>
 					</thead>
 					<tbody>
-						<tr>
-							<td>00</td>
-							<td>000000</td>
-							<td>00%</td>
-						</tr>
 						<tr>
 							<td>00</td>
 							<td>000000</td>
@@ -559,11 +588,6 @@
 							<td>000000</td>
 							<td>00%</td>
 						</tr>
-						<tr>
-							<td>00</td>
-							<td>000000</td>
-							<td>00%</td>
-						</tr>
 					<tbody>
 				</table>
 			</td>
@@ -578,9 +602,19 @@
 	</div>
 </div>
 
-<div class="box" id="tetris_rate">
-	<div class="header">TRT</div>
-	<div class="content">00%</div>
+<div class="box" id="trt_brn">
+	<div class="header">
+		TRT
+		<span class="trt">00%</span>
+		BRN
+		<span class="brn">00</span>
+	</div>
+	<div class="content"><canvas class="bounded" width="238" height="86" /></div>
+</div>
+
+<div class="box" id="eff">
+	<div class="header">EFFICIENCY <span class="eff">000</span></div>
+	<div class="content"><canvas class="bounded" width="238" height="86" /></div>
 </div>
 
 <div class="box" id="level">
@@ -591,11 +625,6 @@
 <div class="box" id="lines">
 	<div class="header">LINES</div>
 	<div class="content">000</div>
-</div>
-
-<div class="box" id="burn">
-	<div class="header">BURN</div>
-	<div class="content">00</div>
 </div>
 
 <div class="box" id="score">
@@ -634,13 +663,12 @@
 </div>
 
 <div class="box" id="piece_stats">
-	<div class="header">PIECES <span class="count">000</span></div>
 	<table class="content">
 		<tr class="headers">
 			<th></th>
 			<th class="count">#</th>
 			<th class="percent">%</th>
-			<th class="distribution">Distribution (last 120)</th>
+			<th class="header distribution">PIECES <span class="count">000</span></th>
 			<th class="drought">DRT</th>
 		</tr>
 		<tr class="piece T">
@@ -708,7 +736,21 @@
 		<span class="ok"><span class="label">&#338;</span><span class="count">000</span></span>
 		<span class="great"><span class="label">&#338;</span><span class="count">000</span></span>
 	</div>
-	<div class="content"><canvas width="730" height="51" /></div>
+	<div class="content"><canvas class="bounded" width="730" height="51" /></div>
+</div>
+
+<div class="box" id="board_stats">
+	<div class="header">
+		<span class="label">BOARD HEIGHT &amp; STATE</span>
+		<span class="info_labels">
+			<span class="label tetris_ready">Tetris ready</span>
+			-
+			<span class="label clean_slope">Clean Slope</span>
+			-
+			<span class="label double_well">Double Well</span>
+		</span>
+	</div>
+	<div class="content"><canvas class="bounded" width="730" height="80" /></div>
 </div>
 
 <div class="box" id="lines_stats">
@@ -740,7 +782,6 @@
 				<td class="percent">00%</td>
 			</tr>
 		</table>
-		<div class="tetris_rate"><canvas width="250" height="85" /></div>
 	</div>
 </div>
 

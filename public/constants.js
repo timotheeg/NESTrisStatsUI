@@ -2,12 +2,24 @@ const
 
 	PIECES = ['T', 'J', 'Z', 'O', 'S', 'L', 'I'],
 
+	// generate colors at https://paletton.com/
+
 	LINES = {
 		1: { name: 'singles', color: '#1678FF' },
 		2: { name: 'doubles', color: '#FF9F00' },
 		3: { name: 'triples', color: '#FF00B9' },
 		4: { name: 'tetris',  color: '#FFFFFF' },
 	},
+
+	BOARD_COLORS = {
+		floor:        '#747474',
+		height:       '#BBBBBB',
+		tetris_ready: '#8438AE',
+		clean_slope:  '#11988E',
+		double_well:  '#F8F81B',
+	},
+
+	FIELD_ANALYSIS_IGNORED_ROWS = 4,
 
 	DAS_COLORS = {
 		absent: 'white',

@@ -84,7 +84,7 @@ document.querySelector('#skip .btn').addEventListener('click', () => {
 		return;
 	}
 
-	while (timeline_idx < to ) {
+	while (timeline_idx < to) {
 		oneFrame();
 	}
 });

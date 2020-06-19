@@ -12,13 +12,18 @@ class DomRefs {
 
 		// store refs by component
 		this.tetris_rate = {
-			element: doc.querySelector('#tetris_rate'),
-			value:   doc.querySelector('#tetris_rate .content')
+			element: doc.querySelector('#trt_brn'),
+			value:   doc.querySelector('#trt_brn .trt')
 		};
 
 		this.burn = {
-			element: doc.querySelector('#burn'),
-			count:   doc.querySelector('#burn .content')
+			element: doc.querySelector('#trt_brn'),
+			count: doc.querySelector('#trt_brn .brn')
+		};
+
+		this.efficiency = {
+			element: doc.querySelector('#eff'),
+			value: doc.querySelector('#eff .eff')
 		};
 
 		this.level = {
@@ -82,7 +87,7 @@ class DomRefs {
 			name: pbs.querySelector('.header .name')
 		};
 
-		['s9', 's18', 's19'].forEach(level_class => {
+		['s18', 's19'].forEach(level_class => {
 			this.pbs[level_class] = {
 				start_level: pbs.querySelector(`.${level_class} .start_level`),
 				end_level:   pbs.querySelector(`.${level_class} .end_level`),
@@ -141,11 +146,24 @@ class DomRefs {
 		// ===============================================================
 		// ===============================================================
 
+		const board_stats = doc.querySelector('#board_stats');
+
+		if (board_stats) {
+			this.board_stats = {
+				element: board_stats,
+				ctx:     board_stats.querySelector('canvas').getContext('2d'),
+			};
+		}
+
+		// ===============================================================
+		// ===============================================================
+
 		const lines_stats = doc.querySelector('#lines_stats');
 
 		this.lines_stats = {
 			element:     lines_stats,
-			trt_ctx:     lines_stats.querySelector('canvas').getContext('2d'),
+			trt_ctx:     doc.querySelector('#trt_brn canvas').getContext('2d'),
+			eff_ctx:     doc.querySelector('#eff canvas').getContext('2d'),
 			count:       lines_stats.querySelector('.header .count'),
 		};
 

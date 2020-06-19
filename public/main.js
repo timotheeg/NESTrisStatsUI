@@ -2,16 +2,24 @@ const dom = new DomRefs(document);
 
 // initial setup for colors based con constants.js
 for (const {name, color} of Object.values(LINES)) {
-	document.querySelector(`#lines_stats tr.${name} th`).style.color = color;
+	[...document.querySelectorAll(`tr.${name} th`)].forEach(node => node.style.color = color);
 }
 
 if (dom.das) {
 	for (const [rating, color] of Object.entries(DAS_COLORS)) {
-		const das_label = document.querySelector(`#das .${rating} .label `);
+		const das_label = document.querySelector(`#das .${rating} .label`);
 
 		if (!das_label) continue;
 
 		das_label.style.color = color;
+	}
+
+	for (const [type, color] of Object.entries(BOARD_COLORS)) {
+		const label = document.querySelector(`#board_stats .${type}`);
+
+		if (!label) continue;
+
+		label.style.color = color;
 	}
 }
 
@@ -104,7 +112,7 @@ let
 	game_frames = [];
 
 function onFrame(event, debug) {
-	game_frames.push({ ...event });
+	// game_frames.push({ ...event });
 
 	// transformation
 	const transformed = {
@@ -384,7 +392,7 @@ function renderPastGamesAndPBs(data) {
 			data.high_scores[category].push(null);
 		}
 
-		dom.high_scores[category].innerHTML = data.high_scores[category].slice(0, 7).map(record => {
+		dom.high_scores[category].innerHTML = data.high_scores[category].slice(0, 5).map(record => {
 			if (!record) {
 				record = {
 					score: 0,
@@ -415,6 +423,7 @@ function renderLine() {
 
 	// do the small boxes first
 	dom.tetris_rate.value.textContent = getPercent(game.data.lines[4].percent);
+	dom.efficiency.value.textContent = Math.floor(game.data.score.normalized / game.data.lines.count).toString().padStart(3, '0');
 	dom.level.value.textContent = game.data.level.toString().padStart(2, '0');
 	dom.burn.count.textContent = game.data.burn.toString().padStart(2, '0');
 
@@ -451,24 +460,35 @@ function renderLine() {
 	dom.points.drops.count.textContent = game.data.points.drops.count.toString().padStart(6, '0');
 	dom.points.drops.percent.textContent = getPercent(game.data.points.drops.percent);
 
-	// graph tetris rate
+	// graph tetris rate and efficiency
+	// assume both canvas are exact same size!
 	dom.lines_stats.trt_ctx.clear();
+	dom.lines_stats.eff_ctx.clear();
 
 	const
-		ctx = dom.lines_stats.trt_ctx,
+		trt_ctx = dom.lines_stats.trt_ctx,
+		eff_ctx = dom.lines_stats.eff_ctx,
 		pixel_size = 4,
-		max_pixels = Math.floor(ctx.canvas.width / (pixel_size + 1)),
-		y_scale = (ctx.canvas.height - pixel_size) / pixel_size,
+		max_pixels = Math.floor(trt_ctx.canvas.width / (pixel_size + 1)),
+		y_scale = (trt_ctx.canvas.height - pixel_size) / pixel_size,
 		cur_x = 0,
 		to_draw = game.line_events.slice(-1 * max_pixels);
 
 	for (let idx = to_draw.length; idx--;) {
-		const { num_lines, tetris_rate } = to_draw[idx];
+		const { num_lines, tetris_rate, efficiency } = to_draw[idx];
 
-		ctx.fillStyle = LINES[num_lines].color;
-		ctx.fillRect(
+		trt_ctx.fillStyle = LINES[num_lines].color;
+		trt_ctx.fillRect(
 			idx * (pixel_size + 1),
 			Math.round((1 - tetris_rate) * y_scale * pixel_size),
+			pixel_size,
+			pixel_size
+		);
+
+		eff_ctx.fillStyle = LINES[num_lines].color;
+		eff_ctx.fillRect(
+			idx * (pixel_size + 1),
+			Math.round((1 - efficiency) * y_scale * pixel_size),
 			pixel_size,
 			pixel_size
 		);
@@ -633,7 +653,6 @@ function renderPiece(event) {
 	// das
 	if (dom.das) {
 		renderDas()
-
 	}
 
 	renderNextPiece(event.level, event.next_piece);
@@ -671,12 +690,22 @@ function renderDas() {
 	dom.das.ok.textContent = game.data.das.ok.toString().padStart(3, '0');
 	dom.das.bad.textContent = game.data.das.bad.toString().padStart(3, '0');
 
+	// assume same width for das and board stats
 	dom.das.ctx.clear();
+	dom.board_stats.ctx.clear();
 
 	pixel_size = 4;
 	max_pixels = Math.floor(dom.das.ctx.canvas.width / (pixel_size + 1));
 	cur_x = 0;
 	to_draw = game.pieces.slice(-1 * max_pixels);
+
+	dom.board_stats.ctx.fillStyle = BOARD_COLORS.floor;
+	dom.board_stats.ctx.fillRect(
+		0,
+		62,
+		dom.board_stats.ctx.canvas.width,
+		1
+	);
 
 	for (let idx = to_draw.length; idx--;) {
 		const
@@ -700,6 +729,56 @@ function renderDas() {
 			(16 - das) * (pixel_size - 1),
 			pixel_size,
 			pixel_size
+		);
+
+		const board_stats = piece.board;
+
+		if (board_stats.top_idx + FIELD_ANALYSIS_IGNORED_ROWS < 20) {
+			dom.board_stats.ctx.fillStyle = BOARD_COLORS.height;
+			dom.board_stats.ctx.fillRect(
+				idx * (pixel_size + 1),
+				(board_stats.top_idx + FIELD_ANALYSIS_IGNORED_ROWS) * (pixel_size - 1),
+				pixel_size,
+				(16 - board_stats.top_idx) * (pixel_size - 1)
+			);
+		}
+
+		if (board_stats.tetris_ready) {
+			dom.board_stats.ctx.fillStyle = BOARD_COLORS.tetris_ready;
+			dom.board_stats.ctx.fillRect(
+				idx * (pixel_size + 1),
+				64,
+				pixel_size,
+				pixel_size
+			);
+		}
+		if (board_stats.clean_slope) {
+			dom.board_stats.ctx.fillStyle = BOARD_COLORS.clean_slope;
+			dom.board_stats.ctx.fillRect(
+				idx * (pixel_size + 1),
+				69,
+				pixel_size,
+				pixel_size
+			);
+		}
+		if (board_stats.double_well) {
+			dom.board_stats.ctx.fillStyle = BOARD_COLORS.double_well;
+			dom.board_stats.ctx.fillRect(
+				idx * (pixel_size + 1),
+				74,
+				pixel_size,
+				pixel_size
+			);
+		}
+	}
+
+	for (let idx=16; idx--; ) {
+		dom.board_stats.ctx.fillStyle = '#000000';
+		dom.board_stats.ctx.fillRect(
+			0,
+			(idx + FIELD_ANALYSIS_IGNORED_ROWS) * (pixel_size - 1),
+			dom.board_stats.ctx.canvas.width,
+			1
 		);
 	}
 }

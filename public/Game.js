@@ -1,5 +1,3 @@
-const FIELD_ANALYSIS_IGNORED_ROWS = 3;
-
 class Row {
 	constructor(line, row_idx) {
 		this.cells = line.split('');
@@ -54,13 +52,13 @@ class Board {
 
 		this.columns = columns.map((col, idx) => new Column(col, idx));
 
-		const tetris_top_row = this.getTetrisTopRow();
+		this.tetris_top_row = this.getTetrisTopRow();
 
 		this.stats = {
-			top_idx:           columns.reduce((acc, col) => Math.min(acc, col.top_fill_idx), 20),
-			is_tetris_ready:   !!this.tetris_top_row,
-			has_perfect_slope: this.hasPerfectSlope(),
-			has_double_well:   this.hasDoubleWell(),
+			top_idx:      this.columns.reduce((acc, col) => Math.min(acc, col.top_fill_idx), 20),
+			tetris_ready: !!this.tetris_top_row,
+			clean_slope:  this.hasPerfectSlope(),
+			double_well:  this.hasDoubleWell(),
 		};
 	}
 
@@ -100,7 +98,7 @@ class Board {
 
 	hasDoubleWell() {
 		if (
-			!this.is_tetris_ready
+			!this.tetris_top_row
 			|| this.tetris_top_row.idx === 0 // tetris ready all the way to the top
 			|| this.tetris_top_row.well != 10
 		) return false;
@@ -135,6 +133,7 @@ class Game {
 
 			score: {
 				current:    event.score,
+				normalized: 0,
 				transition: null
 			},
 
@@ -244,10 +243,13 @@ class Game {
 		das_stats.avg   =  das_stats.total / this.data.pieces.count;
 		das_stats[DAS_THRESHOLDS[das_stats.cur]]++; // great, ok, bad
 
+		this.board = new Board(event.stage.field, FIELD_ANALYSIS_IGNORED_ROWS);
+
 		const piece_data = {
 			piece: p,
 			das:   event.cur_piece_das,
-			index: this.pieces.length
+			index: this.pieces.length,
+			board: this.board.stats,
 		};
 
 		this.pieces.push(piece_data);
@@ -269,6 +271,8 @@ class Game {
 
 		if (num_lines) {
 			if (num_lines > 0 && num_lines <= 4) {
+				this.data.score.normalized += EFF_LINE_VALUES[num_lines] * num_lines;
+
 				// update lines stats for clearing type (single, double, etc...)
 				this.data.lines[num_lines].count += 1;
 				this.data.lines[num_lines].lines += num_lines;
@@ -283,13 +287,15 @@ class Game {
 				}
 			}
 			else {
+				// TODO: how to recover
 				console.log('invalid num_lines', num_lines, event);
 			}
 
 			// record line event
 			this.line_events.push({
 				num_lines,
-				tetris_rate: this.data.lines[4].percent
+				tetris_rate: this.data.lines[4].percent,
+				efficiency: this.data.score.normalized / event.lines / 300,
 			});
 		}
 
