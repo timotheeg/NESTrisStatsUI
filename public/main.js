@@ -697,7 +697,7 @@ function renderDas() {
 		dom.das.ctx.fillStyle = color;
 		dom.das.ctx.fillRect(
 			idx * (pixel_size + 1),
-			(16 - das) * pixel_size,
+			(16 - das) * (pixel_size - 1),
 			pixel_size,
 			pixel_size
 		);
