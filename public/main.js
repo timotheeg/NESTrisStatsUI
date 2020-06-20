@@ -69,7 +69,7 @@ const user_colors = {};
 
 function getUserColor(username) {
 	if (!(username in user_colors)) {
-		user_colors[username] = `hsl(${~~(360 * Math.random())},${~~(80 + 20 * Math.random())}%,${~~(40 + 20 * Math.random())}%)`;
+		user_colors[username] = `hsl(${~~(360 * Math.random())},${~~(80 + 20 * Math.random())}%,${~~(50 + 20 * Math.random())}%)`;
 	}
 
 	return user_colors[username];
@@ -460,14 +460,10 @@ function renderLine() {
 	dom.points.drops.count.textContent = game.data.points.drops.count.toString().padStart(6, '0');
 	dom.points.drops.percent.textContent = getPercent(game.data.points.drops.percent);
 
-	// graph tetris rate and efficiency
-	// assume both canvas are exact same size!
 	dom.lines_stats.trt_ctx.clear();
-	dom.lines_stats.eff_ctx.clear();
 
 	const
 		trt_ctx = dom.lines_stats.trt_ctx,
-		eff_ctx = dom.lines_stats.eff_ctx,
 		pixel_size = 4,
 		max_pixels = Math.floor(trt_ctx.canvas.width / (pixel_size + 1)),
 		y_scale = (trt_ctx.canvas.height - pixel_size) / pixel_size,
@@ -475,20 +471,12 @@ function renderLine() {
 		to_draw = game.line_events.slice(-1 * max_pixels);
 
 	for (let idx = to_draw.length; idx--;) {
-		const { num_lines, tetris_rate, efficiency } = to_draw[idx];
+		const { num_lines, tetris_rate } = to_draw[idx];
 
 		trt_ctx.fillStyle = LINES[num_lines].color;
 		trt_ctx.fillRect(
 			idx * (pixel_size + 1),
 			Math.round((1 - tetris_rate) * y_scale * pixel_size),
-			pixel_size,
-			pixel_size
-		);
-
-		eff_ctx.fillStyle = LINES[num_lines].color;
-		eff_ctx.fillRect(
-			idx * (pixel_size + 1),
-			Math.round((1 - efficiency) * y_scale * pixel_size),
 			pixel_size,
 			pixel_size
 		);
@@ -702,7 +690,7 @@ function renderDas() {
 	dom.board_stats.ctx.fillStyle = BOARD_COLORS.floor;
 	dom.board_stats.ctx.fillRect(
 		0,
-		62,
+		60,
 		dom.board_stats.ctx.canvas.width,
 		1
 	);
@@ -733,13 +721,14 @@ function renderDas() {
 
 		const board_stats = piece.board;
 
-		if (board_stats.top_idx + FIELD_ANALYSIS_IGNORED_ROWS < 20) {
-			dom.board_stats.ctx.fillStyle = BOARD_COLORS.height;
+		dom.board_stats.ctx.fillStyle = BOARD_COLORS.height;
+
+		for (let yidx = 20; yidx-- > board_stats.top_idx; ) {
 			dom.board_stats.ctx.fillRect(
 				idx * (pixel_size + 1),
-				(board_stats.top_idx + FIELD_ANALYSIS_IGNORED_ROWS) * (pixel_size - 1),
+				yidx * (pixel_size - 1),
 				pixel_size,
-				(16 - board_stats.top_idx) * (pixel_size - 1)
+				2
 			);
 		}
 
@@ -747,39 +736,31 @@ function renderDas() {
 			dom.board_stats.ctx.fillStyle = BOARD_COLORS.tetris_ready;
 			dom.board_stats.ctx.fillRect(
 				idx * (pixel_size + 1),
-				64,
+				62,
 				pixel_size,
 				pixel_size
 			);
 		}
+
 		if (board_stats.clean_slope) {
 			dom.board_stats.ctx.fillStyle = BOARD_COLORS.clean_slope;
 			dom.board_stats.ctx.fillRect(
 				idx * (pixel_size + 1),
-				69,
+				67,
 				pixel_size,
 				pixel_size
 			);
 		}
+
 		if (board_stats.double_well) {
 			dom.board_stats.ctx.fillStyle = BOARD_COLORS.double_well;
 			dom.board_stats.ctx.fillRect(
 				idx * (pixel_size + 1),
-				74,
+				72,
 				pixel_size,
 				pixel_size
 			);
 		}
-	}
-
-	for (let idx=16; idx--; ) {
-		dom.board_stats.ctx.fillStyle = '#000000';
-		dom.board_stats.ctx.fillRect(
-			0,
-			(idx + FIELD_ANALYSIS_IGNORED_ROWS) * (pixel_size - 1),
-			dom.board_stats.ctx.canvas.width,
-			1
-		);
 	}
 }
 

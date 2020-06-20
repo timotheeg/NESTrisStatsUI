@@ -36,17 +36,33 @@ class Column {
 }
 
 class Board {
-	constructor(board_str, top_rows_to_ignore) {
+	constructor(board_str) {
 		this.rows = Array();
 
 		const columns = Array(10).fill().map(_ => []);
 
-		for (let y = top_rows_to_ignore; y < 20; y++) {
-			const row = new Row(board_str.substr(10 * y, 10), this.rows.length);
-			this.rows.push(row);
+		let top_seen = false;
+		let top_idx = 2;
+
+		for (let yidx = 20; yidx--; ) {
+			let row;
+
+			if (!top_seen) {
+				row = new Row(board_str.substr(10 * yidx, 10), 20 - this.rows.length);
+
+				if (row.emptys.length === 10) {
+					top_seen = true;
+					top_idx = yidx + 1;
+				}
+			}
+			else {
+				row = new Row('0000000000', this.rows.length);
+			}
+
+			this.rows.unshift(row);
 
 			row.cells.forEach((value, idx) => {
-				columns[idx].push(value);
+				columns[idx].unshift(value);
 			});
 		}
 
@@ -55,7 +71,7 @@ class Board {
 		this.tetris_top_row = this.getTetrisTopRow();
 
 		this.stats = {
-			top_idx:      this.columns.reduce((acc, col) => Math.min(acc, col.top_fill_idx), 20),
+			top_idx,
 			tetris_ready: !!this.tetris_top_row,
 			clean_slope:  this.hasPerfectSlope(),
 			double_well:  this.hasDoubleWell(),
@@ -243,7 +259,7 @@ class Game {
 		das_stats.avg   =  das_stats.total / this.data.pieces.count;
 		das_stats[DAS_THRESHOLDS[das_stats.cur]]++; // great, ok, bad
 
-		this.board = new Board(event.stage.field, FIELD_ANALYSIS_IGNORED_ROWS);
+		this.board = new Board(event.stage.field);
 
 		const piece_data = {
 			piece: p,

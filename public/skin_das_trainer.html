@@ -29,22 +29,17 @@
 	border-width: 1px 0;
 }
 
-#trt_brn, #eff {
+#tetris_rate {
 	left: 1021px;
-	top: 451px;
+	top: 132px;
 	width: 238px;
-	height: 110px;
+	height: 128px;
 	padding-right: 8px;
 	padding-left: 8px;
 }
 
-#trt_brn .header,
-#eff .header {
+#tetris_rate .header {
 	padding-bottom: 4px;
-}
-
-#eff {
-	top: 585px;
 }
 
 #level {
@@ -55,6 +50,16 @@
 #lines {
 	left: 1021px;
 	top: 6px;
+}
+
+#efficiency {
+	left: 1021px;
+	top: 69px;
+}
+
+#burn {
+	left: 1150px;
+	top: 69px;
 }
 
 #score {
@@ -279,8 +284,9 @@
 	height: 120px;
 }
 
-#lines_stats .header {
-	padding-bottom: 4px;
+#lines_stats .header,
+#points .header {
+	padding-bottom: 6px;
 }
 
 #lines_stats th {
@@ -308,10 +314,6 @@
 	left: 486px;
 	width: 250px;
 	height: 142px;
-}
-
-#points .header {
-	padding-bottom: 4px;
 }
 
 #points th {
@@ -352,7 +354,7 @@
 }
 
 #video {
-	top: 69px;
+	top: 284px;
 	left: 1021px;
 	width: 234px;
 	height: 128px;
@@ -401,7 +403,7 @@
 }
 
 #high_scores th {
-	line-height: 18px;
+	line-height: 16px;
 	font-size: 8px;
 	vertical-align: bottom;
 }
@@ -416,10 +418,10 @@
 }
 
 #chat {
-	top: 221px;
+	top: 436px;
 	left: 1021px;
 	width: 234px;
-	height: 206px;
+	height: 258px;
 	overflow: hidden;
 }
 
@@ -431,7 +433,7 @@
 	font-size: 10px;
 	line-height: 10px;
 	width: 100%;
-	height: 386px;
+	height: 234px;
 	overflow: hidden;
 	text-align: left;
 }
@@ -602,19 +604,9 @@
 	</div>
 </div>
 
-<div class="box" id="trt_brn">
-	<div class="header">
-		TRT
-		<span class="trt">00%</span>
-		BRN
-		<span class="brn">00</span>
-	</div>
-	<div class="content"><canvas class="bounded" width="238" height="86" /></div>
-</div>
-
-<div class="box" id="eff">
-	<div class="header">EFFICIENCY <span class="eff">000</span></div>
-	<div class="content"><canvas class="bounded" width="238" height="86" /></div>
+<div class="box" id="tetris_rate">
+	<div class="header">TRT <span class="value">00%</span></div>
+	<div class="content"><canvas class="bounded" width="238" height="104" /></div>
 </div>
 
 <div class="box" id="level">
@@ -624,6 +616,16 @@
 
 <div class="box" id="lines">
 	<div class="header">LINES</div>
+	<div class="content">000</div>
+</div>
+
+<div class="box" id="burn">
+	<div class="header">BRN</div>
+	<div class="content">00</div>
+</div>
+
+<div class="box" id="efficiency">
+	<div class="header">EFF</div>
 	<div class="content">000</div>
 </div>
 

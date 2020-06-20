@@ -12,18 +12,18 @@ class DomRefs {
 
 		// store refs by component
 		this.tetris_rate = {
-			element: doc.querySelector('#trt_brn'),
-			value:   doc.querySelector('#trt_brn .trt')
+			element: doc.querySelector('#tetris_rate'),
+			value:   doc.querySelector('#tetris_rate .value')
 		};
 
 		this.burn = {
-			element: doc.querySelector('#trt_brn'),
-			count: doc.querySelector('#trt_brn .brn')
+			element: doc.querySelector('#burn'),
+			count: doc.querySelector('#burn .content')
 		};
 
 		this.efficiency = {
-			element: doc.querySelector('#eff'),
-			value: doc.querySelector('#eff .eff')
+			element: doc.querySelector('#efficiency'),
+			value: doc.querySelector('#efficiency .content')
 		};
 
 		this.level = {
@@ -162,8 +162,7 @@ class DomRefs {
 
 		this.lines_stats = {
 			element:     lines_stats,
-			trt_ctx:     doc.querySelector('#trt_brn canvas').getContext('2d'),
-			eff_ctx:     doc.querySelector('#eff canvas').getContext('2d'),
+			trt_ctx:     doc.querySelector('#tetris_rate canvas').getContext('2d'),
 			count:       lines_stats.querySelector('.header .count'),
 		};
 

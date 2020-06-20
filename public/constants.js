@@ -13,13 +13,11 @@ const
 
 	BOARD_COLORS = {
 		floor:        '#747474',
-		height:       '#BBBBBB',
-		tetris_ready: '#8438AE',
-		clean_slope:  '#11988E',
+		height:       '#747474', // BBBBBB',
+		tetris_ready: '#9F5DC3',
+		clean_slope:  '#53BAB2',
 		double_well:  '#F8F81B',
 	},
-
-	FIELD_ANALYSIS_IGNORED_ROWS = 4,
 
 	DAS_COLORS = {
 		absent: 'white',
