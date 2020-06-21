@@ -36,13 +36,17 @@ const
 			'en-AU-Wavenet-B',
 			'en-AU-Wavenet-C',
 			'en-AU-Wavenet-D',
+
 			'en-GB-Wavenet-A',
 			'en-GB-Wavenet-B',
 			'en-GB-Wavenet-C',
 			'en-GB-Wavenet-D',
+
 			'en-IN-Wavenet-A',
 			'en-IN-Wavenet-B',
 			'en-IN-Wavenet-C',
+			'en-IN-Wavenet-D',
+
 			'en-US-Wavenet-A',
 			'en-US-Wavenet-B',
 			'en-US-Wavenet-C',
