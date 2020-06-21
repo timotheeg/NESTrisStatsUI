@@ -423,7 +423,7 @@ function renderLine() {
 
 	// do the small boxes first
 	dom.tetris_rate.value.textContent = getPercent(game.data.lines[4].percent);
-	dom.efficiency.value.textContent = Math.floor(game.data.score.normalized / game.data.lines.count).toString().padStart(3, '0');
+	dom.efficiency.value.textContent = (Math.floor(game.data.score.normalized / game.data.lines.count) || 0).toString().padStart(3, '0');
 	dom.level.value.textContent = game.data.level.toString().padStart(2, '0');
 	dom.burn.count.textContent = game.data.burn.toString().padStart(2, '0');
 
@@ -695,7 +695,7 @@ function renderDas() {
 		1
 	);
 
-	for (let idx = to_draw.length; idx--;) {
+	for (let idx = 0; idx < to_draw.length; idx++) {
 		const
 			piece = to_draw[idx]
 			das = piece.das,
@@ -720,6 +720,17 @@ function renderDas() {
 		);
 
 		const board_stats = piece.board;
+
+		if (piece.lines && piece.lines.num_lines) {
+			dom.board_stats.ctx.fillStyle = LINES[piece.lines.num_lines].color;
+
+			dom.board_stats.ctx.fillRect(
+				idx * (pixel_size + 1) + (pixel_size),
+				0,
+				1,
+				60
+			);
+		}
 
 		dom.board_stats.ctx.fillStyle = BOARD_COLORS.height;
 

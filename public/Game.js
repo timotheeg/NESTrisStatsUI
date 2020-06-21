@@ -307,12 +307,15 @@ class Game {
 				console.log('invalid num_lines', num_lines, event);
 			}
 
-			// record line event
-			this.line_events.push({
+			const line_event = {
 				num_lines,
 				tetris_rate: this.data.lines[4].percent,
 				efficiency: this.data.score.normalized / event.lines / 300,
-			});
+			};
+
+			// record line event
+			this.line_events.push(line_event);
+			this.pieces[this.pieces.length - 1].lines = line_event;
 		}
 
 		// update percentages for everyone
