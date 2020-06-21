@@ -6,7 +6,10 @@ const
 	ttsClient = new TTS.TextToSpeechClient(),
 	config    = require('./config'),
 	player    = require('play-sound')(opts = {}),
-	_         = require('lodash');
+	_         = require('lodash'),
+
+	URL_RE = /\bhttps?:\/\/[^\s]+\b/g
+;
 
 const
 	writeFileAsync = Promise.promisify(fs.writeFile),
@@ -87,14 +90,24 @@ function log(...args) {
 }
 
 function getVoice(username) {
-	if (!voice_map.has(username)) {
-		const voices = ordered_voices[config.chat_voice.provider];
+	let introduced = true;
 
-		voice_index = (voice_index + 1) % voices.length;
-		voice_map.set(username, voices[voice_index]);
+	if (!voice_map.has(username)) {
+		introduced = false;
+
+		let voice = config.chat_voice.twitch_mappings[config.chat_voice.provider][username];
+
+		if (!voice) {
+			const voices = ordered_voices[config.chat_voice.provider];
+
+			voice_index = (voice_index + 1) % voices.length;
+			voice = voices[voice_index];
+		}
+
+		voice_map.set(username, voice);
 	}
 
-	return voice_map.get(username);
+	return [introduced, voice_map.get(username)];
 }
 
 function _sayNextMessageOSX(from_previous_message_complete) {
@@ -108,13 +121,14 @@ function _sayNextMessageOSX(from_previous_message_complete) {
   saying = true;
 
   const chatter = say_queue.shift();
+  const [_, voice] = getVoice(chatter.username);
 
   // Using spawn to have guaranteed arg safety (no command injection)
   // see: https://www.owasp.org/index.php/Command_Injection
   // doc: https://nodejs.org/api/child_process.html#child_process_asynchronous_process_creation
   const say = spawn('say', [
     '-v',
-    getVoice(chatter.username),
+    voice,
     chatter.message
   ]);
 
@@ -169,7 +183,7 @@ function _sayNextMessageGoogle() {
 
 function say_google(chatter) {
 	const
-		voice = getVoice(chatter.username),
+		[_, voice] = getVoice(chatter.username),
 		filename = `message.${++message_index}.opus`,
 
 		request = {
@@ -204,10 +218,18 @@ function say_osx(chatter) {
 }
 
 
-if (config.chat_voice && config.chat_voice.enabled) {
-	module.exports = eval(`say_${config.chat_voice.provider}`);
-}
-else {
-	module.exports = _.noop;
-}
+module.exports = _.noop;
 
+if (config.chat_voice && config.chat_voice.enabled) {
+	const say = eval(`say_${config.chat_voice.provider}`);
+
+	module.exports = function(chatter) {
+		const [introduced] = getVoice(chatter.ussername);
+
+		if (!introduced) {
+			say({ ...chatter, message: `New viewer! ${chatter.display_name} is in the channel with this voice.` });
+		}
+
+		say({ ...chatter, message: chatter.message.replace(URL_RE, 'a URL') });
+	};
+}
