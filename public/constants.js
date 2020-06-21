@@ -17,6 +17,7 @@ const
 		tetris_ready: '#9F5DC3',
 		clean_slope:  '#53BAB2',
 		double_well:  '#F8F81B',
+		drought:      'orange',
 	},
 
 	DAS_COLORS = {

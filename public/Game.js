@@ -236,6 +236,11 @@ class Game {
 
 			if (this.data.i_droughts.cur == DROUGHT_PANIC_THRESHOLD) {
 				this.data.i_droughts.count++;
+
+				// mark past pieces as being in drought
+				for (let offset = DROUGHT_PANIC_THRESHOLD; offset > 0; offset--) {
+					this.pieces[this.pieces.length - offset].in_drought = true;
+				}
 			}
 
 			if (this.data.i_droughts.cur > this.data.i_droughts.max) {
@@ -250,8 +255,6 @@ class Game {
 			this.data.i_droughts.cur = 0;
 		}
 
-		this.data.pieces[p].drought = 0;
-
 		// update das
 		const das_stats = this.data.das;
 		das_stats.cur   =  event.cur_piece_das;
@@ -262,10 +265,11 @@ class Game {
 		this.board = new Board(event.stage.field);
 
 		const piece_data = {
-			piece: p,
-			das:   event.cur_piece_das,
-			index: this.pieces.length,
-			board: this.board.stats,
+			piece:      p,
+			das:        event.cur_piece_das,
+			index:      this.pieces.length,
+			board:      this.board.stats,
+			in_drought: this.data.i_droughts.cur >= DROUGHT_PANIC_THRESHOLD,
 		};
 
 		this.pieces.push(piece_data);

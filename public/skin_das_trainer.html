@@ -253,8 +253,7 @@
 	height: 78px;
 }
 
-#das .header,
-#board_stats .header {
+#das .header {
 	padding-bottom: 6px;
 }
 
@@ -271,11 +270,17 @@
 	height: 108px;
 }
 
+#board_stats .header {
+	padding-bottom: 5px;
+}
+
 #board_stats .header .info_labels {
 	font-size: 8px;
 }
 
-
+#board_stats .bounded {
+	border-width: 1px 0 0 0;
+}
 
 #lines_stats {
 	top: 6px;
@@ -750,9 +755,11 @@
 			<span class="label clean_slope">Clean Slope</span>
 			-
 			<span class="label double_well">Double Well</span>
+			-
+			<span class="label drought">Drought</span>
 		</span>
 	</div>
-	<div class="content"><canvas class="bounded" width="730" height="80" /></div>
+	<div class="content"><canvas class="bounded" width="730" height="81" /></div>
 </div>
 
 <div class="box" id="lines_stats">

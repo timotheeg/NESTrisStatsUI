@@ -746,9 +746,9 @@ function renderDas() {
 		if (board_stats.tetris_ready) {
 			dom.board_stats.ctx.fillStyle = BOARD_COLORS.tetris_ready;
 			dom.board_stats.ctx.fillRect(
-				idx * (pixel_size + 1),
+				idx * (pixel_size + 1) - 1,
 				62,
-				pixel_size,
+				pixel_size + 1,
 				pixel_size
 			);
 		}
@@ -756,9 +756,9 @@ function renderDas() {
 		if (board_stats.clean_slope) {
 			dom.board_stats.ctx.fillStyle = BOARD_COLORS.clean_slope;
 			dom.board_stats.ctx.fillRect(
-				idx * (pixel_size + 1),
+				idx * (pixel_size + 1) - 1,
 				67,
-				pixel_size,
+				pixel_size + 1,
 				pixel_size
 			);
 		}
@@ -766,9 +766,19 @@ function renderDas() {
 		if (board_stats.double_well) {
 			dom.board_stats.ctx.fillStyle = BOARD_COLORS.double_well;
 			dom.board_stats.ctx.fillRect(
-				idx * (pixel_size + 1),
+				idx * (pixel_size + 1) - 1,
 				72,
-				pixel_size,
+				pixel_size + 1,
+				pixel_size
+			);
+		}
+
+		if (piece.in_drought) {
+			dom.board_stats.ctx.fillStyle = BOARD_COLORS.drought;
+			dom.board_stats.ctx.fillRect(
+				idx * (pixel_size + 1) - 1,
+				77,
+				pixel_size + 1,
 				pixel_size
 			);
 		}
