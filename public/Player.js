@@ -107,10 +107,23 @@ function renderBlock(level, block_index, pixel_size, ctx, pos_x, pos_y) {
 	}
 */
 
+const DEFAULT_OPTIONS = {
+	field_pixel_size: 3,
+	preview_pixel_size: 3,
+	running_trt_rtl: 0,
+	wins_rtl: 0,
+	tetris_flashes: 1,
+	tetris_sound: 1,
+	format_score: 1
+};
+
 class Player {
 	constructor(dom, options) {
 		this.dom = dom;
-		this.options = options;
+		this.options = {
+			...DEFAULT_OPTIONS,
+			...options
+		};
 
 		this.field_pixel_size = this.options.field_pixel_size || this.options.pixel_size;
 		this.preview_pixel_size = this.options.preview_pixel_size || this.options.pixel_size;
@@ -194,20 +207,25 @@ class Player {
 	}
 
 	onTetris() {
-		let remaining_frames = 12;
+		if (this.options.tetris_flashes) {
+			let remaining_frames = 12;
 
-		const steps = () => {
-			const bg_color = (--remaining_frames % 2) ? 'white' : 'rgba(0,0,0,0)';
+			const steps = () => {
+				const bg_color = (--remaining_frames % 2) ? 'white' : 'rgba(0,0,0,0)';
 
-			this.field_bg.style.background = bg_color;
+				this.field_bg.style.background = bg_color;
 
-			if (remaining_frames > 0) {
-				this.tetris_animation_ID = window.requestAnimationFrame(steps);
+				if (remaining_frames > 0) {
+					this.tetris_animation_ID = window.requestAnimationFrame(steps);
+				}
 			}
+
+			this.tetris_animation_ID = window.requestAnimationFrame(steps);
 		}
 
-		this.tetris_animation_ID = window.requestAnimationFrame(steps);
-		this.sounds.tetris.play();
+		if (this.options.tetris_sound) {
+			this.sounds.tetris.play();
+		}
 	}
 
 	clearTetrisAnimation() {
@@ -266,7 +284,11 @@ class Player {
 
 		if (data.score) {
 			this.score = this.getScoreFromScoreString(data.score);
-			this.dom.score.textContent = this.numberFormatter.format(this.score);
+
+			this.dom.score.textContent = this.options.format_score
+				? this.numberFormatter.format(this.score)
+				: data.score
+			;
 		}
 
 		const level = parseInt(data.level, 10);
