@@ -238,7 +238,7 @@ class Game {
 				this.data.i_droughts.count++;
 
 				// mark past pieces as being in drought
-				for (let offset = DROUGHT_PANIC_THRESHOLD; offset > 0; offset--) {
+				for (let offset = DROUGHT_PANIC_THRESHOLD - 1; offset > 0; offset--) {
 					this.pieces[this.pieces.length - offset].in_drought = true;
 				}
 			}
