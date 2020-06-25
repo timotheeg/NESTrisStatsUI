@@ -228,10 +228,10 @@ if (config.chat_voice && config.chat_voice.enabled) {
 	const say = eval(`say_${config.chat_voice.provider}`);
 
 	module.exports = function(chatter) {
-		const [introduced] = getVoice(chatter.ussername);
+		const [introduced] = getVoice(chatter.username);
 
 		if (!introduced) {
-			say({ ...chatter, message: `New viewer! ${chatter.display_name} is in the channel with this voice.` });
+			say({ ...chatter, message: `${chatter.display_name} is now chatting with this voice.` });
 		}
 
 		say({ ...chatter, message: chatter.message.replace(URL_RE, 'a URL') });
