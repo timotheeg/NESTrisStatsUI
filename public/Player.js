@@ -340,7 +340,7 @@ class Player {
 
 		this.clear_events.push({ trt, eff, cleared });
 		this.dom.trt.textContent = getPercent(trt);
-		this.dom.eff.textContent = Math.round(eff).toString().padStart(3, '0');
+		this.dom.eff.textContent = (Math.round(eff) || 0).toString().padStart(3, '0');
 		this.renderRunningTRT();
 		this.lines = lines;
 	}
