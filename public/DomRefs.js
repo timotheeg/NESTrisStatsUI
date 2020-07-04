@@ -214,8 +214,11 @@ class DomRefs {
 		const piece_stats = doc.querySelector('#piece_stats');
 
 		this.pieces = {
-			element: piece_stats,
-			count:   piece_stats.querySelector(`.header .count`)
+			element:      piece_stats,
+			count:        piece_stats.querySelector(`.header .count`),
+			deviation_28: piece_stats.querySelector(`.header .deviation_28`),
+			deviation_56: piece_stats.querySelector(`.header .deviation_56`),
+			deviation:    piece_stats.querySelector(`.header .deviation_all`),
 		};
 
 		PIECES.forEach(name => {

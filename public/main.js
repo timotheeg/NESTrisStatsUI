@@ -181,12 +181,6 @@ function onFrame(event, debug) {
 	// quick check for das loss
 	if (transformed.cur_piece_das && transformed.instant_das === 0) {
 		if (game.pieces.length) {
-			console.log('das loss',
-				game.pieces.length,
-				game.pieces[game.pieces.length -1].das,
-				transformed.instant_das,
-				transformed.cur_piece_das
-			);
 			game.onDasLoss()
 			renderDas()
 		}
@@ -492,6 +486,10 @@ function renderLine() {
 
 function renderPiece(event) {
 	dom.pieces.count.textContent = game.data.pieces.count.toString().padStart(3, '0');
+
+	dom.pieces.deviation.textContent = (game.data.pieces.deviation * 100).toFixed(1);
+	dom.pieces.deviation_28.textContent = (game.data.pieces.deviation_28 * 100).toFixed(1);
+	dom.pieces.deviation_56.textContent = (game.data.pieces.deviation_56 * 100).toFixed(1);
 
 	let
 		pixel_size = 4,
