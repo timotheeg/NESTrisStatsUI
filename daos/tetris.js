@@ -39,11 +39,11 @@ const
 	),
 
 	best_overall = db.prepare(
-		`select start_level, score, tetris_rate from scores where name=? order by score desc limit 11`
+		`select start_level, score, tetris_rate from scores where name=? order by score desc limit 5`
 	),
 
 	best_today = db.prepare(
-		`select start_level, score, tetris_rate from scores where name=? and datetime >= ? and datetime < ? order by score desc limit 11`
+		`select start_level, score, tetris_rate from scores where name=? and datetime>=? order by score desc limit 5`
 	)
 ;
 
@@ -51,23 +51,22 @@ let current_player = config.default_player;
 
 module.exports = {
 	getStats() {
-		const
-			now = new Date(),
-			tomorrow = new Date(now);
-
-		tomorrow.setDate(now.getDate() + 1);
+		const now = new Date();
+		const today = new Date(
+			now.getFullYear(),
+			now.getMonth(),
+			now.getDate()
+		);
 
 		return {
 			current_player,
 			pbs: [
-				pbs.get(current_player, 9),
-				pbs.get(current_player, 15),
 				pbs.get(current_player, 18),
 				pbs.get(current_player, 19),
 			],
 			high_scores: {
 				overall: best_overall.all(current_player),
-				today:   best_today.all(current_player, now.toISOString().split('T')[0], tomorrow.toISOString().split('T')[0])
+				today:   best_today.all(current_player, today.toISOString())
 			}
 		};
 	},
