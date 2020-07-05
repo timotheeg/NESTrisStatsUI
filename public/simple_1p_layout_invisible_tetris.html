@@ -269,6 +269,23 @@ function handleFrame(frame) {
 
 			cur_board = combined_board;
 		}
+		else if ( // detecting first frame of clear animation, does not work for doubles, does not work when rotating pieces at top of field
+			new_board.num_block === 2
+			|| new_board.num_block === 6
+			|| new_board.num_block === 8
+		) {
+			// preparing clear animation
+			remaining_clear_animation_frames = 5;
+
+			// record prev piece settling
+			last_board.forEach((row, ridx) => row.forEach((cell, cidx) => {
+				if (cell === 0) return;
+
+				combined_board[ridx][cidx] = cell + 3;
+			}));
+
+			cur_board = combined_board;
+		}
 		else {
 			// piece is falling, we need to display its temporary location
 			const new_top_empty = new_board.slice(0, 2).filter(row => row.every(cell => cell === 0)).length === 2;
@@ -306,8 +323,11 @@ function handleFrame(frame) {
 }
 
 
+var frames = []
+
 const API = {
 	frame(data) {
+		// frames.push(data);
 		handleFrame(data);
 	}
 }
@@ -331,7 +351,7 @@ function onFrame(frame, debug) {
 }
 </script>
 
-<script src="sample_frames_13.js"></script>
+<script src="sample_frames_14.js"></script>
 <script src="debug.js"></script>
 
 
