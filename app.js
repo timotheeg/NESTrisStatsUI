@@ -101,7 +101,10 @@ Bot.on('message', chatter => {
 
 const server = new NEStrisServer(3338, 'default');
 
-server.on('frame', data => ClientConnectionAPI.frame(data));
+server.on('frame', data => {
+  // console.log(data);
+  ClientConnectionAPI.frame(data);
+});
 
 
 
@@ -110,3 +113,5 @@ server.on('frame', data => ClientConnectionAPI.frame(data));
 TetrisDAO.onScoreUpdate = function(data) {
   ClientConnectionAPI.player_data(data);
 }
+
+setInterval(() => console.log('heartbeat'), 2000);

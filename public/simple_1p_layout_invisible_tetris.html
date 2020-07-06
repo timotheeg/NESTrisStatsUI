@@ -313,14 +313,19 @@ function isSecondFrameOfDoubleClearAnimation(board) {
 
 				return { top_idx, lines };
 			}
+			else {
+				break;
+			}
 		}
 		else {
-			return false;
+			break;
 		}
 	}
 
 	return false;
 }
+
+const CLEAR_ANIMATION_FRAMES = 7;
 
 function handleFrame(frame) {
 	if (frame.gameid !== game_id) {
@@ -345,6 +350,8 @@ function handleFrame(frame) {
 		frame._board = new_board;
 
 		if (remaining_clear_animation_frames-- > 0) {
+			new_board._clear = true;
+
 			new_board.forEach((row, ridx) => row.forEach((cell, cidx) => {
 				if (cell === 1) {
 					combined_board[ridx][cidx] = 0;
@@ -365,9 +372,11 @@ function handleFrame(frame) {
 
 			cur_board = combined_board;
 		}
-		else if (new_board.num_block === 0) {
+		else if (new_board.num_block === 0
+			&& last_board
+			&& !last_board._clear) {
 			// preparing clear animation
-			remaining_clear_animation_frames = 6;
+			remaining_clear_animation_frames = CLEAR_ANIMATION_FRAMES;
 
 			// record prev piece settling
 			last_board.forEach((row, ridx) => row.forEach((cell, cidx) => {
@@ -380,7 +389,9 @@ function handleFrame(frame) {
 		}
 		else if (isFirstFrameOfClearAnimation(new_board)) {
 			// preparing clear animation
-			remaining_clear_animation_frames = 5;
+			remaining_clear_animation_frames = CLEAR_ANIMATION_FRAMES - 1;
+
+			new_board._clear = true;
 
 			// record prev piece settling
 			last_board.forEach((row, ridx) => row.forEach((cell, cidx) => {
@@ -400,7 +411,10 @@ function handleFrame(frame) {
 		}
 		else if (isSecondFrameOfDoubleClearAnimation(new_board)) {
 			// preparing clear animation
-			remaining_clear_animation_frames = 4;
+			remaining_clear_animation_frames = CLEAR_ANIMATION_FRAMES - 2;
+
+			new_board._clear = true;
+			last_board._clear = true;
 
 			// 1. record prev piece settling
 			peek(frame_buffer, 1).forEach((row, ridx) => row.forEach((cell, cidx) => {
@@ -481,7 +495,7 @@ function onFrame(frame, debug) {
 }
 </script>
 
-<script src="sample_frames_14.js"></script>
+<script src="sample_frames_15.js"></script>
 <script src="debug.js"></script>
 
 
