@@ -218,16 +218,123 @@ function boardToStr(board) {
 	return board.map(r => r.join('')).join('');
 }
 
+function isRowEmpty(row) {
+	return 0 === row.reduce((sum, v) => sum + v, 0);
+}
+
+function isRowPotentiallyFirstFrameOfClearAnimation(row) {
+	return (
+		   row[4] === 1
+		&& row[5] === 1
+		&& 2 === row.reduce((sum, v) => sum + v, 0)
+	);
+}
+
+function isRowPotentiallySecondFrameOfDoubleClearAnimation(row) {
+	return (
+		   row[3] === 1
+		&& row[4] === 1
+		&& row[5] === 1
+		&& row[6] === 1
+		&& 4 === row.reduce((sum, v) => sum + v, 0)
+	);
+}
+
+// detect first animation frame for singles, triples, tetris
+function isFirstFrameOfClearAnimation(board) {
+	if (board.num_block != 2
+		&& board.num_block != 6
+		&& board.num_block != 8
+	) {
+		return false;
+	}
+
+	let ridx, top_idx, lines;
+
+	for (ridx=1; ridx<20; ridx++) {
+		const row = board[ridx];
+
+		if (isRowEmpty(row)) {
+			continue;
+		}
+		else if (isRowPotentiallyFirstFrameOfClearAnimation(row)) {
+			top_idx = ridx;
+			lines = 1;
+
+			if (ridx < 18
+				&& isRowPotentiallyFirstFrameOfClearAnimation(board[++ridx])
+				&& isRowPotentiallyFirstFrameOfClearAnimation(board[++ridx])
+			) {
+				lines = 3;
+
+				if (ridx < 19 && isRowPotentiallyFirstFrameOfClearAnimation(board[++ridx])) {
+					lines = 4;
+				}
+			}
+
+			break;
+		}
+		else {
+			return false;
+		}
+	}
+
+
+	// verify all remaining rows are empty
+	for (; ridx<20; ridx++) {
+		const row = board[ridx];
+
+		if (!isRowEmpty(row)) return false;
+	}
+
+	board.clear_data = { top_idx, lines };
+
+	return true;
+}
+
+function isSecondFrameOfDoubleClearAnimation(board) {
+	if (board.num_block != 8) {
+		return false;
+	}
+
+	let ridx, top_idx, lines;
+
+	for (ridx=1; ridx<19; ridx++) {
+		const row = board[ridx];
+
+		if (isRowEmpty(row)) {
+			continue;
+		}
+		else if (isRowPotentiallySecondFrameOfDoubleClearAnimation(row)) {
+			top_idx = ridx;
+
+			if (isRowPotentiallySecondFrameOfDoubleClearAnimation(board[++ridx])) {
+				lines = 2;
+
+				return { top_idx, lines };
+			}
+		}
+		else {
+			return false;
+		}
+	}
+
+	return false;
+}
+
 function handleFrame(frame) {
 	if (frame.gameid !== game_id) {
 		game_id = frame.gameid;
 		reset();
 	}
 
+	const last_board = peek(frame_buffer) && peek(frame_buffer)._board;
+
 	if (last_frame === frame.field) {
 		frame_buffer.push({
 			...frame,
 			field: peek(frame_buffer).field,
+			_board: peek(frame_buffer)._board,
 		});
 	}
 	else {
@@ -235,8 +342,10 @@ function handleFrame(frame) {
 
 		let new_board = toBoard(frame.field);
 
+		frame._board = new_board;
+
 		if (remaining_clear_animation_frames-- > 0) {
-			last_board.forEach((row, ridx) => row.forEach((cell, cidx) => {
+			new_board.forEach((row, ridx) => row.forEach((cell, cidx) => {
 				if (cell === 1) {
 					combined_board[ridx][cidx] = 0;
 				}
@@ -269,11 +378,7 @@ function handleFrame(frame) {
 
 			cur_board = combined_board;
 		}
-		else if ( // detecting first frame of clear animation, does not work for doubles, does not work when rotating pieces at top of field
-			new_board.num_block === 2
-			|| new_board.num_block === 6
-			|| new_board.num_block === 8
-		) {
+		else if (isFirstFrameOfClearAnimation(new_board)) {
 			// preparing clear animation
 			remaining_clear_animation_frames = 5;
 
@@ -282,6 +387,33 @@ function handleFrame(frame) {
 				if (cell === 0) return;
 
 				combined_board[ridx][cidx] = cell + 3;
+			}));
+
+			// remove the block from the clear animation
+			new_board.forEach((row, ridx) => row.forEach((cell, cidx) => {
+				if (cell === 1) {
+					combined_board[ridx][cidx] = 0;
+				}
+			}));
+
+			cur_board = combined_board;
+		}
+		else if (isSecondFrameOfDoubleClearAnimation(new_board)) {
+			// preparing clear animation
+			remaining_clear_animation_frames = 4;
+
+			// 1. record prev piece settling
+			peek(frame_buffer, 1).forEach((row, ridx) => row.forEach((cell, cidx) => {
+				if (cell === 0) return;
+
+				combined_board[ridx][cidx] = cell + 3;
+			}));
+
+			// remove the block from the clear animation
+			new_board.forEach((row, ridx) => row.forEach((cell, cidx) => {
+				if (cell === 1) {
+					combined_board[ridx][cidx] = 0;
+				}
 			}));
 
 			cur_board = combined_board;
@@ -313,8 +445,6 @@ function handleFrame(frame) {
 			...frame,
 			field: boardToStr(cur_board)
 		});
-
-		last_board = new_board;
 	}
 
 	if (frame_buffer.length >= 2) {
