@@ -43,7 +43,7 @@ const
 	),
 
 	best_today = db.prepare(
-		`select start_level, score, tetris_rate from scores where name=? and datetime>=? order by score desc limit 5`
+		`select start_level, score, tetris_rate from scores where name=? and datetime>=datetime(?) order by score desc limit 5`
 	)
 ;
 
