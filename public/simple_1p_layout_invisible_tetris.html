@@ -161,7 +161,6 @@ html {
 
 <!-- Audio -->
 
-<script src="sample_frames_11.js"></script>
 <script src="constants.js"></script>
 <script src="utils.js"></script>
 <script src="bg.js"></script>
@@ -191,7 +190,7 @@ let last_frame;
 let last_board;
 let game_id;
 let top_empty;
-let remaining_clear_animation_frames;
+let clear_animation_remaining_frames;
 
 
 function reset() {
@@ -200,7 +199,7 @@ function reset() {
 	last_frame = '';
 	last_board = null;
 	top_empty = true;
-	remaining_clear_animation_frames = 0;
+	clear_animation_remaining_frames = 0;
 }
 
 reset();
@@ -243,51 +242,39 @@ function isRowPotentiallySecondFrameOfDoubleClearAnimation(row) {
 // detect first animation frame for singles, triples, tetris
 function isFirstFrameOfClearAnimation(board) {
 	if (board.num_block != 2
+		&& board.num_block != 4
 		&& board.num_block != 6
 		&& board.num_block != 8
 	) {
 		return false;
 	}
 
-	let ridx, top_idx, lines;
+	let row_indexes = [];
 
-	for (ridx=1; ridx<20; ridx++) {
+	for (let ridx=0; ridx<20; ridx++) {
 		const row = board[ridx];
 
 		if (isRowEmpty(row)) {
 			continue;
 		}
 		else if (isRowPotentiallyFirstFrameOfClearAnimation(row)) {
-			top_idx = ridx;
-			lines = 1;
-
-			if (ridx < 18
-				&& isRowPotentiallyFirstFrameOfClearAnimation(board[++ridx])
-				&& isRowPotentiallyFirstFrameOfClearAnimation(board[++ridx])
-			) {
-				lines = 3;
-
-				if (ridx < 19 && isRowPotentiallyFirstFrameOfClearAnimation(board[++ridx])) {
-					lines = 4;
-				}
-			}
-
-			break;
+			row_indexes.push(ridx);
 		}
 		else {
 			return false;
 		}
 	}
 
-
-	// verify all remaining rows are empty
-	for (; ridx<20; ridx++) {
-		const row = board[ridx];
-
-		if (!isRowEmpty(row)) return false;
+	if (row_indexes.length === 2) {
+		if (row_indexes[1] - row_indexes[0] === 1) {
+			// not guaranteed to be a first frame of clear animation
+			// it could also be an O piece
+			return false;
+		}
 	}
 
-	board.clear_data = { top_idx, lines };
+	// K, here we know for sure we're in the first frame of a clear animation
+	board.clear_data = { top_idx: row_indexes[0], lines: row_indexes.length };
 
 	return true;
 }
@@ -325,7 +312,12 @@ function isSecondFrameOfDoubleClearAnimation(board) {
 	return false;
 }
 
-const CLEAR_ANIMATION_FRAMES = 7;
+const CLEAR_ANIMATION_FRAMES = 6;
+
+function startClearAnimation(remaining_frames) {
+	clear_animation_remaining_frames = remaining_frames;
+	clear_animation_covered = false;
+}
 
 function handleFrame(frame) {
 	if (frame.gameid !== game_id) {
@@ -349,16 +341,10 @@ function handleFrame(frame) {
 
 		frame._board = new_board;
 
-		if (remaining_clear_animation_frames-- > 0) {
+		if (clear_animation_remaining_frames-- > 0) {
 			new_board._clear = true;
 
-			new_board.forEach((row, ridx) => row.forEach((cell, cidx) => {
-				if (cell === 1) {
-					combined_board[ridx][cidx] = 0;
-				}
-			}));
-
-			if (remaining_clear_animation_frames === 0) {
+			if (clear_animation_covered) {
 				// last frame of clear animation, we need to remove all empty lines
 				// MUST RUN BEFORE NEXT PIECE APPEARS!!!!
 				const empty_rows = combined_board.filter(row => row.every(cell => cell === 0));
@@ -369,14 +355,33 @@ function handleFrame(frame) {
 					...filled_rows
 				];
 			}
+			else {
+				if (new_board.num_block < 200) { // 200 is a flash, it means we're OCR-ing Trey's renderer
+					new_board.forEach((row, ridx) => row.forEach((cell, cidx) => {
+						if (cell === 1) {
+							combined_board[ridx][cidx] = 0;
+						}
+					}));
+				}
+			}
+
+			if (new_board.num_block && new_board.num_block < 200 && new_board.num_block % 10 === 0) {
+				// this is the frame where the line clear cover the entire horizontal breadth of the field
+				clear_animation_covered = 1;
+			}
 
 			cur_board = combined_board;
 		}
-		else if (new_board.num_block === 0
-			&& last_board
-			&& !last_board._clear) {
-			// preparing clear animation
-			remaining_clear_animation_frames = CLEAR_ANIMATION_FRAMES;
+		else if (new_board.num_block === 0) {
+			return; // ignore blank frames
+		}
+		else if (new_board.num_block === 200) {
+			// end frame of death animation
+			// OR
+			// tetris animation in field in Trey's renderer
+			startClearAnimation(10);
+
+			new_board._clear = true;
 
 			// record prev piece settling
 			last_board.forEach((row, ridx) => row.forEach((cell, cidx) => {
@@ -389,7 +394,7 @@ function handleFrame(frame) {
 		}
 		else if (isFirstFrameOfClearAnimation(new_board)) {
 			// preparing clear animation
-			remaining_clear_animation_frames = CLEAR_ANIMATION_FRAMES - 1;
+			startClearAnimation(CLEAR_ANIMATION_FRAMES - 1);
 
 			new_board._clear = true;
 
@@ -411,7 +416,7 @@ function handleFrame(frame) {
 		}
 		else if (isSecondFrameOfDoubleClearAnimation(new_board)) {
 			// preparing clear animation
-			remaining_clear_animation_frames = CLEAR_ANIMATION_FRAMES - 2;
+			startClearAnimation(CLEAR_ANIMATION_FRAMES - 2);
 
 			new_board._clear = true;
 			last_board._clear = true;
@@ -432,7 +437,7 @@ function handleFrame(frame) {
 
 			cur_board = combined_board;
 		}
-		else if (new_board.num_block <= 8) { // 8 to account for stupid double count due to interlacing...
+		else {
 			// piece is falling, we need to display its temporary location
 			const new_top_empty = new_board.slice(0, 2).filter(row => row.every(cell => cell === 0)).length === 2;
 
