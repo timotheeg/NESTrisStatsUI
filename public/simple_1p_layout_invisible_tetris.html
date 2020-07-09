@@ -432,7 +432,7 @@ function handleFrame(frame) {
 
 			cur_board = combined_board;
 		}
-		else {
+		else if (new_board.num_block <= 8) { // 8 to account for stupid double count due to interlacing...
 			// piece is falling, we need to display its temporary location
 			const new_top_empty = new_board.slice(0, 2).filter(row => row.every(cell => cell === 0)).length === 2;
 
@@ -467,12 +467,17 @@ function handleFrame(frame) {
 }
 
 
-var frames = []
+var captured_frames = []
 
 const API = {
 	frame(data) {
-		// frames.push(data);
-		handleFrame(data);
+		// captured_frames.push(data);
+		try {
+			handleFrame(data);
+		}
+		catch(e) {
+			console.error(e);
+		}
 	}
 }
 
