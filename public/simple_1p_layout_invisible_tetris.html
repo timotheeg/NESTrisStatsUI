@@ -432,6 +432,8 @@ function handleFrame(frame) {
 				last_top_idx = last_board.map((row, idx) => row.some(cell => cell > 0) ? idx : -1).find(v => v > -1);
 
 				if (last_top_idx > 3) {
+					// TODO: Find a better way to do this detection
+					// as it is, we do not record piece settling high, even if they are on the side, when we could actually detect them
 					// record prev piece settling
 					last_board.forEach((row, ridx) => row.forEach((cell, cidx) => {
 						if (cell === 0) return;
