@@ -404,17 +404,34 @@ function handleFrame(frame) {
 			// preparing clear animation
 			startClearAnimation(CLEAR_ANIMATION_FRAMES - 2);
 
+			// we now need to correct the previous frame
+
 			new_board._clear = true;
 			last_board._clear = true;
 
+			const last_combined_board = peek(frame_buffer)._combined_board;
+
 			// 1. record prev piece settling
-			peek(frame_buffer, 1).forEach((row, ridx) => row.forEach((cell, cidx) => {
+			peek(frame_buffer, 1)._board.forEach((row, ridx) => row.forEach((cell, cidx) => {
 				if (cell === 0) return;
 
-				combined_board[ridx][cidx] = cell + 3;
+				last_combined_board[ridx][cidx] = cell + 3;
 			}));
 
-			// remove the block from the clear animation
+			// 2. remove "O piece hole" (it was part of the clear animation after all)
+			last_board.forEach((row, ridx) => row.forEach((cell, cidx) => {
+				if (cell === 1) {
+					last_combined_board[ridx][cidx] = 0;
+				}
+			}));
+
+			// 3. update past frame object
+			peek(frame_buffer).field = boardToStr(last_combined_board);
+
+			// 4. update new combined board
+			combined_board = last_combined_board;
+
+			// 5. and clear the blocks from the second frame of animation too
 			new_board.forEach((row, ridx) => row.forEach((cell, cidx) => {
 				if (cell === 1) {
 					combined_board[ridx][cidx] = 0;
@@ -450,11 +467,12 @@ function handleFrame(frame) {
 
 		frame_buffer.push({
 			...frame,
-			field: boardToStr(cur_board)
+			field: boardToStr(cur_board),
+			_combined_board: cur_board,
 		});
 	}
 
-	if (frame_buffer.length >= 2) {
+	if (frame_buffer.length >= 3) {
 		player.setFrame( frame_buffer.shift() );
 	}
 }
