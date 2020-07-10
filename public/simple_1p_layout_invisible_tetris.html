@@ -251,7 +251,7 @@ function isFirstFrameOfClearAnimation(board) {
 
 	let row_indexes = [];
 
-	for (let ridx=0; ridx<20; ridx++) {
+	for (let ridx = 0; ridx < 20; ridx++) {
 		const row = board[ridx];
 
 		if (isRowEmpty(row)) {
@@ -274,8 +274,6 @@ function isFirstFrameOfClearAnimation(board) {
 	}
 
 	// K, here we know for sure we're in the first frame of a clear animation
-	board.clear_data = { top_idx: row_indexes[0], lines: row_indexes.length };
-
 	return true;
 }
 
@@ -284,29 +282,17 @@ function isSecondFrameOfDoubleClearAnimation(board) {
 		return false;
 	}
 
-	let ridx, top_idx, lines;
-
-	for (ridx=1; ridx<19; ridx++) {
+	for (let ridx = 0; ridx < 19; ridx++) {
 		const row = board[ridx];
 
 		if (isRowEmpty(row)) {
 			continue;
 		}
 		else if (isRowPotentiallySecondFrameOfDoubleClearAnimation(row)) {
-			top_idx = ridx;
-
-			if (isRowPotentiallySecondFrameOfDoubleClearAnimation(board[++ridx])) {
-				lines = 2;
-
-				return { top_idx, lines };
-			}
-			else {
-				break;
-			}
+			return isRowPotentiallySecondFrameOfDoubleClearAnimation(board[++ridx]);
 		}
-		else {
-			break;
-		}
+
+		break;
 	}
 
 	return false;
