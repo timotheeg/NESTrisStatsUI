@@ -237,9 +237,9 @@ Sample board with their states:
 | ![foo](./stats/boards/board_nothing.png) | ![foo](./stats/boards/board_tetris_ready_2.png) | ![foo](./stats/boards/board_tetris_ready_4.png) |
 | **nothing** | Tetris Ready | Tetris Ready |
 | ![foo](./stats/boards/board_double_well.png) | ![foo](./stats/boards/board_double_well_2.png) | ![foo](./stats/boards/board_tetris_ready_5.png) |
-| Tetris Ready + Double Well | Tetris Ready + Double Well | Tetris Ready + Double Well |
+| Tetris Ready<br>Double Well | Tetris Ready<br>Double Well | Tetris Ready<br>Double Well |
 | ![foo](./stats/boards/board_perfect_slope.png) | ![foo](./stats/boards/board_perfect_slope_3.png) | ![foo](./stats/boards/board_perfect_slope_tetris_ready_double_well.png) |
-| Perfect Slope | Perfect Slope | Perfect Slope + Tetris Ready + Double Well |
+| Perfect Slope | Perfect Slope | Perfect Slope<br>Tetris Ready<br>Double Well |
 
 
 ### Notes
@@ -318,9 +318,9 @@ How many line clears since the last tetris.
 
 ![Tetris Rate](./stats/tetris_rate.png) ![Tetris rate with all colors](./stats/tetris_rate_all_colors.png)
 
-This shows the tetris rate with the same value as what is computed in the Lines box. It also shows the running Tetris rate based on the past line clear events. Each line clear event is a dot in the graph. Dots are color-coded as described at the start of the document.
+This shows the tetris rate with the same value as what is computed in the Lines box. It also shows the running Tetris rate based on the past line clear events. Each line clear event is a dot in the graph. Dots are color-coded by line-clear type, as described at the start of the document.
 
-Just like the piece distribution, das, and height section, this graph is a timeline, BUT it is not a timeline on the same timescale as the others. Line clear events are shown here as one dot each, but they are separated in time by long(-ish), non-regular intervals. To see the line clear events with the correct time spacing, check the vertical bars in the HEIGHT section.
+Just like the piece distribution, DAS, and Height section, this graph is a timeline, BUT it is not a timeline on the same timescale as the others. Line-clear events are shown here as one dot each, but they are separated in time by long(-ish), non-regular intervals. To see the line clear events with the correct time spacing, check the vertical bars in the Height section.
 
 
 
