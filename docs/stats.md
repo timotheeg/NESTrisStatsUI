@@ -177,6 +177,8 @@ Additionally, each time DAS is lost (falls to 0 when moving pieces, a dim red ve
 
 ![Height n State](./stats/height_n_state.png)
 
+![Height All Colors](./stats/height_all_colors.png)
+
 This section is yet another timeline. It is perfectly aligned with the DAS timeline above.
 
 ### Header
@@ -191,14 +193,9 @@ The header conly contains the color-coded legend of the information provided. 4 
 
 The timeline represents the height of the board at a specific point in time.
 
-The State of the board is represented as 3 lines below
+The states of the board are represented as continuous lines of the appropriate colors below the height graph
 
-Each line clear event is represented as a vertical line of the color code for line that line-clear type.
-
-Example with all 3 types of markers:
-
-![Height All Colors](./stats/height_all_colors.png)
-
+Additionally, each line-clear event is represented as a vertical line of the color of that line-clear type.
 
 Sample board with their states:
 
@@ -212,11 +209,11 @@ Sample board with their states:
 | Perfect Slope | Perfect Slope | Perfect Slope + Tetris Ready + Double Well |
 
 
-### Interesting Notes
+### Notes
 
-Observe the sample graphes, you can see whether periods of tetris-readiness (purple horizontal marker) are ended with a Tetris (vertical white line)
+Observe the sample graphes, you can see whether periods of tetris-readiness (purple horizontal marker) are ended with a Tetris (vertical white line).
 
-You can also observe whether an extended period of tetris readiness in a drought "sees" many non-Tetris line clear events as the player is burning while maintaining his/her tetris readiness.
+You can also observe whether an extended period of tetris readiness in a drought "sees" many non-Tetris line-clear events, as the player is burning, while maintaining his/her tetris readiness.
 
 
 ## Score
