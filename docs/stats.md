@@ -346,13 +346,13 @@ function evenness(piece_counts) {
 
 ### Disclaimer
 
-I don't know if "evenness" makes sense as a metric. I was looking for a single number that would represent whether the game, or a section thereof, was "easy" or "hard" (especialy "useful" to look at right when I die so I can blame RNG instead of just my poor skills)
+I don't know if "evenness" makes sense as a metric. I wanted to compute a single number that would represent whether the game, or a section thereof, was "easy" or "hard" (especialy "useful" to look at right when I die so I can blame RNG instead of just my poor skills)
 
 Basically there are 2 kinds of metrics and stats:
 * stats about the game itself, over which the player has no control, piece distribution being the main one
 * stats about skills (control of DAS, stacking, spin, tucks, etc.)
 
-While I can show the piece distribution over an extended period of time to get a visual sense of a given game's difficulty, I was looking for a single number, sort of like the [unix load average](http://www.brendangregg.com/blog/2017-08-08/linux-load-averages.html) (which also shows independent time frames (last 1min, 5mins, 15mins) to get a sense of how a server is doing).
+While the stats UI can show the piece distribution over an extended period of time, to get a visual sense of a given game's difficulty, I was looking for a single number, sort of like the [unix load average](http://www.brendangregg.com/blog/2017-08-08/linux-load-averages.html) (which also shows independent time frames (last 1min, 5mins, 15mins) to get a sense of how a server is doing).
 
 
 ### Chat and Text-to-Speech
@@ -363,30 +363,28 @@ Just like for the user color, each chatter is randomly assigned a voice that he/
 
 The voices are picked from the following selection of Google Voices. Do not complain about what voice you get!
 
-```javascript
-[
-	'en-AU-Wavenet-A',
-	'en-AU-Wavenet-B',
-	'en-AU-Wavenet-C',
-	'en-AU-Wavenet-D',
+```
+en-AU-Wavenet-A
+en-AU-Wavenet-B
+en-AU-Wavenet-C
+en-AU-Wavenet-D
 
-	'en-GB-Wavenet-A',
-	'en-GB-Wavenet-B',
-	'en-GB-Wavenet-C',
-	'en-GB-Wavenet-D',
+en-GB-Wavenet-A
+en-GB-Wavenet-B
+en-GB-Wavenet-C
+en-GB-Wavenet-D
 
-	'en-IN-Wavenet-A',
-	'en-IN-Wavenet-B',
-	'en-IN-Wavenet-C',
-	'en-IN-Wavenet-D',
+en-IN-Wavenet-A
+en-IN-Wavenet-B
+en-IN-Wavenet-C
+en-IN-Wavenet-D
 
-	'en-US-Wavenet-A',
-	'en-US-Wavenet-B',
-	'en-US-Wavenet-C',
-	'en-US-Wavenet-D',
-	'en-US-Wavenet-E',
-	'en-US-Wavenet-F',
-]
+en-US-Wavenet-A
+en-US-Wavenet-B
+en-US-Wavenet-C
+en-US-Wavenet-D
+en-US-Wavenet-E
+en-US-Wavenet-F
 ```
 
 I **can** permanently assign a voice to a twitch user, but you need to be a regular visitor for this to happen. So far only one twitch player has that priviledge (beside myself of course), [Puffy](https://www.twitch.tv/puffie_)!
