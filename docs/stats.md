@@ -207,9 +207,11 @@ Example with all 3 types of markers:
 
 ![Height All Colors](./stats/height_all_colors.png)
 
-### Notes
+### Interesting Notes
 
 Observe the graph, you can see whether periods of tetris-readiness (purple horizontal marker) are ended with a Tetris (vertical white line)
+
+You can also observe whether an extended period of tetris readiness in a drought "sees" many non-Tetris line clear events as the player is burning while maintaining his/her tetris readiness.
 
 
 
