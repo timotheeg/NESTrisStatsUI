@@ -48,7 +48,7 @@ Shows stats about lines cleared, by type of line clears. Contains 4 type of info
 * total number of lines clear (as read from the game UI)
 * for each type of line clear, shows:
     * number of line clear events for that type
-    * number of lines cleared  for that type
+    * number of lines cleared for that type
     * percentage of lines cleared for that type overall (Note: The percentage for tetrises is the "famous" tetris rate)
 
 
@@ -82,7 +82,8 @@ The "evenness" metrics are calulated as follows:
 
 ![Evenness formula](./stats/evenness.png)
 
-Notes on evenness:
+### Notes on evenness
+
 * The formula is almost identical to the [Standard Deviation](https://en.wikipedia.org/wiki/Standard_deviation), but uses ratio rather than piece counts
 * In modern tetrises, evenness for the *last 4 bags* and *last 8 bags* would be 0, since all pieces would have exactly a ratio of 1/7
 * On a sufficiently long game, the number of *all game pieces* should also tend to zero, as the distribution for all pieces evens out
@@ -96,7 +97,8 @@ Latex fomula below. Visit [http://atomurl.net/math/](http://atomurl.net/math/) t
 100 * \sqrt{(\sum_{piece type} (\frac{count_{piece type}}{count_{allpieces}} - \frac{1}{7} )^2) / 7}
 ```
 
-Javascript function to compute it:
+#### Javascript function
+
 ```javascript
 function evenness(piece_counts) {
 	const total_pieces = piece_counts.reduce((sum, num) => sum + num, 0);
@@ -107,7 +109,8 @@ function evenness(piece_counts) {
 
 ````
 
-Sample values:
+#### Sample values
+
 ```javascript
 // 28 piece bag, perfect evenness
 evenness([4, 4, 4, 4, 4, 4, 4]); // 0
@@ -156,7 +159,7 @@ The second thing the piece section is the distribution matrix, which is crammed 
 
 The following informations are presented:
 * Instant Das value with gauge ![DAS gauge](./stats/das_instant_das.png)
-* Average Das value from when pieces spawned (newbie, will get a number below 10, average player 10-12, experts above 14) ![DAS average](./stats/das_average_das.png)
+* Average Das value from when pieces spawned (newbies will get a number below 10, average player 10-12, experts above 14) ![DAS average](./stats/das_average_das.png)
 * 3 counters ![DAS groups](./stats/das_groups.png)
     * Number of pieces where spawn DAS was below 10 and below (red heart)
     * Number of pieces where spawn DAS was between 10 and 14 (both inclusive) (orange heart)
@@ -290,7 +293,7 @@ This shows the tetris rate with the same value as what is computed in the Lines 
 
 Just like the piece distribution, das, and height section, this graph is also a timeline, BUT it is not a timeline on the same timescale as the others. Line clear events are shown here as one dot each, but they are separated in time by long(-ish), non-regular periods. To see the line clear events with the correct time spacing, check the vertical bars in the HEIGHT section.
 
-Exampe of Tetris rate showing all 4 types of line clear events
+Exampe of Tetris rate showing all 4 types of line clear events:
 
 ![Tetris rate with all colors](./stats/tetris_rate_all_colors.png)
 
@@ -340,5 +343,5 @@ The voices are picked based on the following selection from Google Voice's offer
 ]
 ```
 
-I **can** permanently assign a voice to a twitch user, but you need to be a regular for this to happen. So far only one twitch player has that priviledge (beside myself of course), [Puffy](https://www.twitch.tv/puffie_)!
+I **can** permanently assign a voice to a twitch user, but you need to be a regular visitor for this to happen. So far only one twitch player has that priviledge (beside myself of course), [Puffy](https://www.twitch.tv/puffie_)!
 
