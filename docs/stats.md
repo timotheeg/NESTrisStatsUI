@@ -205,13 +205,19 @@ Each line clear event is represented as a vertical line of the color code for li
 
 Example with all 3 types of markers:
 
+![Height All Colors](./stats/height_all_colors.png)
+
+### Notes
+
+Observe the graph, you can see whether periods of tetris-readiness (purple horizontal marker) are ended with a Tetris (vertical white line)
+
 
 
 ## Score
 
 ![Score](./stats/score_no_transition.png)
 
-2 information as presented:
+2 information are presented:
 * Current score (as read from game itself)
 * Score at transition
 
@@ -230,7 +236,7 @@ Next piece box, just like in the game
 
 ![Board](./stats/board.png)
 
-The board as read from the game itself
+The board as read from the game itself, but redrawn for sweet sweet pixel-perfect crispness!
 
 ## I-Drought
 
