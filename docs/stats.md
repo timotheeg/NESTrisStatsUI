@@ -125,13 +125,13 @@ evenness([0, 4, 5, 5, 4, 5, 5]); // ~6.0
 
 ### Disclaimer
 
-I don't know if the evenness distribution makes much sense at all. I was looking for a single number that would represent whether the game, or a section thereof was "easy" or "hard". Especialy useful to look at right when I die.
+I don't know if the "evenness" makes sense as a metric at all. I was looking for a single number that would represent whether the game, or a section thereof, was "easy" or "hard" (especialy useful to look at right when I die so I can blame RNG instead of just my poor skills)
 
 Basically there are 2 kinds of metrics and stats:
 * stats about the game itself, over which the player has no control piece distribution being the main one
 * stats about skills (control of DAS, stacking, spin, tucks, etc.)
 
-While I can show the piece distribution over an extended block of time, I was looking for a single number, sor of like the [unix load average](http://www.brendangregg.com/blog/2017-08-08/linux-load-averages.html), which also shows independent time frames (last 1min, 5mins, 15mins) to get a sense of how a server is doing.
+While I can show the piece distribution over an extended period of time to get a visual sense of a given game's difficulty, I was looking for a single number, sort of like the [unix load average](http://www.brendangregg.com/blog/2017-08-08/linux-load-averages.html) (which also shows independent time frames (last 1min, 5mins, 15mins) to get a sense of how a server is doing)
 
 
 
