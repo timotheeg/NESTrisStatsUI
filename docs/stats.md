@@ -102,7 +102,7 @@ Sample values:
 // 28 piece bag, perfect eveness
 eveness([4, 4, 4, 4, 4, 4, 4]); // 0
 
-// 28 piece bag, bad distribution
+// 28 piece bag, okay-ish distribution
 eveness([4, 6, 2, 1, 7, 5, 3]); // ~7.1
 
 // 28 piece bag, worst possible distribution (only single piece release)
