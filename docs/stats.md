@@ -43,7 +43,7 @@ Bag 1: T L I S O J Z
 Bag 2: I S Z J O L T
 ````
 
-Classic NES tetris [doesn't use bag randomization](https://simon.lc/the-history-of-tetris-randomizers). And because of that, a drought may have arbitrary length, and be difficult for a player to handle. To contrast with modern tetrises, a game is considered in a drought in NES Classic Tetris whenever there is a sequence **13-long** or more, where a given piece does not come.
+Classic NES Tetris [doesn't use bag randomization](https://simon.lc/the-history-of-tetris-randomizers). And because of that, a drought may have arbitrary length, and be difficult for a player to handle. To contrast with modern tetrises, a game is considered in a drought in NES Classic Tetris whenever there is a sequence **13-long** or more, where a given piece does not come.
 
 Traditionnaly, Classic Tetris players, viewers, and commentators have been focusing on I piece droughts, considered the most important because Tetrises can only be achieved with I pieces. This Stats UI however shows droughts for all pieces!
 
@@ -84,9 +84,9 @@ Reports the top 5 high scores for the current player in 2 sections:
 
 Shows stats about lines cleared, by type of line clears. Contains 4 type of information:
 
-* total number of lines clear (as read from the game UI)
-* for each type of line clear, shows:
-    * number of line clear events for that type
+* Total number of lines cleared (as read from the game)
+* For each type of line-clear, shows:
+    * number of line-clear events for that type
     * number of lines cleared for that type
     * percentage of lines cleared for that type overall (Note: The percentage for tetrises is the "famous" tetris rate)
 
@@ -97,7 +97,7 @@ Shows stats about lines cleared, by type of line clears. Contains 4 type of info
 
 Shows point stats for the game in 3 types of information:
 
-* current score for the whole game (as read from the game UI)
+* Current score for the whole game (as read from the game)
 * For each point line clear type, shows the points generated and the percentage contribution of that type of line clear to the overall score
 * Also shows points accumulated from soft drops (labelled "Drops")
 
@@ -157,7 +157,7 @@ For more information abour this metric, see the Miscellaneous section at the end
 
 ![Pieces Matrix](./stats/pieces_matrix.png)
 
-The second thing the piece section is the distribution matrix, which is crammed with information. There are 7 rows, one for each piece type, with the following information in each row:
+The second thing the piece section shows is the distribution matrix, which is crammed with information. There are 7 rows, one for each piece type, with the following information in each row:
 
 * Piece type (colored based on the level)
 * Number of pieces released for that type
@@ -186,7 +186,7 @@ The following informations are presented:
 
 The second section represents a timeline of piece spawning (just like the matrix in the Piece section above). Each column represents one piece spawning. Approximately the last 150 pieces are presented.
 
-Within each column, the piece spwaning is represented by a dot. The DAS value for the dot is represented by both its height in the column (full DAS on top, empty DAS at bottom), and its color (red, orange, green).
+Within each column, the piece spwaning is represented by a dot. The DAS value for the dot is represented by both its height in the column (full DAS on top, empty DAS at bottom), and its color (red, orange, green, as described above).
 
 Additionally, each time DAS is lost (falls to 0 when moving pieces, a dim red vertical bar is displayed).
 
