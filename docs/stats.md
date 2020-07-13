@@ -1,5 +1,7 @@
 As of 2020-07-13, this is the view of the Stats UI
 
+![Full UI](./stats/full_ui.png)
+
 Many stats are self-explanatory, but nevertheless, this document will go over each.
 
 ## Background Info
@@ -20,6 +22,8 @@ Various components of the statsUI show stats driven by line clear events, or inc
 
 ## PBs
 
+![PBs](./stats/pbs.png)
+
 Level 18 and 19 start PBs for the current player (retrieved from DB).
 
 PBs are reported on score alone, not on number of lines
@@ -27,12 +31,16 @@ PBs are reported on score alone, not on number of lines
 
 ## High Scores
 
+![High Scores](./stats/high_scores.png)
+
 Reports the top 5 high scores for the current player in 2 sections:
 * For the day
 * Overall
 
 
 ## Lines
+
+![Lines](./stats/lines.png)
 
 Shows stats about lines cleared, by type of line clears. Contains 4 type of information:
 
@@ -45,6 +53,8 @@ Shows stats about lines cleared, by type of line clears. Contains 4 type of info
 
 ## Points
 
+![Points](./stats/points.png)
+
 Shows point stats for the game in 3 types of information:
 
 * current score for the whole game (as read from the game UI)
@@ -53,6 +63,8 @@ Shows point stats for the game in 3 types of information:
 
 
 ## Pieces
+
+![Pieces](./stats/pieces.png)
 
 This section is a little crowded with information
 
@@ -138,7 +150,9 @@ The second thing the piece section is the distribution matrix, which is crammed 
     * If the piece experiences a drought, a continuous bar will be displayed (in grey for all piece types, but in orange for the I piece, because it is the most important drought type)
 * Current drought counter for the piece
 
-## Das Section
+## DAS Section
+
+![DAS](./stats/das.png)
 
 ### Header
 
@@ -162,10 +176,16 @@ Sample signature:
 
 Average DAS player (myself):
 
+![DAS](./stats/das.png)
+
 Expert Das player (my son Tristan):
+
+![DAS Expert](./stats/das_expert.png)
 
 
 ## Height and State
+
+![Height n State](./stats/height_n_state.png)
 
 This section is yet another timeline. It is perfectly aligned with the DAS timeline above.
 
@@ -185,25 +205,38 @@ The State of the board is represented as 3 lines below
 
 Each line clear event is represented as a vertical line of the color code for line that line-clear type.
 
+Example with all 3 types of markers:
+
+
 
 ## Score
+
+![Score](./stats/score_no_transition.png)
 
 2 information as presented:
 * Current score (as read from game itself)
 * Score at transition
 
-Note: Transition is the first level change.
+Note: Transition is the first level change, Below is an example of the score box when transition is active
+
+![Score with Transition](./stats/score_with_transition.png)
 
 
 ### Next
+
+![Next](./stats/next.png)
 
 Next piece box, just like in the game
 
 ### Board
 
+![Board](./stats/board.png)
+
 The board as read from the game itself
 
 ## I-Drought
+
+![I Drought](./stats/i-drought.png)
 
 This show information about I-piece droughts:
 
@@ -221,6 +254,8 @@ Shows the following information
 When the current drought is above 13, the number blinks in red.
 
 ### Standard Metrics
+
+![Standard Stats](./stats/standard_stats.png)
 
 ### LINES
 
@@ -243,17 +278,27 @@ How many line clears since the last tetris.
 
 ## Tetris Rate
 
+![Tetris Rate](./stats/tetris_rate.png)
+
 This shows the tetris rate with the same value as what is computed in the Lines box. It also shows the running Tetris rate based on the past line clear events. Ech line clea event is a dot in the graph, color coded based as described at the start of the document.
 
 This graph is aslo a timeline, BUT, it is not a timeline on the same timescale as the DAS and HEIGHT graphs. Line clear events are show here as one dot each, but they are separated in time by long periods. To see the line clear with the correct time spacing, check the HEIGHT section.
 
+Exampe of Tetris rate showing all 4 types of line clear events
+
+![Tetris rate with all colors](./stats/tetris_rate_all_colors.png)
+
 
 ## Player Video
+
+![Video](./stats/video.png)
 
 So you all can see me when I bang my head against the wall and cry.
 
 
 ## Chat
+
+![Chat](./stats/chat.png)
 
 Shows the twitch chat (last few messages only, because there's no space left in the UI)
 
