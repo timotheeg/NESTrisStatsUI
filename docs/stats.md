@@ -136,7 +136,7 @@ The second thing the piece section is the distribution matrix, which is crammed 
 * Overall distribution of that piece in the game
 * Visual representation for the piece distribution within a timeline of the last 120 pieces
     * Each dot represent a time when the piece was released
-    * Dots are color coded based on the das value the piece had when it spawned (see section on das below)
+    * Dots are color coded based on the DAS value the piece had when it spawned (see section on DAS below)
     * If the piece experiences a drought, a continuous bar will be displayed (in grey for all piece types, but in orange for the I piece, because it is the most important drought type)
 * Current drought counter for the piece
 
@@ -151,20 +151,23 @@ The UI is able to know DAS values only because [JazzThief81](https://www.twitch.
 ### Header
 
 The following informations are presented:
-* Instant Das value with gauge ![DAS gauge](./stats/das_instant_das.png)
-* Average Das value from when pieces spawned (newbies will get a number below 10, average player 10-12, experts above 14) ![DAS average](./stats/das_average_das.png)
+* Instant DAS value with gauge ![DAS gauge](./stats/das_instant_das.png)
+* Average DAS value from when pieces spawned (newbies will get a number below 10, average player 10-12, experts above 14) ![DAS average](./stats/das_average_das.png)
 * 3 counters ![DAS groups](./stats/das_groups.png)
     * Number of pieces where spawn DAS was below 10 and below (red heart)
     * Number of pieces where spawn DAS was between 10 and 14 (both inclusive) (orange heart)
-    * Number of pieces where spawn DAS was 15 or 16
+    * Number of pieces where spawn DAS was 15 or 16 (green heart)
 
 ### Matrix
 
 The second section represents a timeline of piece spawning (just like the matrix in the Piece section above). Each column represent one piece spanwing. Approximately the last 150 pieces are presented.
 
-The matrix position color code the dots based on the das values see section Header above), and position the dots based on the value too (full das on top, empty das below). The result represents a "signature" of the player skills at controlling DAS.
+Within each column, the piece spwaning is represented by a dot. The DAS value for the dot is represented by both its height in the column (full DAS on top, empty DAS at bottom), and its color (red, orange, green)
 
 Additionally, each time DAS is lost (falls to 0 when moving pieces, a dim red vertical bar is displayed).
+
+The resulting display represents a "signature" of the player skills at controlling DAS.
+
 
 #### Sample DAS signatures:
 
