@@ -14,10 +14,11 @@ Any piece in Tetris can have a drought (a sequence of pieces where a given piece
 ### Color-coding
 
 Various components of the statsUI show stats driven by line clear events, or include inormation about line clear events. These will be color coded as followed:
-* single:
-* double:
-* triple:
-* tetris:
+
+* ![#1678FF](https://via.placeholder.com/15/1678FF/000000?text=+) `#1678FF`  for Singles
+* ![#FF9F00](https://via.placeholder.com/15/FF9F00/000000?text=+) `#FF9F00`  for Doubles
+* ![#FF00B9](https://via.placeholder.com/15/FF00B9/000000?text=+) `#FF00B9` for Triples
+* ![#FFFFFF](https://via.placeholder.com/15/FFFFFF/000000?text=+) `#FFFFFF` for Tetrises (i.e. White!)
 
 
 ## PBs
