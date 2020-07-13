@@ -65,14 +65,14 @@ Shows:
     * Last 56 pieces (8 bags)
     * All game pieces
 
-The "eveness" metrics are calulated as follows:
+The "evenness" metrics are calulated as follows:
 
 Latex formula:
 ```
 https://en.wikipedia.org/wiki/Standard_deviation
 ```
 
-Notes on eveness:
+Notes on evenness:
 * The formula is almost identical to the [Standard Deviation](https://en.wikipedia.org/wiki/Standard_deviation), but uses percentages rather than the piece counts
 * In modern tetrises, the *last 4 bags* and *last 8 bags* would be 0
 * On a sufficiently long game, the number of *all game pieces* should also tend to zero, as the distribution for all pieces evens out
@@ -88,7 +88,7 @@ Latex fomula below. Visit [http://atomurl.net/math/](http://atomurl.net/math/) t
 
 Javascript function to compute it:
 ```javascript
-function eveness(piece_counts) {
+function evenness(piece_counts) {
 	const total_pieces = piece_counts.reduce((sum, num) => sum + num, 0);
 	const deviation_sum = piece_counts.reduce((sum, num) => sum + Math.pow(num/total_pieces - 1/7, 2), 0);
 
@@ -99,19 +99,30 @@ function eveness(piece_counts) {
 
 Sample values:
 ```javascript
-// 28 piece bag, perfect eveness
-eveness([4, 4, 4, 4, 4, 4, 4]); // 0
+// 28 piece bag, perfect evenness
+evenness([4, 4, 4, 4, 4, 4, 4]); // 0
 
 // 28 piece bag, okay-ish distribution
-eveness([4, 6, 2, 1, 7, 5, 3]); // ~7.1
+evenness([4, 6, 2, 1, 7, 5, 3]); // ~7.1
 
-// 28 piece bag, worst possible distribution (only single piece release)
-eveness([28, 0, 0, 0, 0, 0, 0]); // ~35.0
+// 28 piece bag, worst possible distribution (only single piece released)
+evenness([28, 0, 0, 0, 0, 0, 0]); // ~35.0
 
-// 28 piece bag, very even, except for a drought
-eveness([0, 4, 5, 5, 4, 5, 5]); // ~6.0
+// 28 piece bag, very even ... except for a drought
+evenness([0, 4, 5, 5, 4, 5, 5]); // ~6.0
 
 ```
+
+### Disclaimer
+
+I don't know if the evenness distribution makes much sense at all. I was looking for a single number that would represent whether the game, or a section thereof was "easy" or "hard". Especialy useful to look at right when I die.
+
+Basically there are 2 kinds of metrics and stats:
+* stats about the game itself, over which the player has no control piece distribution being the main one
+* stats about skills (control of DAS, stacking, spin, tucks, etc.)
+
+While I can show the piece distribution over an extended block of time, I was looking for a single number, sor of like the [unix load average](http://www.brendangregg.com/blog/2017-08-08/linux-load-averages.html), which also shows independent time frames (last 1min, 5mins, 15mins) to get a sense of how a server is doing.
+
 
 
 ### Distribution matrix
