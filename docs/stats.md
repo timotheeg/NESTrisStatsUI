@@ -230,16 +230,16 @@ The states of the board are represented as continuous lines of the appropriate c
 
 Additionally, each line-clear event is represented as a vertical line of the color of that line-clear type.
 
-Sample board with their states:
+Sample board with their states as computed by the Stats UI:
 
 | sample | sample | sample |
 | :-: | :-: | :-: |
 | ![foo](./stats/boards/board_nothing.png) | ![foo](./stats/boards/board_tetris_ready_2.png) | ![foo](./stats/boards/board_tetris_ready_4.png) |
 | **nothing** | Tetris Ready | Tetris Ready |
-| ![foo](./stats/boards/board_tetris_ready_8.png) | ![foo](./stats/boards/board_double_well_2.png) | ![foo](./stats/boards/board_tetris_ready_5.png) |
+| ![foo](./stats/boards/board_tetris_ready_7.png) | ![foo](./stats/boards/board_double_well_2.png) | ![foo](./stats/boards/board_tetris_ready_5.png) |
 | Tetris Ready | Tetris Ready<br>Double Well | Tetris Ready<br>Double Well |
 | ![foo](./stats/boards/board_perfect_slope.png) | ![foo](./stats/boards/board_perfect_slope_3.png) | ![foo](./stats/boards/board_perfect_slope_tetris_ready_double_well.png) |
-| Perfect Slope | Perfect Slope | Perfect Slope<br>Tetris Ready<br>Double Well |
+| Perfect Slope | "Perfect" Slope<br>Tetris Ready | Perfect Slope<br>Tetris Ready<br>Double Well |
 
 
 ### Notes
