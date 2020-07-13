@@ -178,7 +178,7 @@ The following informations are presented:
 * Instant DAS value with gauge ![DAS gauge](./stats/das_instant_das.png)
 * Average DAS value from when pieces spawned (newbies will get a number below 10, average player 10-12, experts above 14) ![DAS average](./stats/das_average_das.png)
 * 3 counters ![DAS groups](./stats/das_groups.png)
-    * Number of pieces where spawn DAS was below 10 and below (red heart)
+    * Number of pieces where spawn DAS was below 10 (red heart)
     * Number of pieces where spawn DAS was between 10 and 14 (both inclusive) (orange heart)
     * Number of pieces where spawn DAS was 15 or 16 (green heart)
 
