@@ -1,0 +1,256 @@
+As of 2020-07-13, this is the view of the Stats UI
+
+Many stats are self-explanatory, but nevertheless, this document will go over each.
+
+## Background Info
+
+The Stats UI runs for a given player (defaults to "TIM"). Each completed game is recorded in a local sqlite3 database for that user.
+
+Any piece in Tetris can have a drought (a sequence of pieces where a given piece doesn't come out). In modern Tetrises with bags, the maximum sequence length for a which doesn't come is 13 (2 consecutive bags of 7 pieces, where a piece type is the first of the first bag and the last of the second bag).
+
+
+### Color-coding
+
+Various components of the statsUI show stats driven by line clear events, or include inormation about line clear events. These will be color coded as followed:
+* single:
+* double:
+* triple:
+* tetris:
+
+
+## PBs
+
+Level 18 and 19 start PBs for the current player (retrieved from DB).
+
+PBs are reported on score alone, not on number of lines
+
+
+## High Scores
+
+Reports the top 5 high scores for the current player in 2 sections:
+* For the day
+* Overall
+
+
+## Lines
+
+Shows stats about lines cleared, by type of line clears. Contains 4 type of information:
+
+* total number of lines clear (as read from the game UI)
+* for each type of line clear, shows:
+    * number of line clear events for that type
+    * number of lines cleared  for that type
+    * percentage of lines cleared for that type overall (Note: The percentage for tetrises is the "famous" tetris rate)
+
+
+## Points
+
+Shows point stats for the game in 3 types of information:
+
+* current score for the whole game (as read from the game UI)
+* For each point line clear type, shows the points generated and the percentage contribution of that type of line clear to the overall score
+* Also shows points accumulated from soft drops (labelled "Drops")
+
+
+## Pieces
+
+This section is a little crowded with information
+
+### Header
+
+Shows:
+* Number of pieces played in the game
+* "Eveneness" measurement for 3 game periods
+    * Last 28 pieces (4 bags)
+    * Last 56 pieces (8 bags)
+    * All game pieces
+
+The "eveness" metrics are calulated as follows:
+
+Latex formula:
+```
+https://en.wikipedia.org/wiki/Standard_deviation
+```
+
+Notes on eveness:
+* The formula is almost identical to the [Standard Deviation](https://en.wikipedia.org/wiki/Standard_deviation), but uses percentages rather than the piece counts
+* In modern tetrises, the *last 4 bags* and *last 8 bags* would be 0
+* On a sufficiently long game, the number of *all game pieces* should also tend to zero, as the distribution for all pieces evens out
+* The 3 metric can each take value within the range 0 (all pieces came out with the same number) to 35 (only one piece came out from a given sequence)
+
+
+#### Reference for the formula:
+
+Latex fomula below. Visit [http://atomurl.net/math/](http://atomurl.net/math/) to render it:
+```
+100* \sqrt{ (\sum  (\frac{num_{piece type}}{num pieces} - \frac{1}{7} )^2) / 7}
+```
+
+Javascript function to compute it:
+```javascript
+function eveness(piece_counts) {
+	const total_pieces = piece_counts.reduce((sum, num) => sum + num, 0);
+	const deviation_sum = piece_counts.reduce((sum, num) => sum + Math.pow(num/total_pieces - 1/7, 2), 0);
+
+	return 100 * Math.sqrt( deviation_sum / 7);
+}
+
+````
+
+Sample values:
+```javascript
+// 28 piece bag, perfect eveness
+eveness([4, 4, 4, 4, 4, 4, 4]); // 0
+
+// 28 piece bag, bad distribution
+eveness([4, 6, 2, 1, 7, 5, 3]); // ~7.1
+
+// 28 piece bag, worst possible distribution (only single piece release)
+eveness([28, 0, 0, 0, 0, 0, 0]); // ~35.0
+
+// 28 piece bag, very even, except for a drought
+eveness([0, 4, 5, 5, 4, 5, 5]); // ~6.0
+
+```
+
+
+### Distribution matrix
+
+The second thing the piece section is the distribution matrix, which is crammed with information. There are 7 rows, one for each piece types, with the following information:
+
+* Piece type label (colored based on the level)
+* Number of piece released for that type
+* Overall distribution of that piece in the game
+* Visual representation for the piece distribution within a timeline of the last 120 pieces
+    * Each dot represent a time when the piece was released
+    * Dots are color coded based on the das value the piece had when it spawned (see section on das below)
+    * If the piece experiences a drought, a continuous bar will be displayed (in grey for all piece types, but in orange for the I piece, because it is the most important drought type)
+* Current drought counter for the piece
+
+## Das Section
+
+### Header
+
+The following informations are presented:
+* Instant Das value with gauge
+* Average Das value from when pieces spawned (newbie, will get a number below 10, average player 10-12, experts above 14)
+* 3 counters:
+    * Number of pieces where spawn DAS was below 10 and below (red heart)
+    * Number of pieces where spawn DAS was between 10 and 14 (both inclusive) (orange heart)
+    * Number of pieces where spawn DAS was 15 or 16
+
+### Matrix
+
+The second section represents a timeline of piece spawning (just like the matrix in the Piece section above). Each column represent one piece spanwing. Approximately the last 150 pieces are presented.
+
+The matrix position color code the dots based on the das values see section Header above), and position the dots based on the value too (full das on top, empty das below). The result represents a "signature" of the player skills at controlling DAS.
+
+Additionally, each time DAS is lost (falls to 0 when moving pieces, a dim red vertical bar is displayed).
+
+Sample signature:
+
+Average DAS player (myself):
+
+Expert Das player (my son Tristan):
+
+
+## Height and State
+
+This section is yet another timeline. It is perfectly aligned with the DAS timeline above.
+
+### header
+
+The header conly contains the color-coded legend of the information provided. 4 states are being tracked:
+* Is board Tetris-ready
+* Is board in a perfect slope (decreasing or equal height from left to right)
+* Is there a double Well
+* Is player in a I-piece drought
+
+### Matrix
+
+The timeline represents the height of the board at a specific point in time.
+
+The State of the board is represented as 3 lines below
+
+Each line clear event is represented as a vertical line of the color code for line that line-clear type.
+
+
+## Score
+
+2 information as presented:
+* Current score (as read from game itself)
+* Score at transition
+
+Note: Transition is the first level change.
+
+
+### Next
+
+Next piece box, just like in the game
+
+### Board
+
+The board as read from the game itself
+
+## I-Drought
+
+This show information about I-piece droughts:
+
+### Header
+
+Show number of droughts there had been in the game so far.
+
+### Panel
+
+Shows the following information
+* Current I-drought count (may be below 13, meaning not yet a drought)
+* Shows the size of the last drought (number you want to look at right after you survive a long drought)
+* Shows the longest drought that was experienced in the game
+
+When the current drought is above 13, the number blinks in red.
+
+### Standard Metrics
+
+### LINES
+
+As read from Game itself.
+
+### LEVEL
+
+As read from game itself.
+
+### Efficiency (EFF)
+
+The score per lines ignoring the level multiplier. Individual clears have score per lines of: 40 for a single, 50 for a double, 100 for a triple, 300 for a tetris
+
+Definition from [TAUS (Tetris - Actually Useful Statistics) rom](https://www.romhacking.net/hacks/4646/) released by talented programmer [Ejona](https://github.com/ejona86), who is also the author of the awesome [2 player mod](https://www.romhacking.net/hacks/5076/)!
+
+### BRN
+
+How many line clears since the last tetris.
+
+
+## Tetris Rate
+
+This shows the tetris rate with the same value as what is computed in the Lines box. It also shows the running Tetris rate based on the past line clear events. Ech line clea event is a dot in the graph, color coded based as described at the start of the document.
+
+This graph is aslo a timeline, BUT, it is not a timeline on the same timescale as the DAS and HEIGHT graphs. Line clear events are show here as one dot each, but they are separated in time by long periods. To see the line clear with the correct time spacing, check the HEIGHT section.
+
+
+## Player Video
+
+So you all can see me when I bang my head against the wall and cry.
+
+
+## Chat
+
+Shows the twitch chat (last few messages only, because there's no space left in the UI)
+
+I typically do not read this, messages are read to me during a game, and I answer by talking back.
+
+Each chatter is assigned a color that he/she keeps for the whole session, and similarly, each chatter is assigned a random voice that he/she keeps during the whole section.
+
+The voices are random based on the following selection from Google Voice's offering. Do not complain about what voice you get!
+
+I **can** permanently assign a voice to a twitch user, but you need to be a regular for this to happen. So far only one twitch player has that priviledge (beside myself of course), [Puffy](https://www.twitch.tv/puffie_)!
+
