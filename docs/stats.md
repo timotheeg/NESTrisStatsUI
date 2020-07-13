@@ -169,13 +169,13 @@ The matrix position color code the dots based on the das values see section Head
 
 Additionally, each time DAS is lost (falls to 0 when moving pieces, a dim red vertical bar is displayed).
 
-Sample signature:
+#### Sample DAS signatures:
 
-Average DAS player (myself):
+* Average DAS player (myself - losing was a lot)
 
 ![DAS](./stats/das.png)
 
-Expert Das player (my son Tristan):
+* Expert Das player (my son Tristan - almost never losing das)
 
 ![DAS Expert](./stats/das_expert.png)
 
@@ -214,7 +214,7 @@ Example with all 3 types of markers:
 * Current score (as read from game itself)
 * Score at transition
 
-Note: Transition is the first level change, Below is an example of the score box when transition is active
+Note: Transition is the first level change, Below is an example of the score box when transition has been reached and passed:
 
 ![Score with Transition](./stats/score_with_transition.png)
 
@@ -299,11 +299,37 @@ So you all can see me when I bang my head against the wall and cry.
 
 Shows the twitch chat (last few messages only, because there's no space left in the UI)
 
-I typically do not read this, messages are read to me during a game, and I answer by talking back.
+I typically do not read this, messages are read to me during a game by my Text-to-Speech system, and I answer by talking back.
 
-Each chatter is assigned a color that he/she keeps for the whole session, and similarly, each chatter is assigned a random voice that he/she keeps during the whole section.
+Each chatter is randomly assigned both a color and a voice that he/she keeps for the whole session.
 
-The voices are random based on the following selection from Google Voice's offering. Do not complain about what voice you get!
+The voices are picked based on the following selection from Google Voice's offering. Do not complain about what voice you get!
+
+```javascript
+[
+	'en-AU-Wavenet-A',
+	'en-AU-Wavenet-B',
+	'en-AU-Wavenet-C',
+	'en-AU-Wavenet-D',
+
+	'en-GB-Wavenet-A',
+	'en-GB-Wavenet-B',
+	'en-GB-Wavenet-C',
+	'en-GB-Wavenet-D',
+
+	'en-IN-Wavenet-A',
+	'en-IN-Wavenet-B',
+	'en-IN-Wavenet-C',
+	'en-IN-Wavenet-D',
+
+	'en-US-Wavenet-A',
+	'en-US-Wavenet-B',
+	'en-US-Wavenet-C',
+	'en-US-Wavenet-D',
+	'en-US-Wavenet-E',
+	'en-US-Wavenet-F',
+]
+```
 
 I **can** permanently assign a voice to a twitch user, but you need to be a regular for this to happen. So far only one twitch player has that priviledge (beside myself of course), [Puffy](https://www.twitch.tv/puffie_)!
 
