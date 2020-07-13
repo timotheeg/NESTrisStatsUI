@@ -201,13 +201,11 @@ Example with all 3 types of markers:
 Sample board with their states:
 
 | sample | sample | sample |
-| -- | -- | -- |
-| ![foo](./stats/boards/board_tetris_nothing.png) | ![foo](./stats/boards/board_tetris_ready_2.png) | ![foo](./stats/boards/board_tetris_ready_4.png) |
+| :-: | :-: | :-: |
+| ![foo](./stats/boards/board_nothing.png) | ![foo](./stats/boards/board_tetris_ready_2.png) | ![foo](./stats/boards/board_tetris_ready_4.png) |
 | **nothing** | Tetris Ready | Tetris Ready |
-| ![foo](./stats/boards/board_tetris_double_well.png) | ![foo](./stats/boards/board_tetris_double_well_2.png) | ![foo](./stats/boards/board_tetris_ready_5.png) |
+| ![foo](./stats/boards/board_double_well.png) | ![foo](./stats/boards/board_double_well_2.png) | ![foo](./stats/boards/board_tetris_ready_5.png) |
 | Tetris Ready + Double Well | Tetris Ready + Double Well | Tetris Ready + Double Well |
-| ![foo](./stats/boards/board_perfect_slope.png) | ![foo](./stats/boards/board_perfect_slope_2.png) | ![foo](./stats/boards/board_perfect_slope_3.png) |
-| Perfect Slope | Perfect Slope | Perfect Slope |
 | ![foo](./stats/boards/board_perfect_slope.png) | ![foo](./stats/boards/board_perfect_slope_3.png) | ![foo](./stats/boards/board_perfect_slope_tetris_ready_double_well.png) |
 | Perfect Slope | Perfect Slope | Perfect Slope + Tetris Ready + Double Well |
 
