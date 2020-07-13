@@ -219,15 +219,13 @@ You can also observe whether an extended period of tetris readiness in a drought
 
 ## Score
 
-![Score](./stats/score_no_transition.png)
+| ![Score](./stats/score_no_transition.png) | ![Score with Transition](./stats/score_with_transition.png) |
 
 2 information are presented:
 * Current score (as read from game itself)
-* Score at transition
+* Score at transition (nor present if transition is not reached - duh!)
 
-Note: Transition is the first level change, Below is an example of the score box when transition has been reached and passed:
-
-![Score with Transition](./stats/score_with_transition.png)
+Note: Transition is the first level change. Starting at Level 18, a player needs to clear 130 lines before transition, starting at level 0, a player only needs to clear 10 lines till transition.
 
 
 ### Next
