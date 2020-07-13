@@ -79,14 +79,11 @@ Shows:
 
 The "evenness" metrics are calulated as follows:
 
-Latex formula:
-```
-https://en.wikipedia.org/wiki/Standard_deviation
-```
+![Evenness formula](./stats/evenness.png)
 
 Notes on evenness:
-* The formula is almost identical to the [Standard Deviation](https://en.wikipedia.org/wiki/Standard_deviation), but uses percentages rather than the piece counts
-* In modern tetrises, the *last 4 bags* and *last 8 bags* would be 0
+* The formula is almost identical to the [Standard Deviation](https://en.wikipedia.org/wiki/Standard_deviation), but uses ratio rather than piece counts
+* In modern tetrises, evenness for the *last 4 bags* and *last 8 bags* would be 0, since all pieces would have exactly a ratio of 1/7
 * On a sufficiently long game, the number of *all game pieces* should also tend to zero, as the distribution for all pieces evens out
 * The 3 metric can each take value within the range 0 (all pieces came out with the same number) to 35 (only one piece came out from a given sequence)
 
