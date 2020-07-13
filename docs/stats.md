@@ -6,9 +6,29 @@ Many stats are self-explanatory, but nevertheless, this document will go over ea
 
 # Background Info
 
+## Classic NES Tetris
+
+If you don't know anything about Classic NES Tetris, watch [this amazing video](https://www.youtube.com/watch?v=9RaqVGzhQTM) first.
+
+## OCR, Stats, and Rerendering
+
+Classic Tetris on NES runs on very limited real estate (good old 8bit retro game!). The only stats the original game shows are the piece counts for a particular game.
+
+Talented developpers have built [many rom mods](https://www.romhacking.net/games/940/) to add informational stats to the in game display (e.g. tetris rate, efficiency, das value, tap speed, etc.) to address the wants of players seeking to improve various aspects of their skills.
+
+Sadly the real estate is too limiting to add many stats. But in today's system with HD resolution, there are plenty of pixels to use, even in a 720p display! So instead of modifying the game, one might read the game information from the game frames, infer the game state from it, and recompute mamy stats which can all be displayed in a richer UI (*cough* crowded UI? Cluttered UI? 😅 *cough*). This is what this project is strying to do.
+
+To read the game frame, I use the fantastic OCR software [NESTrisOCR](https://github.com/alex-ong/NESTrisOCR) written by [Alex-Ong](https://www.twitch.tv/xeal337).
+
+While most information (like board height, line-clears, tetris rate etc.) can be derived from the original game's display, info about DAS is not available. As a DAS player, I wanted it, so to power this Stats UI, I run all my games from the wonderful [Das Trainer rom mod](https://www.romhacking.net/hacks/3761/) made by [JazzThief81](https://www.twitch.tv/jazzthief81).
+
+The UI renders both the stats and the board itself, with crisp pixel perfect accuracy.
+
+
 ## Current player
 
 The Stats UI runs for a given player (defaults to "TIM" - me!). Each completed game is recorded in a local sqlite3 database for that user. The name of the user is displayed in the PBs and High Scores Sections.
+
 
 ## Tetris piece randomization and droughts
 
@@ -30,7 +50,7 @@ Traditionnaly, in CLassic tetris players, viewers, and commentators have been fo
 
 ## Color-coding
 
-Sereal components of the statsUI include information about line-clear events. Line-clear events are color-coded in the UI as followed:
+Sereal components of the StatsUI include information about line-clear events. Line-clear events are color-coded in the UI as followed:
 
 * ![#1678FF](https://via.placeholder.com/15/1678FF/000000?text=+) `#1678FF`  for Singles
 * ![#FF9F00](https://via.placeholder.com/15/FF9F00/000000?text=+) `#FF9F00`  for Doubles
@@ -108,8 +128,8 @@ Which is almost identical to the [Standard Deviation](https://en.wikipedia.org/w
 ### Notes on Evenness
 
 * In modern tetrises, evenness for the *last 4 bags* and *last 8 bags* would be 0, since all pieces would have exactly a ratio of 1/7
-* On a sufficiently long game, the evenness of *all game pieces* should also tend to zero, as the distribution for all pieces evens out.
-* The 3 metric can each take values within the range 0 (all pieces came out with the same count) to 35 (only one piece came out from a given sequence)
+* Even in Classic Tetris, on a sufficiently long game, the evenness of *all game pieces* should also tend to zero, as the distribution for all pieces evens out.
+* The 3 period metric can each take values within the range 0 (all pieces came out with the same count) to 35 (only one piece came out from a given sequence)
 
 As shown in the sample values below:
 
@@ -128,9 +148,9 @@ evenness([0, 4, 5, 5, 4, 5, 5]); // ~6.0
 
 ```
 
-Note that eveness does not convey precise information, it's only a general comparative measurement. As in a value of 2 would tell you it was "reasonnably even", while a value of 9 would tell you "something weird was happening", but you'd still have to inspect the distribution to know what exactly.
+Note that eveness does not convey precise information, it's only a general comparative metric. As in, a value of `2` would tell you it was "reasonnably even", while a value of `9` would tell you "something weird was happening", but you'd still have to inspect the distribution to know what exactly.
 
-For more information abour this metrics, see the Miscellaneous section at the end of the document.
+For more information abour this metrics, see the Miscellaneous section at the end of this document.
 
 
 ### Distribution matrix
@@ -151,10 +171,6 @@ The second thing the piece section is the distribution matrix, which is crammed 
 ## DAS
 
 ![DAS](./stats/das.png)
-
-### Background
-
-The UI is able to know DAS values only because [JazzThief81](https://www.twitch.tv/jazzthief81) made available his wonderful [Das Trainer rom mod](https://www.romhacking.net/hacks/3761/).
 
 ### Header
 
