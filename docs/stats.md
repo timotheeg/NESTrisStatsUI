@@ -4,33 +4,41 @@ As of 2020-07-13, this is the view of the Stats UI
 
 Many stats are self-explanatory, but nevertheless, this document will go over each.
 
-## Background Info
+# Background Info
 
-The Stats UI runs for a given player (defaults to "TIM"). Each completed game is recorded in a local sqlite3 database for that user.
+## Current player
 
-Any piece in Tetris can have a drought (a sequence of pieces where a given piece doesn't come out). In modern Tetrises with bags, the maximum sequence length for which a piece doesn't come is 12 (2 consecutive bags of 7 pieces, where a piece type is the first of the first bag, and the last of the second bag).
+The Stats UI runs for a given player (defaults to "TIM" - me!). Each completed game is recorded in a local sqlite3 database for that user. The name of the user is displayed in the PBs and High Scores Sections.
 
-Below is one example of the longest possible T drought in modern tetrises:
+## Tetris piece randomization and droughts
+
+Any piece in Tetris can experience a "drought", which is a sequence of pieces where that given piece doesn't come out.
+
+In modern Tetrises with bag randomization, the longest a drought can be is 12 pieces, which occurs when, in 2 consecutive bags of 7 pieces, a given piece type is both the first of the first bag, and the last of the second bag.
+
+For example, below is an example of the longest possible T drought in modern tetrises:
 
 ```
 Bag 1: T L I S O J Z
 Bag 2: I S Z J O L T
 ````
 
-In contrast, Classic NES tetris doesn't use bag rndomization. Because of that a drought may have any arbitrary length and be extermely dificult for a player to navigate. A player is considered in a drought in NES Classic Tetris whenever there is a sequence 13-long or more where a given piece does not come.
+In contrast, Classic NES tetris doesn't use bag randomization. Because of that, a drought may have arbitrary length, and be extremely difficult for a player to handle. To contrast with modern tetrises, a player is considered in a drought in NES Classic Tetris whenever there is a sequence 13-long or more, where a given piece does not come.
 
-This stats UI shows droughts for all pieces to try to quantify whether a game was hard. Special attention is given to I-droughts of course, since only I pieces can give Tetrises.
+Traditionnaly, in CLassic tetris players, viewers, and commentators have been focusing on the I piece droughts. Considered the most important, because Tetrises can only be achieved with I pieces. This Stats UI however shows droughts for all pieces!
 
 
-### Color-coding
+## Color-coding
 
-Various components of the statsUI show stats driven by line clear events, or include inormation about line clear events. These will be color coded as followed:
+Sereal components of the statsUI include information about line-clear events. Line-clear events are color-coded in the UI as followed:
 
 * ![#1678FF](https://via.placeholder.com/15/1678FF/000000?text=+) `#1678FF`  for Singles
 * ![#FF9F00](https://via.placeholder.com/15/FF9F00/000000?text=+) `#FF9F00`  for Doubles
 * ![#FF00B9](https://via.placeholder.com/15/FF00B9/000000?text=+) `#FF00B9` for Triples
 * ![#FFFFFF](https://via.placeholder.com/15/FFFFFF/000000?text=+) `#FFFFFF` for Tetrises (i.e. White!)
 
+
+# UI Sections
 
 ## PBs
 
@@ -137,8 +145,8 @@ The second thing the piece section is the distribution matrix, which is crammed 
 * Visual representation for the piece distribution within a timeline of the last 120 pieces
     * Each dot represent a time when the piece was released
     * Dots are color coded based on the DAS value the piece had when it spawned (see section on DAS below)
-    * If the piece experiences a drought, a continuous bar will be displayed (in grey for all piece types, but in orange for the I piece, because it is the most important drought type)
-* Current drought counter for the piece
+    * If the piece experiences a drought, a continuous bar will be displayed (in grey for all piece types, except for I pieces, where droughts are displayed in orange)
+* Current drought counter for the piece type
 
 ## DAS
 
@@ -160,22 +168,22 @@ The following informations are presented:
 
 ### Matrix
 
-The second section represents a timeline of piece spawning (just like the matrix in the Piece section above). Each column represent one piece spanwing. Approximately the last 150 pieces are presented.
+The second section represents a timeline of piece spawning (just like the matrix in the Piece section above). Each column represents one piece spawning. Approximately the last 150 pieces are presented.
 
-Within each column, the piece spwaning is represented by a dot. The DAS value for the dot is represented by both its height in the column (full DAS on top, empty DAS at bottom), and its color (red, orange, green)
+Within each column, the piece spwaning is represented by a dot. The DAS value for the dot is represented by both its height in the column (full DAS on top, empty DAS at bottom), and its color (red, orange, green).
 
 Additionally, each time DAS is lost (falls to 0 when moving pieces, a dim red vertical bar is displayed).
 
-The resulting display represents a "signature" of the player skills at controlling DAS.
+The resulting display can be considered a "signature" of the player skills at controlling DAS.
 
 
-#### Sample DAS signatures:
+#### Sample DAS signatures
 
-* Average DAS player (myself - losing was a lot)
+* Average DAS player (myself - losing DAS a lot)
 
 ![DAS](./stats/das.png)
 
-* Expert Das player (my son Tristan - almost never losing das)
+* Expert DAS player (my son Tristan - almost never losing DAS)
 
 ![DAS Expert](./stats/das_expert.png)
 
@@ -191,16 +199,18 @@ This section is yet another timeline. It is perfectly aligned with the DAS timel
 ### Header
 
 The header conly contains the color-coded legend of the information provided. 4 states are being tracked:
-* Is board tetris-ready
-* Is board in a perfect slope (decreasing or equal height from left to right)
-* Is there a double-well (double well can only be true if player is also tetris ready)
-* Is player in a I-piece drought
+* Is board tetris-ready?
+* Is board in a perfect slope? (decreasing or equal height from left to right)
+* Is board in a double-well? (double well can only be true if player is also tetris ready)
+* Is player in a I-piece drought?
+
+See this [video from Jonas Neubauer](https://www.youtube.com/watch?v=2vtyX0lkt7o) from more information about the double well.
 
 ### Matrix
 
 The timeline represents the height of the board at a specific point in time.
 
-The states of the board are represented as continuous lines of the appropriate colors below the height graph
+The states of the board are represented as continuous lines of the appropriate colors below the graph.
 
 Additionally, each line-clear event is represented as a vertical line of the color of that line-clear type.
 
@@ -218,14 +228,14 @@ Sample board with their states:
 
 ### Notes
 
-Observe the sample graphes, you can see whether periods of tetris-readiness (purple horizontal marker) are ended with a Tetris (vertical white line).
+Observe the sample graphs, you can see whether periods of tetris-readiness (purple horizontal marker) are ended with a Tetris (vertical white line).
 
 You can also observe whether an extended period of tetris readiness in a drought "sees" many non-Tetris line-clear events, as the player is burning, while maintaining his/her tetris readiness.
 
 
 ## Score
 
-| ![Score](./stats/score_no_transition.png) | ![Score with Transition](./stats/score_with_transition.png) |
+![Score](./stats/score_no_transition.png) ![Score with Transition](./stats/score_with_transition.png)
 
 2 information are presented:
 * Current score (as read from game itself)
@@ -290,7 +300,7 @@ How many line clears since the last tetris.
 
 ## Tetris Rate
 
-| ![Tetris Rate](./stats/tetris_rate.png) | ![Tetris rate with all colors](./stats/tetris_rate_all_colors.png) |
+![Tetris Rate](./stats/tetris_rate.png) ![Tetris rate with all colors](./stats/tetris_rate_all_colors.png)
 
 This shows the tetris rate with the same value as what is computed in the Lines box. It also shows the running Tetris rate based on the past line clear events. Each line clear event is a dot in the graph. Dots are color-coded as described at the start of the document.
 
@@ -315,9 +325,9 @@ Shows the twitch chat (last few messages only, because there's no space left in 
 Each message shows the chatter name and the message. Each chatter is randomly assigned a color for the session, and the chatter name will be displayed in that color.
 
 
-## Miscellanous notes
+# Miscellanous notes
 
-### Evenness Metrics
+## Evenness Metrics
 
 For refresher, the formula I used for eveness is this:
 
@@ -327,14 +337,14 @@ Why this formula? Why ratios rather than counts?
 
 I thought having ratios would help having the 3 metrics in the same unit.
 
-#### Reference for the formula:
+### Reference for the formula
 
 This was generated from this [latex equation renderer](http://atomurl.net/math/) from the following Latex fomula:
 ```
 100 * \sqrt{(\sum_{piece type} (\frac{count_{piece type}}{count_{allpieces}} - \frac{1}{7} )^2) / 7}
 ```
 
-#### Javascript function
+### Javascript function
 
 ```javascript
 function evenness(piece_counts) {
@@ -358,9 +368,9 @@ Basically there are 2 kinds of metrics and stats:
 While the stats UI can show the piece distribution over an extended period of time, to get a visual sense of a given game's difficulty, I was looking for a single number, sort of like the [unix load average](http://www.brendangregg.com/blog/2017-08-08/linux-load-averages.html) (which also shows independent time frames (last 1min, 5mins, 15mins) to get a sense of how a server is doing).
 
 
-### Chat and Text-to-Speech
+## Chat and Text-to-Speech
 
-I typically do not read chat during a streaming session, messages are read to me during by my custom Text-to-Speech system, which uses the [Google Cloud Voices API](https://cloud.google.com/text-to-speech), and I answer by talking back.
+I typically do not read chat during a streaming session, messages are read to me by my custom Text-to-Speech system, which uses the [Google Cloud Voices API](https://cloud.google.com/text-to-speech), and I answer by talking back.
 
 Just like for the user color, each chatter is randomly assigned a voice that he/she keeps for the whole session.
 
