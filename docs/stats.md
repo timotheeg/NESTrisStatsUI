@@ -83,7 +83,7 @@ Notes on evenness:
 
 Latex fomula below. Visit [http://atomurl.net/math/](http://atomurl.net/math/) to render it:
 ```
-100* \sqrt{ (\sum  (\frac{num_{piece type}}{num pieces} - \frac{1}{7} )^2) / 7}
+100 * \sqrt{(\sum_{piece type} (\frac{count_{piece type}}{count_{allpieces}} - \frac{1}{7} )^2) / 7}
 ```
 
 Javascript function to compute it:
