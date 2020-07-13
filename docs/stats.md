@@ -82,6 +82,8 @@ This section is a little crowded with information
 
 ### Header
 
+![Pieces Header](./stats/pieces_header.png)
+
 Shows:
 * Number of pieces played in the game ![Piece count](./stats/pieces_count.png)
 * "Eveneness" measurement for 3 game periods
@@ -150,6 +152,8 @@ While I can show the piece distribution over an extended period of time to get a
 
 
 ### Distribution matrix
+
+![Pieces Matrix](./stats/pieces_matrix.png)
 
 The second thing the piece section is the distribution matrix, which is crammed with information. There are 7 rows, one for each piece types, with the following information:
 
