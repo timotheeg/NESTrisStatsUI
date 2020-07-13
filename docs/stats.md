@@ -16,7 +16,7 @@ Classic Tetris on NES runs on very limited real estate (good old 8bit retro game
 
 Talented developpers have built [many rom mods](https://www.romhacking.net/games/940/) to add informational stats to the in game display (e.g. tetris rate, efficiency, das value, tap speed, etc.) to address the wants of players seeking to improve various aspects of their skills.
 
-Sadly the real estate is too limiting to add many stats. But in today's system with HD resolution, there are plenty of pixels to use. So instead of modifying the game, one might read the game information from the game frames, infer the game state from them, and recompute many stats which can all be displayed in a richer UI (*cough* crowded UI? Cluttered UI? 😅 *cough*). This is what this project is strying to do.
+Sadly the real estate is too limiting to add many stats. But in today's system with HD resolution, there are plenty of pixels to use. So instead of modifying the game, one might read the game information from the game frames, infer the game state from them, and recompute many stats which can all be displayed in a richer UI (*cough*  crowded UI? cluttered UI? 😅  *cough*). This is what this project is strying to do.
 
 To read the game frames, I use the fantastic OCR software [NESTrisOCR](https://github.com/alex-ong/NESTrisOCR) written by [Alex-Ong](https://www.twitch.tv/xeal337).
 
