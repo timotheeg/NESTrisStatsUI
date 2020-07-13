@@ -120,7 +120,9 @@ evenness([0, 4, 5, 5, 4, 5, 5]); // ~6.0
 
 ```
 
-Note that eveness does not convey precise information, it's only a general comparative measurement. As in a value of 2 wou;d tell you it's "pretty even", a value of 9 would tell you "something weird was happening", but you'd still have to inspect the distribution to know what.
+Note that eveness does not convey precise information, it's only a general comparative measurement. As in a value of 2 would tell you it was "reasonnably even", while a value of 9 would tell you "something weird was happening", but you'd still have to inspect the distribution to know what exactly.
+
+For more information abour this metrics, see the Miscellaneous section at the end of the document.
 
 
 ### Distribution matrix
@@ -212,7 +214,7 @@ Sample board with their states:
 
 ### Interesting Notes
 
-Observe the graph, you can see whether periods of tetris-readiness (purple horizontal marker) are ended with a Tetris (vertical white line)
+Observe the sample graphes, you can see whether periods of tetris-readiness (purple horizontal marker) are ended with a Tetris (vertical white line)
 
 You can also observe whether an extended period of tetris readiness in a drought "sees" many non-Tetris line clear events as the player is burning while maintaining his/her tetris readiness.
 
