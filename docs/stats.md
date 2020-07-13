@@ -78,7 +78,7 @@ Shows point stats for the game in 3 types of information:
 
 ![Pieces](./stats/pieces.png)
 
-This section is a little crowded with information
+This section is a little crowded with information.
 
 ### Header
 
@@ -91,64 +91,36 @@ Shows:
     * Last 56 pieces (8 bags) ![Dev 56](./stats/pieces_dev56.png)
     * All game pieces ![Dev All](./stats/pieces_devall.png)
 
-The "evenness" metrics are calulated as follows:
+Evenness is a metrics computed from this formula:
 
 ![Evenness formula](./stats/evenness.png)
 
-### Notes on evenness
+Which is almost identical to the [Standard Deviation](https://en.wikipedia.org/wiki/Standard_deviation), but uses ratios rather than piece counts.
 
-* The formula is almost identical to the [Standard Deviation](https://en.wikipedia.org/wiki/Standard_deviation), but uses ratio rather than piece counts
+### Notes on Evenness
+
 * In modern tetrises, evenness for the *last 4 bags* and *last 8 bags* would be 0, since all pieces would have exactly a ratio of 1/7
-* On a sufficiently long game, the number of *all game pieces* should also tend to zero, as the distribution for all pieces evens out
-* The 3 metric can each take value within the range 0 (all pieces came out with the same number) to 35 (only one piece came out from a given sequence)
+* On a sufficiently long game, the evenness of *all game pieces* should also tend to zero, as the distribution for all pieces evens out.
+* The 3 metric can each take values within the range 0 (all pieces came out with the same count) to 35 (only one piece came out from a given sequence)
 
-
-#### Reference for the formula:
-
-Latex fomula below. Visit [http://atomurl.net/math/](http://atomurl.net/math/) to render it:
-```
-100 * \sqrt{(\sum_{piece type} (\frac{count_{piece type}}{count_{allpieces}} - \frac{1}{7} )^2) / 7}
-```
-
-#### Javascript function
+As shown in the sample values below:
 
 ```javascript
-function evenness(piece_counts) {
-	const total_pieces = piece_counts.reduce((sum, num) => sum + num, 0);
-	const deviation_sum = piece_counts.reduce((sum, num) => sum + Math.pow(num/total_pieces - 1/7, 2), 0);
-
-	return 100 * Math.sqrt( deviation_sum / 7);
-}
-
-````
-
-#### Sample values
-
-```javascript
-// 28 piece bag, perfect evenness
+// 28 pieces (4 bags), perfect evenness
 evenness([4, 4, 4, 4, 4, 4, 4]); // 0
 
-// 28 piece bag, okay-ish distribution
+// 28 pieces (4 bags), okay-ish distribution
 evenness([4, 6, 2, 1, 7, 5, 3]); // ~7.1
 
-// 28 piece bag, worst possible distribution (only single piece released)
+// 28 pieces (4 bags), worst possible distribution (only single piece released)
 evenness([28, 0, 0, 0, 0, 0, 0]); // ~35.0
 
-// 28 piece bag, very even ... except for a drought
+// 28 pieces (4 bags), very even ... except for a drought
 evenness([0, 4, 5, 5, 4, 5, 5]); // ~6.0
 
 ```
 
-### Disclaimer
-
-I don't know if the "evenness" makes sense as a metric at all. I was looking for a single number that would represent whether the game, or a section thereof, was "easy" or "hard" (especialy useful to look at right when I die so I can blame RNG instead of just my poor skills)
-
-Basically there are 2 kinds of metrics and stats:
-* stats about the game itself, over which the player has no control piece distribution being the main one
-* stats about skills (control of DAS, stacking, spin, tucks, etc.)
-
-While I can show the piece distribution over an extended period of time to get a visual sense of a given game's difficulty, I was looking for a single number, sort of like the [unix load average](http://www.brendangregg.com/blog/2017-08-08/linux-load-averages.html) (which also shows independent time frames (last 1min, 5mins, 15mins) to get a sense of how a server is doing)
-
+Note that eveness does not convey precise information, it's only a general comparative measurement. As in a value of 2 wou;d tell you it's "pretty even", a value of 9 would tell you "something weird was happening", but you'd still have to inspect the distribution to know what.
 
 
 ### Distribution matrix
@@ -205,12 +177,12 @@ Additionally, each time DAS is lost (falls to 0 when moving pieces, a dim red ve
 
 This section is yet another timeline. It is perfectly aligned with the DAS timeline above.
 
-### header
+### Header
 
 The header conly contains the color-coded legend of the information provided. 4 states are being tracked:
-* Is board Tetris-ready
+* Is board tetris-ready
 * Is board in a perfect slope (decreasing or equal height from left to right)
-* Is there a double Well
+* Is there a double-well (double well can only be true if player is also tetris ready)
 * Is player in a I-piece drought
 
 ### Matrix
@@ -225,12 +197,41 @@ Example with all 3 types of markers:
 
 ![Height All Colors](./stats/height_all_colors.png)
 
+
+Sample board with their states
+
+| -- | -- | -- | -- |
+| ![foo](./stats/boards/board_tetris_nothing.png)
+  | ![foo](./stats/boards/board_tetris_ready_2.png)
+  | ![foo](./stats/boards/board_tetris_ready_4.png) |
+| **nothing**
+  | Tetris Ready
+  | Tetris Ready |
+| ![foo](./stats/boards/board_tetris_double_well.png)
+  | ![foo](./stats/boards/board_tetris_double_well_2.png)
+  | ![foo](./stats/boards/board_tetris_ready_5.png) |
+| Tetris Ready + Double Well
+  | Tetris Ready + Double Well
+  | Tetris Ready + Double Well |
+| ![foo](./stats/boards/board_perfect_slope.png)
+  | ![foo](./stats/boards/board_perfect_slope_2.png)
+  | ![foo](./stats/boards/board_perfect_slope_3.png) |
+| Perfect Slope
+  | Perfect Slope
+  | Perfect Slope |
+| ![foo](./stats/boards/board_perfect_slope.png)
+  | ![foo](./stats/boards/board_perfect_slope_3.png)
+  | ![foo](./stats/boards/board_perfect_slope_tetris_ready_double_well.png) |
+| Perfect Slope
+  | Perfect Slope
+  | Perfect Slope + Tetris Ready + Double Well |
+
+
 ### Interesting Notes
 
 Observe the graph, you can see whether periods of tetris-readiness (purple horizontal marker) are ended with a Tetris (vertical white line)
 
 You can also observe whether an extended period of tetris readiness in a drought "sees" many non-Tetris line clear events as the player is burning while maintaining his/her tetris readiness.
-
 
 
 ## Score
@@ -326,11 +327,59 @@ So you all can see me when I bang my head against the wall and cry.
 
 Shows the twitch chat (last few messages only, because there's no space left in the UI)
 
-I typically do not read this, messages are read to me during a game by my Text-to-Speech system, and I answer by talking back.
+Each message shows the chatter name and the message. Each chatter is randomly assigned a color for the session, and the chatter name will be displayed in that color.
 
-Each chatter is randomly assigned both a color and a voice that he/she keeps for the whole session.
 
-The voices are picked based on the following selection from Google Voice's offering. Do not complain about what voice you get!
+## Miscellanous notes
+
+### Evenness Metrics
+
+For refresher, the formula I used for eveness is this:
+
+![Evenness formula](./stats/evenness.png)
+
+Why this formula? Why ratios rather than counts?
+
+I thought having ratios would help having the 3 metrics in the same unit.
+
+#### Reference for the formula:
+
+This was generated from this [latex equation renderer](http://atomurl.net/math/) from the following Latex fomula:
+```
+100 * \sqrt{(\sum_{piece type} (\frac{count_{piece type}}{count_{allpieces}} - \frac{1}{7} )^2) / 7}
+```
+
+#### Javascript function
+
+```javascript
+function evenness(piece_counts) {
+	const total_pieces = piece_counts.reduce((sum, num) => sum + num, 0);
+	const deviation_sum = piece_counts.reduce((sum, num) => sum + Math.pow(num/total_pieces - 1/7, 2), 0);
+
+	return 100 * Math.sqrt( deviation_sum / 7);
+}
+
+````
+
+
+### Disclaimer
+
+I don't know if "evenness" makes sense as a metric. I was looking for a single number that would represent whether the game, or a section thereof, was "easy" or "hard" (especialy "useful" to look at right when I die so I can blame RNG instead of just my poor skills)
+
+Basically there are 2 kinds of metrics and stats:
+* stats about the game itself, over which the player has no control, piece distribution being the main one
+* stats about skills (control of DAS, stacking, spin, tucks, etc.)
+
+While I can show the piece distribution over an extended period of time to get a visual sense of a given game's difficulty, I was looking for a single number, sort of like the [unix load average](http://www.brendangregg.com/blog/2017-08-08/linux-load-averages.html) (which also shows independent time frames (last 1min, 5mins, 15mins) to get a sense of how a server is doing).
+
+
+### Chat and Text-to-Speech
+
+I typically do not read chat during a streaming session, messages are read to me during by my custom Text-to-Speech system, which uses the [Google Cloud Voices API](https://cloud.google.com/text-to-speech), and I answer by talking back.
+
+Just like for the user color, each chatter is randomly assigned a voice that he/she keeps for the whole session.
+
+The voices are picked from the following selection of Google Voices. Do not complain about what voice you get!
 
 ```javascript
 [
