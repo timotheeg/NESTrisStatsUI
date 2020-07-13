@@ -278,9 +278,9 @@ How many line clears since the last tetris.
 
 ![Tetris Rate](./stats/tetris_rate.png)
 
-This shows the tetris rate with the same value as what is computed in the Lines box. It also shows the running Tetris rate based on the past line clear events. Ech line clea event is a dot in the graph, color coded based as described at the start of the document.
+This shows the tetris rate with the same value as what is computed in the Lines box. It also shows the running Tetris rate based on the past line clear events. Each line clear event is a dot in the graph. Dots are color coded as described at the start of the document.
 
-This graph is aslo a timeline, BUT, it is not a timeline on the same timescale as the DAS and HEIGHT graphs. Line clear events are show here as one dot each, but they are separated in time by long periods. To see the line clear with the correct time spacing, check the HEIGHT section.
+Just like the piece distribution, das, and height section, this graph is also a timeline, BUT it is not a timeline on the same timescale as the others. Line clear events are shown here as one dot each, but they are separated in time by long(-ish), non-regular periods. To see the line clear events with the correct time spacing, check the vertical bars in the HEIGHT section.
 
 Exampe of Tetris rate showing all 4 types of line clear events
 
