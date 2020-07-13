@@ -16,9 +16,9 @@ Classic Tetris on NES runs on very limited real estate (good old 8bit retro game
 
 Talented developpers have built [many rom mods](https://www.romhacking.net/games/940/) to add informational stats to the in game display (e.g. tetris rate, efficiency, das value, tap speed, etc.) to address the wants of players seeking to improve various aspects of their skills.
 
-Sadly the real estate is too limiting to add many stats. But in today's system with HD resolution, there are plenty of pixels to use, even in a 720p display! So instead of modifying the game, one might read the game information from the game frames, infer the game state from it, and recompute mamy stats which can all be displayed in a richer UI (*cough* crowded UI? Cluttered UI? 😅 *cough*). This is what this project is strying to do.
+Sadly the real estate is too limiting to add many stats. But in today's system with HD resolution, there are plenty of pixels to use. So instead of modifying the game, one might read the game information from the game frames, infer the game state from them, and recompute many stats which can all be displayed in a richer UI (*cough* crowded UI? Cluttered UI? 😅 *cough*). This is what this project is strying to do.
 
-To read the game frame, I use the fantastic OCR software [NESTrisOCR](https://github.com/alex-ong/NESTrisOCR) written by [Alex-Ong](https://www.twitch.tv/xeal337).
+To read the game frames, I use the fantastic OCR software [NESTrisOCR](https://github.com/alex-ong/NESTrisOCR) written by [Alex-Ong](https://www.twitch.tv/xeal337).
 
 While most information (like board height, line-clears, tetris rate etc.) can be derived from the original game's display, info about DAS is not available. As a DAS player, I wanted it, so to power this Stats UI, I run all my games from the wonderful [Das Trainer rom mod](https://www.romhacking.net/hacks/3761/) made by [JazzThief81](https://www.twitch.tv/jazzthief81).
 
@@ -43,14 +43,14 @@ Bag 1: T L I S O J Z
 Bag 2: I S Z J O L T
 ````
 
-In contrast, Classic NES tetris doesn't use bag randomization. Because of that, a drought may have arbitrary length, and be difficult for a player to handle. To contrast with modern tetrises, a player is considered in a drought in NES Classic Tetris whenever there is a sequence **13-long** or more, where a given piece does not come.
+Classic NES tetris [doesn't use bag randomization](https://simon.lc/the-history-of-tetris-randomizers). And because of that, a drought may have arbitrary length, and be difficult for a player to handle. To contrast with modern tetrises, a game is considered in a drought in NES Classic Tetris whenever there is a sequence **13-long** or more, where a given piece does not come.
 
-Traditionnaly, Classic Tetris players, viewers, and commentators have been focusing on the I piece droughts, considered the most important because Tetrises can only be achieved with I pieces. This Stats UI however shows droughts for all pieces!
+Traditionnaly, Classic Tetris players, viewers, and commentators have been focusing on I piece droughts, considered the most important because Tetrises can only be achieved with I pieces. This Stats UI however shows droughts for all pieces!
 
 
 ## Color-coding
 
-Sereal components of the StatsUI include information about line-clear events. Line-clear events are color-coded in the UI as followed:
+Sereal components of the StatsUI include information about line-clear events. Line-clear events are color-coded as followed:
 
 * ![#1678FF](https://via.placeholder.com/15/1678FF/000000?text=+) `#1678FF`  for Singles
 * ![#FF9F00](https://via.placeholder.com/15/FF9F00/000000?text=+) `#FF9F00`  for Doubles
@@ -128,7 +128,7 @@ Which is almost identical to the [Standard Deviation](https://en.wikipedia.org/w
 ### Notes on Evenness
 
 * In modern tetrises, evenness for the *last 4 bags* and *last 8 bags* would be 0, since all pieces would have exactly a ratio of 1/7
-* Even in Classic Tetris, on a sufficiently long game, the evenness of *all game pieces* should also tend to zero, as the distribution for all pieces evens out.
+* Even in Classic Tetris, on a sufficiently long game, the evenness of *all game pieces* should also tend to zero
 * The 3 period metric can each take values within the range 0 (all pieces came out with the same count) to 35 (only one piece came out from a given sequence)
 
 As shown in the sample values below:
@@ -148,9 +148,9 @@ evenness([0, 4, 5, 5, 4, 5, 5]); // ~6.0
 
 ```
 
-Note that eveness does not convey precise information, it's only a general comparative metric. As in, a value of `2` would tell you it was "reasonnably even", while a value of `9` would tell you "something weird was happening", but you'd still have to inspect the distribution to know what exactly.
+Note that evenness does not convey precise information, it's only a general comparative metric. As in, a value of `2` would tell you it was "reasonnably even", while a value of `9` would tell you "something weird was happening", but you'd still have to inspect the distribution to know what exactly.
 
-For more information abour this metrics, see the Miscellaneous section at the end of this document.
+For more information abour this metric, see the Miscellaneous section at the end of this document.
 
 
 ### Distribution matrix
@@ -343,7 +343,7 @@ Each message shows the chatter name and the message. Each chatter is randomly as
 
 # Miscellanous notes
 
-## Evenness Metrics
+## Evenness Metric
 
 For refresher, the formula I used for eveness is this:
 
@@ -355,7 +355,7 @@ I thought having ratios would help having the 3 metrics in the same unit.
 
 ### Reference for the formula
 
-This was generated from this [latex equation renderer](http://atomurl.net/math/) from the following Latex fomula:
+The formula graphic was generated with this [latex equation renderer](http://atomurl.net/math/) from the following Latex fomula:
 ```
 100 * \sqrt{(\sum_{piece type} (\frac{count_{piece type}}{count_{allpieces}} - \frac{1}{7} )^2) / 7}
 ```
@@ -375,7 +375,7 @@ function evenness(piece_counts) {
 
 ### Disclaimer
 
-I don't know if "evenness" makes sense as a metric. I wanted to compute a single number that would represent whether the game, or a section thereof, was "easy" or "hard" (especialy "useful" to look at right when I die so I can blame RNG instead of just my poor skills)
+I don't really know if "evenness" makes sense as a metric. I wanted to compute a single number that would represent whether the game, or a section thereof, was "easy" or "hard" (especialy "useful" to look at right when I die so I can blame RNG instead of just my poor skills)
 
 Basically there are 2 kinds of metrics and stats:
 * stats about the game itself, over which the player has no control, piece distribution being the main one
