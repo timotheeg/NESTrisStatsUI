@@ -8,7 +8,18 @@ Many stats are self-explanatory, but nevertheless, this document will go over ea
 
 The Stats UI runs for a given player (defaults to "TIM"). Each completed game is recorded in a local sqlite3 database for that user.
 
-Any piece in Tetris can have a drought (a sequence of pieces where a given piece doesn't come out). In modern Tetrises with bags, the maximum sequence length for a which doesn't come is 13 (2 consecutive bags of 7 pieces, where a piece type is the first of the first bag and the last of the second bag).
+Any piece in Tetris can have a drought (a sequence of pieces where a given piece doesn't come out). In modern Tetrises with bags, the maximum sequence length for which a piece doesn't come is 13 (2 consecutive bags of 7 pieces, where a piece type is the first of the first bag, and the last of the second bag).
+
+Below is one example of the longest possible T drought in modern tetrises:
+
+```
+Bag 1: T L I S O J Z
+Bag 1: I S Z J O L T
+````
+
+In contrast, Classic NES tetris doesn't use bag rndomization. Because of that a drought may have any arbitrary length and be extermely dificult for a player to navigate.
+
+This stats UI shows droughts for all pieces to try to quantify whether a game was hard. Special attention is given to I-droughts of course, since only I pieces can give tetrises.
 
 
 ### Color-coding
