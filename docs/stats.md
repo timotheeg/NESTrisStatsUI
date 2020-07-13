@@ -280,12 +280,12 @@ This show information about I-piece droughts:
 
 ### Header
 
-Show number of droughts there had been in the game so far.
+Show the number of droughts there have been in the game so far.
 
 ### Panel
 
 Shows the following information
-* Current I-drought count (may be below 13, meaning not yet a drought)
+* Current I-drought counter (may be below 13, meaning not yet a drought!)
 * Shows the size of the last drought (number you want to look at right after you survive a long drought)
 * Shows the longest drought that was experienced in the game
 
@@ -309,18 +309,20 @@ The score per lines ignoring the level multiplier. Individual clears have score 
 
 Definition from [TAUS (Tetris - Actually Useful Statistics) rom](https://www.romhacking.net/hacks/4646/) released by talented programmer [Ejona](https://github.com/ejona86), who is also the author of the awesome [2 player mod](https://www.romhacking.net/hacks/5076/)!
 
-### BRN
+### Burn (BRN)
 
-How many line clears since the last tetris.
+How many lines were cleared since the last tetris.
 
 
 ## Tetris Rate
 
 ![Tetris Rate](./stats/tetris_rate.png) ![Tetris rate with all colors](./stats/tetris_rate_all_colors.png)
 
-This shows the tetris rate with the same value as what is computed in the Lines box. It also shows the running Tetris rate based on the past line clear events. Each line clear event is a dot in the graph. Dots are color-coded by line-clear type, as described at the start of the document.
+This shows the tetris rate with the same value as what is computed in the Lines section. It also shows the running Tetris rate based on previous line-clear events. Each line-clear event is a dot in the graph. Dots are color-coded by line-clear type, as described at the start of the document.
 
-Just like the piece distribution, DAS, and Height section, this graph is a timeline, BUT it is not a timeline on the same timescale as the others. Line-clear events are shown here as one dot each, but they are separated in time by long(-ish), non-regular intervals. To see the line clear events with the correct time spacing, check the vertical bars in the Height section.
+The direction of the graph (trending up or down) indicates whether the player is struggling to score tetris in a given section of the game.
+
+Just like the piece distribution, DAS, and Height section, this graph is a timeline, BUT it is on a different  timescale. Line-clear events are shown as consecutive dots, but they are separated in time by long(-ish), non-regular intervals. To see line-lear events with the correct time spacing, check the vertical bars in the Height section.
 
 
 
