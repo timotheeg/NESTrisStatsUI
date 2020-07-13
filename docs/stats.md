@@ -198,9 +198,10 @@ Example with all 3 types of markers:
 ![Height All Colors](./stats/height_all_colors.png)
 
 
-Sample board with their states
+Sample board with their states:
 
-| -- | -- | -- | -- |
+| sample | sample | sample |
+| -- | -- | -- |
 | ![foo](./stats/boards/board_tetris_nothing.png)
   | ![foo](./stats/boards/board_tetris_ready_2.png)
   | ![foo](./stats/boards/board_tetris_ready_4.png) |
