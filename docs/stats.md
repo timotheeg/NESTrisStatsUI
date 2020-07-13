@@ -217,7 +217,7 @@ This section is yet another timeline. It is perfectly aligned with the DAS timel
 The header conly contains the color-coded legend of the information provided. 4 states are being tracked:
 * Is board tetris-ready?
 * Is board in a perfect slope? (decreasing or equal height from left to right)
-* Is board in a double-well? (double well can only be true if player is also tetris ready)
+* Is board in a double-well? (double well can only be true if player is also tetris ready on the right)
 * Is player in a I-piece drought?
 
 See this [video from Jonas Neubauer](https://www.youtube.com/watch?v=2vtyX0lkt7o) from more information about the double well.
@@ -234,9 +234,9 @@ Sample board with their states as computed by the Stats UI:
 
 | sample | sample | sample |
 | :-: | :-: | :-: |
-| ![foo](./stats/boards/board_nothing.png) | ![foo](./stats/boards/board_tetris_ready_2.png) | ![foo](./stats/boards/board_tetris_ready_4.png) |
+| ![foo](./stats/boards/board_nothing.png) | ![foo](./stats/boards/board_tetris_ready_2.png) | ![foo](./stats/boards/board_tetris_ready_7.png) |
 | **nothing** | Tetris Ready | Tetris Ready |
-| ![foo](./stats/boards/board_tetris_ready_7.png) | ![foo](./stats/boards/board_double_well_2.png) | ![foo](./stats/boards/board_tetris_ready_5.png) |
+| ![foo](./stats/boards/board_tetris_ready_4.png) | ![foo](./stats/boards/board_double_well_2.png) | ![foo](./stats/boards/board_tetris_ready_5.png) |
 | Tetris Ready | Tetris Ready<br>Double Well | Tetris Ready<br>Double Well |
 | ![foo](./stats/boards/board_perfect_slope.png) | ![foo](./stats/boards/board_perfect_slope_3.png) | ![foo](./stats/boards/board_perfect_slope_tetris_ready_double_well.png) |
 | Perfect Slope | "Perfect" Slope<br>Tetris Ready | Perfect Slope<br>Tetris Ready<br>Double Well |
