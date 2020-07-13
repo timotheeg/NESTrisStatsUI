@@ -140,9 +140,13 @@ The second thing the piece section is the distribution matrix, which is crammed 
     * If the piece experiences a drought, a continuous bar will be displayed (in grey for all piece types, but in orange for the I piece, because it is the most important drought type)
 * Current drought counter for the piece
 
-## DAS Section
+## DAS
 
 ![DAS](./stats/das.png)
+
+### Background
+
+The UI is able to know DAS values only because [JazzThief81](https://www.twitch.tv/jazzthief81) made available his wonderful [Das Trainer rom mod](https://www.romhacking.net/hacks/3761/).
 
 ### Header
 
