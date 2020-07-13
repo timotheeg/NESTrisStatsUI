@@ -236,8 +236,8 @@ Sample board with their states:
 | :-: | :-: | :-: |
 | ![foo](./stats/boards/board_nothing.png) | ![foo](./stats/boards/board_tetris_ready_2.png) | ![foo](./stats/boards/board_tetris_ready_4.png) |
 | **nothing** | Tetris Ready | Tetris Ready |
-| ![foo](./stats/boards/board_double_well.png) | ![foo](./stats/boards/board_double_well_2.png) | ![foo](./stats/boards/board_tetris_ready_5.png) |
-| Tetris Ready<br>Double Well | Tetris Ready<br>Double Well | Tetris Ready<br>Double Well |
+| ![foo](./stats/boards/board_tetris_ready_8.png) | ![foo](./stats/boards/board_double_well_2.png) | ![foo](./stats/boards/board_tetris_ready_5.png) |
+| Tetris Ready | Tetris Ready<br>Double Well | Tetris Ready<br>Double Well |
 | ![foo](./stats/boards/board_perfect_slope.png) | ![foo](./stats/boards/board_perfect_slope_3.png) | ![foo](./stats/boards/board_perfect_slope_tetris_ready_double_well.png) |
 | Perfect Slope | Perfect Slope | Perfect Slope<br>Tetris Ready<br>Double Well |
 
