@@ -14,7 +14,7 @@ Below is one example of the longest possible T drought in modern tetrises:
 
 ```
 Bag 1: T L I S O J Z
-Bag 1: I S Z J O L T
+Bag 2: I S Z J O L T
 ````
 
 In contrast, Classic NES tetris doesn't use bag rndomization. Because of that a drought may have any arbitrary length and be extermely dificult for a player to navigate.
