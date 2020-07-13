@@ -43,9 +43,9 @@ Bag 1: T L I S O J Z
 Bag 2: I S Z J O L T
 ````
 
-In contrast, Classic NES tetris doesn't use bag randomization. Because of that, a drought may have arbitrary length, and be extremely difficult for a player to handle. To contrast with modern tetrises, a player is considered in a drought in NES Classic Tetris whenever there is a sequence 13-long or more, where a given piece does not come.
+In contrast, Classic NES tetris doesn't use bag randomization. Because of that, a drought may have arbitrary length, and be difficult for a player to handle. To contrast with modern tetrises, a player is considered in a drought in NES Classic Tetris whenever there is a sequence **13-long** or more, where a given piece does not come.
 
-Traditionnaly, in CLassic tetris players, viewers, and commentators have been focusing on the I piece droughts. Considered the most important, because Tetrises can only be achieved with I pieces. This Stats UI however shows droughts for all pieces!
+Traditionnaly, Classic Tetris players, viewers, and commentators have been focusing on the I piece droughts, considered the most important because Tetrises can only be achieved with I pieces. This Stats UI however shows droughts for all pieces!
 
 
 ## Color-coding
@@ -157,14 +157,14 @@ For more information abour this metrics, see the Miscellaneous section at the en
 
 ![Pieces Matrix](./stats/pieces_matrix.png)
 
-The second thing the piece section is the distribution matrix, which is crammed with information. There are 7 rows, one for each piece types, with the following information:
+The second thing the piece section is the distribution matrix, which is crammed with information. There are 7 rows, one for each piece type, with the following information in each row:
 
-* Piece type label (colored based on the level)
-* Number of piece released for that type
+* Piece type (colored based on the level)
+* Number of pieces released for that type
 * Overall distribution of that piece in the game
 * Visual representation for the piece distribution within a timeline of the last 120 pieces
-    * Each dot represent a time when the piece was released
-    * Dots are color coded based on the DAS value the piece had when it spawned (see section on DAS below)
+    * Each dot represent when the piece spawned
+    * Dots are color-coded based on the DAS value the piece had when it spawned (see section on DAS below)
     * If the piece experiences a drought, a continuous bar will be displayed (in grey for all piece types, except for I pieces, where droughts are displayed in orange)
 * Current drought counter for the piece type
 
