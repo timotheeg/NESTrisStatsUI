@@ -359,7 +359,7 @@ I thought having ratios would help having the 3 metrics in the same unit.
 
 The formula graphic was generated with this [latex equation renderer](http://atomurl.net/math/) from the following Latex fomula:
 ```
-100 * \sqrt{(\sum_{piece type} (\frac{count_{piece type}}{count_{allpieces}} - \frac{1}{7} )^2) / 7}
+100 * \sqrt{\frac{\sum_{piece type} (\frac{count_{piece type}}{count_{allpieces}} - \frac{1}{7} )^2}{7}}
 ```
 
 ### Javascript function
@@ -392,7 +392,7 @@ I typically do not read chat during a streaming session, messages are read to me
 
 Just like for the user color, each chatter is randomly assigned a voice that he/she keeps for the whole session.
 
-The voices are picked from the following selection of Google Voices. Do not complain about what voice you get!
+Voices are picked from the following selection of Google Voices. Do not complain about what voice you get!
 
 ```
 en-AU-Wavenet-A
@@ -418,5 +418,5 @@ en-US-Wavenet-E
 en-US-Wavenet-F
 ```
 
-I **can** permanently assign a voice to a twitch user, but you need to be a regular visitor for this to happen. So far only one twitch player has that priviledge (beside myself of course), [Puffy](https://www.twitch.tv/puffie_)!
+I **can** permanently assign a voice to a twitch user, but you need to be a regular visitor to the stream! So far only one twitch player has that priviledge (beside myself of course), [Puffy](https://www.twitch.tv/puffie_)!
 
