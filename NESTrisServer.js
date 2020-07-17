@@ -61,7 +61,10 @@ class NESTrisServer extends EventEmitter {
 		}
 
 		conn
-			.on('end', () => {
+			.on('error', (err) => {
+				console.log(`OCR producer ${this.server_id} error ${err.errno || err.code}`);
+			})
+			.on('close', () => {
 				console.log(`OCR producer ${this.server_id} disconnected`);
 				conn.removeAllListeners();
 			})
