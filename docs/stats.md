@@ -259,6 +259,8 @@ You can also observe whether an extended period of tetris readiness in a drought
 
 Note: Transition is the first level change. Starting at Level 18, a player needs to clear 130 lines before transition, starting at level 0, a player only needs to clear 10 lines till transition.
 
+The 2 score label `Ru` and `Tr` stand for `Running` and `Transition` respectively.
+
 
 ### Next
 
