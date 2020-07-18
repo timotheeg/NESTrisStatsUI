@@ -4,13 +4,37 @@ const dom = {
 	p1_name:  document.querySelector('#bestof'),
 };
 
-let connected = false;
+let socket;
 
-const ws = new WebSocket('ws://localhost:4000');
+function handleWSOpen() {
+	console.log('connected');
+}
+function handleWSError() {}
+function handleWSClose() {
+	clearSocket();
+	setTimeout(connect, 25);
+}
 
-ws.addEventListener('open', function (event) {
-    connected = true;
-});
+function clearSocket() {
+	try {
+		socket.removeEventListener('open',  handleWSOpen);
+		socket.removeEventListener('error',  handleWSError);
+		socket.removeEventListener('close',  handleWSClose);
+		socket.close();
+	}
+	catch(e) {}
+}
+
+function connect() {
+	if (socket) {
+		clearSocket()
+	}
+
+	socket = new WebSocket('ws://localhost:4000');
+	socket.addEventListener('open',  handleWSOpen);
+	socket.addEventListener('error',  handleWSError);
+	socket.addEventListener('close',  handleWSClose);
+}
 
 const state = {
 	maxBestof: 13,
@@ -23,9 +47,10 @@ const state = {
 };
 
 function send(...args) {
-	if (!connected) return;
-
-	ws.send(JSON.stringify(args));
+	try {
+		socket.send(JSON.stringify(args));
+	}
+	catch(e) {}
 }
 
 const remoteAPI = {
@@ -52,7 +77,7 @@ const remoteAPI = {
 function setBestOfOptions(n, selected) {
 	const select = dom.bestof;
 
-	for (;  n >= 3; n-= 2) {
+	for (;  n >= 3; n -= 2) {
 		const option = document.createElement('option');
 		option.value = n;
 		option.textContent = n;
@@ -141,6 +166,8 @@ function reset() {
 }
 
 function bootstrap() {
+	connect();
+
 	setBestOfOptions(state.maxBestof, state.bestof);
 	setBestOf(state.bestof);
 

@@ -99,16 +99,49 @@ class TetrisCompetitionAPI {
 	}
 };
 
-const socket = new WebSocket('ws://127.0.0.1:4003');
+let socket;
 
-socket.addEventListener('message', (frame => {
+function handleWSFrame(frame) {
 	try{
-		const [method, ...args] = JSON.parse(frame.data); // expect array of format [api_method_name, arg1, arg2, ...]
-
+		const [type, ...args] = JSON.parse(frame.data);
 		API[method].apply(API, args);
 	}
 	catch(e) {
 		console.error(e);
 	}
-}));
+}
+
+function handleWSError(err) {
+	// ignore
+}
+
+function handleWSClose(evt) {
+	// console.log('Socket close');
+	clearSocket();
+	setTimeout(connect, 25); // schedule reconnect
+}
+
+function clearSocket() {
+	try {
+		socket.removeEventListener('message', handleWSFrame);
+		socket.removeEventListener('error',  handleWSError);
+		socket.removeEventListener('close',  handleWSClose);
+		socket.close();
+	}
+	catch(e) {}
+}
+
+function connect() {
+	if (socket) {
+		clearSocket();
+	}
+
+	socket = new WebSocket('ws://127.0.0.1:4003');
+
+	socket.addEventListener('message', handleWSFrame);
+	socket.addEventListener('error',  handleWSError);
+	socket.addEventListener('close',  handleWSClose);
+}
+
+connect();
 
