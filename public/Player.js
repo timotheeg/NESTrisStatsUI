@@ -306,11 +306,18 @@ class Player {
 	}
 
 	setAvatar(url) {
-		this.avatar.style.backgroundImage = `url('${url}')`;
+		if (!url) {
+			// try local files...
+			url = `./avatars/${this.player_name}.png`;
+		}
+
+		this.avatar_url = url;
+		this.avatar.style.backgroundImage = `url('${encodeURI(url)}')`;
 	}
 
 	setName(name) {
-		this.dom.name.textContent = name;
+		this.dom.name.textContent = this.player_name = name;
+		this.setAvatar();
 	}
 
 	setFrame(data) {
