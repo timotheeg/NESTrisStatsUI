@@ -1,3 +1,88 @@
+const WINNER_FACE_BLOCKS = [
+	[12, 3],
+	[12, 6],
+	[15, 2],
+	[15, 7],
+	[16, 3],
+	[16, 4],
+	[16, 5],
+	[16, 6],
+];
+
+const LOSER_FACE_BLOCKS = [
+	[12, 3],
+	[12, 6],
+	[15, 3],
+	[15, 4],
+	[15, 5],
+	[15, 6],
+	[16, 2],
+	[16, 7],
+];
+
+const BORDER_BLOCKS = [
+	[0,  0],
+	[1,  0],
+	[2,  0],
+	[3,  0],
+	[4,  0],
+	[5,  0],
+	[6,  0],
+	[7,  0],
+	[8,  0],
+	[9,  0],
+	[10, 0],
+	[11, 0],
+	[12, 0],
+	[13, 0],
+	[14, 0],
+	[15, 0],
+	[16, 0],
+	[17, 0],
+	[18, 0],
+	[19, 0],
+
+	[19, 1],
+	[19, 2],
+	[19, 3],
+	[19, 4],
+	[19, 5],
+	[19, 6],
+	[19, 7],
+	[19, 8],
+	[19, 9],
+
+	[18, 9],
+	[17, 9],
+	[16, 9],
+	[15, 9],
+	[14, 9],
+	[13, 9],
+	[12, 9],
+	[11, 9],
+	[10, 9],
+	[9,  9],
+	[8,  9],
+	[7,  9],
+	[6,  9],
+	[5,  9],
+	[4,  9],
+	[3,  9],
+	[2,  9],
+	[1,  9],
+	[0,  9],
+
+	[0,  8],
+	[0,  7],
+	[0,  6],
+	[0,  5],
+	[0,  4],
+	[0,  3],
+	[0,  2],
+	[0,  1],
+];
+
+
 function renderBlock(level, block_index, pixel_size, ctx, pos_x, pos_y) {
 	let color;
 
@@ -163,6 +248,9 @@ class Player {
 			...options
 		};
 
+		this.gameid = -1;
+		this.game_over = true;
+
 		this.field_pixel_size = this.options.field_pixel_size || this.options.pixel_size;
 		this.preview_pixel_size = this.options.preview_pixel_size || this.options.pixel_size;
 		this.render_running_trt_rtl = !!this.options.running_trt_rtl;
@@ -179,7 +267,7 @@ class Player {
 		this.avatar.classList.add('avatar');
 		Object.assign(this.avatar.style, {
 			position:           'absolute',
-			top:                `${this.field_pixel_size * 8 * 2}px`,
+			top:                `${this.field_pixel_size * 8 * 1}px`,
 			left:               `${css_size(styles.padding) - this.field_pixel_size}px`,
 			width:              `${css_size(styles.width) + this.field_pixel_size * 2}px`,
 			height:             `${css_size(styles.width) + this.field_pixel_size * 2}px`,
@@ -236,6 +324,8 @@ class Player {
 			tetris: new Audio('./Tetris_Clear.mp3')
 		};
 
+		this.renderWinnerFrame = this.renderWinnerFrame.bind(this);
+
 		this.reset();
 	}
 
@@ -282,11 +372,14 @@ class Player {
 		this.lines_trt = 0;
 		this.total_eff = 0;
 
+		this.winner_frame = 0;
+
 		this.preview_ctx.clear();
 		this.field_ctx.clear();
 		this.running_trt_ctx.clear();
 
 		this.clearTetrisAnimation();
+		this.clearWinnerAnimation();
 		this.field_bg.style.background = 'rbga(0,0,0,0)';
 	}
 
@@ -321,6 +414,14 @@ class Player {
 	}
 
 	setFrame(data) {
+		if (this.game_over) {
+			if (!data.gameid) return;
+			if (data.gameid <= this.gameid) return;
+
+			this.game_over = false;
+			this.gameid = data.gameid;
+		}
+
 		['lines', 'level'].forEach(field => {
 			if (data[field]) {
 				this.dom[field].textContent = data[field];
@@ -353,6 +454,7 @@ class Player {
 			this.field_num_blocks = num_blocks;
 			this.field_string = data.field;
 			this.clear_animation_remaining_frames = -1;
+			this.clearWinnerAnimation();
 		}
 
 		if (!isNaN(level)) {
@@ -361,6 +463,10 @@ class Player {
 			this.renderField(this.level, data.field);
 			this.renderPreview(this.level, data.preview);
 			this.updateField(data.field, num_blocks);
+
+			if (num_blocks === 200) {
+				this.game_over = true;
+			}
 		}
 
 		if (isNaN(lines)
@@ -624,5 +730,94 @@ class Player {
 				pixel_size
 			);
 		}
+	}
+
+	clearField() {
+		this.field_ctx.clear();
+		this.clearWinnerAnimation();
+	}
+
+	showLoserFrame() {
+		this.winner_frame = 0;
+		this.clearField();
+		this.renderLoserFace();
+		this.renderBorder(false);
+	}
+
+	playWinnerAnimation() {
+		this.winner_frame = 0;
+		this.clearField();
+		this.winner_animation_id = setInterval(this.renderWinnerFrame, 1000/18);
+	}
+
+	clearWinnerAnimation() {
+		this.winner_animation_id = clearInterval(this.winner_animation_id);
+	}
+
+	renderWinnerFrame() {
+		this.winner_frame++;
+		this.renderWinnerFace();
+		this.renderBorder(true);
+	}
+
+	renderWinnerFace() {
+		const pixels_per_block = this.field_pixel_size * (7 + 1);
+		const level = Math.floor(this.winner_frame / 3) % 10;
+
+		WINNER_FACE_BLOCKS.forEach(([y, x]) => {
+			renderBlock(
+				level,
+				1,
+				this.field_pixel_size,
+				this.field_ctx,
+				x * pixels_per_block,
+				y * pixels_per_block
+			);
+		});
+	}
+
+	renderLoserFace() {
+		const pixels_per_block = this.field_pixel_size * (7 + 1);
+		const level = 6;
+
+		LOSER_FACE_BLOCKS.forEach(([y, x]) => {
+			renderBlock(
+				level,
+				3,
+				this.field_pixel_size,
+				this.field_ctx,
+				x * pixels_per_block,
+				y * pixels_per_block
+			);
+		});
+	}
+
+	renderBorder(is_winner) {
+		const pixels_per_block = this.field_pixel_size * (7 + 1);
+
+		BORDER_BLOCKS.forEach(([y, x], idx) => {
+			const offset = this.winner_frame + idx;
+
+			let level, color;
+
+			if (is_winner) {
+				level = Math.floor(offset / 3) % 10;
+				color = (offset % 3) + 1;
+			}
+			else {
+				// ugly grey piece
+				level = 6;
+				color = 3;
+			}
+
+			renderBlock(
+				level,
+				color,
+				this.field_pixel_size,
+				this.field_ctx,
+				x * pixels_per_block,
+				y * pixels_per_block
+			);
+		});
 	}
 }

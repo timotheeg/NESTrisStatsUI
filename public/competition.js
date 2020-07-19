@@ -1,7 +1,11 @@
 // very simple RPC system to allow server to send data to client
 
 function getPlayer(num) {
-	return players[num -1];
+	return players[num - 1];
+}
+
+function getOtherPlayer(num) {
+	return players[num % 2];
 }
 
 class TetrisCompetitionAPI {
@@ -29,27 +33,35 @@ class TetrisCompetitionAPI {
 	setFirstTo(num_games_to_win) {
 		this.first_to = num_games_to_win;
 
-		this._repaintVictories(1);
-		this._repaintVictories(2);
+		this.setVictories(1, this.victories[1]);
+		this.setVictories(2, this.victories[2]);
+
+		/*
+		if (this.victories[1] < this.first_to && this.victories[2] < this.first_to) {
+			getPlayer(1).clearField();
+			getPlayer(2).clearField();
+		}
+		/**/
 	}
 
 	setBestOf(num_games) {
-		this.first_to = Math.ceil(num_games / 2);
-
-		this._repaintVictories(1);
-		this._repaintVictories(2);
+		this.setFirstTo(Math.ceil(num_games / 2));
 	}
 
 	setVictories(player_num, num_victories) {
 		this.victories[player_num] = num_victories;
 
 		this._repaintVictories(player_num);
+
+		if (num_victories >= this.first_to) {
+			// global game winner
+			getPlayer(player_num).playWinnerAnimation();
+			getOtherPlayer(player_num).showLoserFrame();
+		}
 	}
 
 	winner(player_num) {
-		this.victories[player_num]++;
-
-		this._repaintVictories(player_num);
+		this.setVictories(player_num, this.victories[player_num] + 1);
 	}
 
 	_repaintVictories(player_num) {
@@ -103,7 +115,7 @@ let socket;
 
 function handleWSFrame(frame) {
 	try{
-		const [type, ...args] = JSON.parse(frame.data);
+		const [method, ...args] = JSON.parse(frame.data);
 		API[method].apply(API, args);
 	}
 	catch(e) {
