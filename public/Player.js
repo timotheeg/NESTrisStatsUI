@@ -414,12 +414,16 @@ class Player {
 	}
 
 	setFrame(data) {
+		const level = parseInt(data.level, 10);
+
 		if (this.game_over) {
 			if (!data.gameid) return;
 			if (data.gameid <= this.gameid) return;
 
 			this.game_over = false;
 			this.gameid = data.gameid;
+			this.start_level = level;
+
 		}
 
 		['lines', 'level'].forEach(field => {
@@ -437,7 +441,6 @@ class Player {
 			;
 		}
 
-		const level = parseInt(data.level, 10);
 		const num_blocks = data.field.replace(/0+/g, '').length;
 
 		const lines = parseInt(data.lines, 10);
