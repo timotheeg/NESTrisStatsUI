@@ -420,10 +420,10 @@ class Player {
 			if (!data.gameid) return;
 			if (data.gameid <= this.gameid) return;
 
+			this.clearWinnerAnimation();
 			this.game_over = false;
 			this.gameid = data.gameid;
 			this.start_level = level;
-
 		}
 
 		['lines', 'level'].forEach(field => {
