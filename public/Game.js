@@ -136,6 +136,9 @@ class Board {
 
 class Game {
 	constructor(event) {
+		this.id = event.gameid;
+		this.over = false;
+
 		// will store all pieces that have been played in the game
 		this.pieces = [];
 

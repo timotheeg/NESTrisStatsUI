@@ -137,10 +137,13 @@ const LINE_CLEAR_IGNORE_FRAMES = 7;
 
 let
 	game = null,
+	gameid = -1,
 	last_valid_state = null,
-	pending_game = false,
+
+	pending_game = true,
 	pending_piece = false,
 	pending_line = false,
+
 	line_animation_remaining_frames = 0,
 	pending_single = false,
 	game_frames = [];
@@ -150,6 +153,7 @@ function onFrame(event, debug) {
 
 	// transformation
 	const transformed = {
+		gameid: event.gameid,
 		diff: {
 			cleared_lines: 0,
 			score:         0,
@@ -176,37 +180,47 @@ function onFrame(event, debug) {
 		debugger;
 	}
 
-	let
-		piece_entry =   false,
-		cleared_lines = 0;
-
-	if (!last_valid_state) {
-		// waiting for one good frame
-		// not guarantee to work well, we may want to gather good data over multiple frames
-		if (transformed.cur_piece
-			&& transformed.next_piece
-			&& !isNaN(transformed.cur_piece_das)
-			&& !isNaN(transformed.score)
-			&& !isNaN(transformed.lines)
-			&& !isNaN(transformed.level)
-			&& transformed.stage.num_blocks != 200
-		) {
-			game = new Game(transformed);
-			// game_frames = [{...event}];
-			clearStage();
-			renderPiece(transformed);
-			renderLine(transformed);
-			last_valid_state = { ...transformed };
-			line_animation_remaining_frames = 0
-			pending_piece = pending_line = true;
-		}
-		else {
+	if (pending_game) {
+		if (game && game.id === transformed.gameid) {
+			// this discards which are considered within a game
+			// but don't actually show gameplay
+			// i.e. rocket animation, score, menu
 			return;
 		}
+
+		pending_game = false;
+
+		game = new Game(transformed);
+		gameid = game.id;
+
+		clearStage();
+		renderPiece(transformed);
+		renderLine(transformed);
+
+		last_valid_state = { ...transformed };
+
+		line_animation_remaining_frames = 0;
+
+		pending_piece = pending_line = true;
 	}
-	else {
+
+	if (!game.over) {
+		// game is ongoing, quick check on possible transitions
+
+		// Is game over?
 		if (transformed.stage.num_blocks === 200) {
 			reportGame(game);
+			pending_game = true;
+
+			renderStage(transformed.level, transformed.stage.field);
+			return;
+		}
+
+		// Has new game started before player waited for the fill animation?
+		if (game.id != transformed.gameid) {
+			reportGame(game);
+			pending_game = true;
+			return
 		}
 	}
 
@@ -215,8 +229,8 @@ function onFrame(event, debug) {
 	// quick check for das loss
 	if (transformed.cur_piece_das && transformed.instant_das === 0) {
 		if (game.pieces.length) {
-			game.onDasLoss()
-			renderDas()
+			game.onDasLoss();
+			renderDas();
 		}
 	}
 
@@ -231,25 +245,6 @@ function onFrame(event, debug) {
 	diff.next_piece    = transformed.next_piece !== last_valid_state.next_piece;
 	diff.stage_blocks  = transformed.stage.num_blocks - last_valid_state.stage.num_blocks;
 
-	if (diff.score && transformed.score === 0) {
-		// new game started
-		if (isNaN(transformed.lines) || isNaN(transformed.level) || transformed.level > 29) {
-			return; // but not fully formed valid state
-		}
-
-		if (game) {
-			reportGame(game);
-		}
-
-		game = new Game(transformed);
-		// game_frames = [{...event}];
-		clearStage();
-		renderLine(transformed);
-		last_valid_state = { ...transformed };
-		pending_piece = true;
-		line_animation_remaining_frames = 0;
-	}
-
 	// check if a change to cur_piece_stats
 	if (pending_piece) {
 		if (transformed.cur_piece && transformed.next_piece && !isNaN(transformed.cur_piece_das) && transformed.cur_piece_das <= 16) {
@@ -262,9 +257,6 @@ function onFrame(event, debug) {
 				next_piece: transformed.next_piece,
 				cur_piece_das: transformed.cur_piece_das
 			});
-		}
-		else {
-			pending_piece = true;
 		}
 	}
 
@@ -367,6 +359,7 @@ function getStats() {
 function reportGame(game) {
 	if (game.reported) return;
 
+	game.over = true;
 	game.reported = true;
 
     fetch(
