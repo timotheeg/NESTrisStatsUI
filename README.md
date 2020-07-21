@@ -16,6 +16,8 @@ NEStrisStatsUI provides many templates implemented in HTML+CSS+JavaScript at 720
 
 Documentation for sections of that UI is [here](./docs/stats.md)
 
+1 game demo video [here](https://www.youtube.com/watch?v=OhNsuIUrRD0)
+
 
 #### Competition Layout
 
@@ -24,6 +26,8 @@ Documentation for sections of that UI is [here](./docs/stats.md)
 Includes score differentials, difference in number of tetrises, tetris rate computation, and running tetris rate.
 
 UI "inspired" from, and improving on, [CTJC's layout](https://www.youtube.com/watch?v=ATpW6TQ_H2c).
+
+1 game demo video [here](https://www.youtube.com/watch?v=0cnpc64fveg)
 
 
 
