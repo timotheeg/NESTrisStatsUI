@@ -1,23 +1,65 @@
-NesTrisStatsUI is a project to re-render NES Tetris and computate game play stats.
+## A Renderer for Classic NES Tetris
 
-It consists or a nodejs server app and a HTML+JS+Canvas Frontend UI which can be run in a browser widget in OBS.
+NesTrisStatsUI is a project to render NES Tetris. It runs by processing Tetris data reported by [NESTrisOCR](https://github.com/alex-ong/NESTrisOCR).
+
+When we have Tetris data, the tetris game can be re-rendered with custom layouts, and various statistics can be computed. When multiple player data are used, a competition UI can be built with score differential, etc.
 
 
-## Features
+NEStrisStatsUI provides many templates implemented in HTML+CSS+JavaScript at 720p resolution. This allows the templates to be dropped easily in [OBS](https://obsproject.com/) or [StreamLabs](https://streamlabs.com/) as [browser sources](https://obsproject.com/wiki/Sources-Guide#browsersource), and then adding player video stream or other sources on top of it.
+
+
+### Screenshots
+
+#### Many stats for one player:
+
+![Full UI](./docs/stats/full_ui.png)
+
+Documentation for sections of that UI is [here](./docs/stats.md)
+
+
+#### Competition Layout
+
+![Full UI](./docs/uis/competition_ui_2.png)
+
+Includes score differentials, difference in number of tetrises, tetris rate computation, and running tetris rate.
+
+UI "inspired" from, and improving on, [CTJC's layout](https://www.youtube.com/watch?v=ATpW6TQ_H2c).
+
+
+
+#### Invisible Tetris Renderer
+
+![Full UI](./docs/uis/invisible_tetris_1.png)
+
+Sample videos from gameplay at CTWC Invisible Tetris Competition 2019:
+
+* [Alex Kerr](https://www.youtube.com/watch?v=2RwoM0Nu9rs)
+* [Koryan](https://www.youtube.com/watch?v=A-h7Ls0FkcU)
+
+And myself playing (badly) from the renderer itself (it's hard because rendering runs 2 frame behind)
+* [Game 1](https://www.youtube.com/watch?v=eh2bqVe4wOo)
+* [Game 2](https://www.youtube.com/watch?v=6CLdBgV3DW4)
+
+
+
+
+## (Some) Features
 
 * Historical game score tracking in local sqlite3 DB
 * Connection to twitch channel to extract chat in real time, (optionally with voice)
-* Connection to google voice or OSX `say` to speak chat entries 
+* Connection to google voice or OSX `say` to speak chat entries
     * Voices are assigned randomly to a chat user and reused for that user for consistent conversation
 * Lots of stats for the ongoing game:
 	* Lines/Scores
 	* Transition Score (first level change)
     * Tetris Rate / Burn counter
+    * Efficiency
     * Running Tetris rate which indicate the singles/doubles/triples/tetris taken
     * Drought counter
     * Piece distribution with drought representation for all pieces
     * Occurence rates for Singles/Doubles/Tripes/Tetris (Last one being Tetris Rate)
     * Point tracking per SoftDrop/Single/Doubles/Triples/tetris with their percentage contribution to the total score
+    * Height and state or board (Clean Slope, Tetris-ready, Double Well)
 
 
 ## Setup
@@ -53,7 +95,7 @@ Notes:
 * The current `NEStrisStatsUI` works with a custom fork of `NESTrisOCR` to support Das Trainer. That version is no yet public
 * A version of `NEStrisStatsUI` to work with Vanilla `NESTrisOCR` is in the works
 
-Make sure you configure NEsTrisOCR to send th 
+Make sure you configure NEsTrisOCR to send th
 
 ## Running
 
@@ -66,7 +108,7 @@ You should be able to verify see the tetris gaeplay being re-rendered
 
 ### OBS
 
-The 2 layouts `skin_das_trainer.html` and `competition_layout1.html` are designed to be displayed at exacly `1280x720` (i.e. 720p). 
+The 2 layouts `skin_das_trainer.html` and `competition_layout1.html` are designed to be displayed at exacly `1280x720` (i.e. 720p).
 
 In OBS:
 
@@ -75,7 +117,7 @@ In OBS:
 
 If you have a webcam, set a video overlay to match the layout slot.
 
-To run and stream, repeat the steps 1, and 2 above, but replace step 3 by 
+To run and stream, repeat the steps 1, and 2 above, but replace step 3 by
 
 3. Run OBS
 
@@ -84,10 +126,12 @@ To run and stream, repeat the steps 1, and 2 above, but replace step 3 by
 
 TODO
 
+Note: This repo is built by myself for myself. Meaning it works, but setting up and troubleshooting is a pain, much of the code is copy/pasted between templates, and there's no documentation on the servers, ports, etc. At some point I will make it clean to allow people to use it easily, and to contribute to it easily, but there's no ETA for that.
+
 
 ## Bonus: Competition Layout
 
-The project contains a competition layout where 2 OCR streams can be sent to individual ports and rerendered. 
+The project contains a competition layout where 2 OCR streams can be sent to individual ports and rerendered.
 
 So far only the score differential, tetris rate and running tetris rate are supported for both players
 
