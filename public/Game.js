@@ -215,6 +215,11 @@ class Game {
 		});
 	}
 
+	setFrame(frame) {
+		// TODO Game should understand frame sequences
+		// Consunmer app should track when a new game starts and instantiate a new game
+	}
+
 	onDasLoss() {
 		if (!this.pieces.length) return;
 
