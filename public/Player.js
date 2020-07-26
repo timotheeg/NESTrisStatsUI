@@ -248,14 +248,12 @@ class Player {
 			...options
 		};
 
-		this.gameid = -1;
-		this.game_over = true;
-
 		this.field_pixel_size = this.options.field_pixel_size || this.options.pixel_size;
 		this.preview_pixel_size = this.options.preview_pixel_size || this.options.pixel_size;
 		this.render_running_trt_rtl = !!this.options.running_trt_rtl;
 		this.render_wins_rtl = !!this.options.wins_rtl;
 
+		this.pieces = [];
 		this.clear_events = [];
 
 		this.numberFormatter = new Intl.NumberFormat();
@@ -327,12 +325,13 @@ class Player {
 		this.renderWinnerFrame = this.renderWinnerFrame.bind(this);
 
 		this.reset();
+
+		this.game_over = true; // we start gae over, waiting for the first good frame
 	}
 
-	onPiece() {
-		// TODO Store piece sequence
-		// TODO Derive drought
-	}
+	onPiece() {}
+	onStartDrought() {}
+	onEndDrought() {}
 
 	onTetris() {
 		if (this.options.tetris_flashes) {
@@ -358,20 +357,28 @@ class Player {
 
 	clearTetrisAnimation() {
 		window.cancelAnimationFrame(this.tetris_animation_ID);
+		this.clear_animation_remaining_frames = -1;
 	}
 
 	reset() {
+		this.pending_piece = false;
+		this.pending_single = false;
+
+		this.pieces.length = 0;
 		this.clear_events.length = 0;
 		this.preview = '';
 		this.score = 0;
 		this.lines = 0;
 		this.level = 0;
+		this.drought = 0;
 		this.field_num_blocks = 0;
 		this.field_string = '';
 
 		this.lines_trt = 0;
 		this.total_eff = 0;
 
+		this.gameid = -1;
+		this.game_over = false;
 		this.winner_frame = 0;
 
 		this.preview_ctx.clear();
@@ -381,6 +388,9 @@ class Player {
 		this.clearTetrisAnimation();
 		this.clearWinnerAnimation();
 		this.field_bg.style.background = 'rbga(0,0,0,0)';
+
+		this.dom.trt.textContent = '---';
+		this.dom.eff.textContent = '---';
 	}
 
 	getScore() {
@@ -414,16 +424,36 @@ class Player {
 	}
 
 	setFrame(data) {
+		const lines = parseInt(data.lines, 10);
 		const level = parseInt(data.level, 10);
+		const num_blocks = data.field.replace(/0+/g, '').length;
+
+		if (this.gameid < 0) {
+			// first frame we're ever reading
+			if (!data.gameid) return;
+
+			this.gameid = data.gameid;
+		}
 
 		if (this.game_over) {
 			if (!data.gameid) return;
-			if (data.gameid <= this.gameid) return;
+			if (data.gameid != this.gameid) return;
 
-			this.clearWinnerAnimation();
-			this.game_over = false;
+			// new game!
+			this.reset();
+
+			// we initialize the game state based on this first frame
+			// dangerous for field data if input is badly detected, but what to do -_-
+
 			this.gameid = data.gameid;
+			this.field_num_blocks = num_blocks;
 			this.start_level = level;
+			this.lines = lines;
+
+			if (data.cur_piece) {
+				// Ideally, we'd want to wait one frame to read cur_piece -_-
+				this.prev_preview = data.cur_piece;
+			}
 		}
 
 		['lines', 'level'].forEach(field => {
@@ -441,25 +471,6 @@ class Player {
 			;
 		}
 
-		const num_blocks = data.field.replace(/0+/g, '').length;
-
-		const lines = parseInt(data.lines, 10);
-
-		if (lines === 0 && (num_blocks === 0 || num_blocks == 4)) {
-			// New game
-			this.lines = 0;
-			this.lines_trt = 0;
-			this.total_eff = 0;
-			this.dom.trt.textContent = '---';
-			this.dom.eff.textContent = '---';
-			this.clear_events.length = 0;
-			this.running_trt_ctx.clear();
-			this.field_num_blocks = num_blocks;
-			this.field_string = data.field;
-			this.clear_animation_remaining_frames = -1;
-			this.clearWinnerAnimation();
-		}
-
 		if (!isNaN(level)) {
 			this.level = level;
 
@@ -472,11 +483,39 @@ class Player {
 			}
 		}
 
+		if (this.pending_piece) {
+			const cur_piece = data.cur_piece || this.prev_preview;
+
+			if (!cur_piece || cur_piece === 'I') {
+				if (this.drought >= 13) {
+					this.onEndDrought();
+				}
+
+				this.drought = 0;
+			}
+			else {
+				this.drought++;
+
+				if (this.drought === 13) {
+					this.onStartDrought();
+				}
+			}
+
+			this.dom.drought.textContent = this.drought;
+
+			this.prev_preview = this.preview;
+			this.pending_piece = false;
+
+			this.onPiece(cur_piece);
+		}
+
 		if (isNaN(lines)
 			|| lines === 0
 			|| lines === this.lines
 			|| this.clear_animation_remaining_frames >= 0
-		) return;
+		) {
+			return;
+		}
 
 		const cleared = lines - this.lines;
 
@@ -596,11 +635,11 @@ class Player {
 
 		if (this.clear_animation_remaining_frames-- > 0) return;
 
-		const block_diff = num_blocks - this.field_num_blocks;
+		const block_diff = num_blocks - (this.field_num_blocks || 0);
 
 		if (block_diff === 4) {
 			this.field_num_blocks = num_blocks;
-			this.onPiece(); // read piece data on next frame if needed
+			this.pending_piece = true;
 			return;
 		}
 
