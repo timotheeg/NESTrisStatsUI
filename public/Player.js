@@ -430,14 +430,13 @@ class Player {
 
 		if (this.gameid < 0) {
 			// first frame we're ever reading
-			if (!data.gameid) return;
+			if (data.gameid == null || isNaN(data.gameid)) return;
 
 			this.gameid = data.gameid;
 		}
 
-		if (this.game_over) {
-			if (!data.gameid) return;
-			if (data.gameid != this.gameid) return;
+		if (this.game_over || data.gameid != this.gameid) {
+			if (data.gameid == this.gameid) return;
 
 			// new game!
 			this.reset();
