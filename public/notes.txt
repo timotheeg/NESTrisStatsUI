@@ -1,5 +1,0 @@
-frame 1028: blocks increment by 4, but cur_piece is null
-
-next issue frame 1653 1654 1655 -> cur_piece null twice, and when increases, block count corrupted
-
-3675 -> transition
