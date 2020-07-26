@@ -483,7 +483,7 @@ class Player {
 		}
 
 		if (this.pending_piece) {
-			const cur_piece = data.cur_piece || this.prev_preview;
+			const cur_piece = this.prev_preview;
 
 			if (!cur_piece || cur_piece === 'I') {
 				if (this.drought >= 13) {
@@ -502,7 +502,7 @@ class Player {
 
 			this.dom.drought.textContent = this.drought;
 
-			this.prev_preview = this.preview;
+			this.prev_preview = data.preview;
 			this.pending_piece = false;
 
 			this.onPiece(cur_piece);
