@@ -56,6 +56,7 @@ class Board {
 				}
 			}
 			else {
+				// removes falling piece
 				row = new Row('0000000000', this.rows.length);
 			}
 
