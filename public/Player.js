@@ -428,16 +428,11 @@ class Player {
 		const level = parseInt(data.level, 10);
 		const num_blocks = data.field.replace(/0+/g, '').length;
 
-		if (this.gameid < 0) {
-			// first frame we're ever reading
-			if (data.gameid == null || isNaN(data.gameid)) return;
-
-			this.gameid = data.gameid;
+		if (this.game_over && data.gameid == this.gameid) {
+			return;
 		}
 
-		if (this.game_over || data.gameid != this.gameid) {
-			if (data.gameid == this.gameid) return;
-
+		if (data.gameid != this.gameid) {
 			// new game!
 			this.reset();
 
