@@ -237,7 +237,8 @@ const DEFAULT_OPTIONS = {
 	wins_rtl: 0,
 	tetris_flashes: 1,
 	tetris_sound: 1,
-	format_score: 1
+	format_score: 1,
+	reliable_field: 1,
 };
 
 class Player {
@@ -423,6 +424,28 @@ class Player {
 		this.setAvatar();
 	}
 
+	_getPieceStats(data) {
+		return PIECES.reduce(
+			(acc, piece) => {
+				const num = parseInt(data[piece], 10);
+
+				if (isNaN(num)) {
+					throw new SyntaxError(`Invalid piece stat: [${piece}, ${data[piece]}`);
+				}
+
+				acc[piece] = num;
+				acc.count += num;
+
+				if (piece != 'I') {
+					acc.notICount += num;
+				}
+
+				return acc;
+			},
+			{ count: 0, notICount: 0 }
+		);
+	}
+
 	setFrame(data) {
 		const lines = parseInt(data.lines, 10);
 		const level = parseInt(data.level, 10);
@@ -442,7 +465,6 @@ class Player {
 			this.gameid = data.gameid;
 			this.field_num_blocks = num_blocks;
 			this.start_level = level;
-			this.lines = lines;
 
 			if (data.cur_piece) {
 				// Ideally, we'd want to wait one frame to read cur_piece -_-
@@ -456,13 +478,61 @@ class Player {
 			}
 		});
 
-		if (data.score) {
-			this.score = this.getScoreFromScoreString(data.score);
+		if (this.pending_piece) {
+			const cur_piece = this.prev_preview
+			let drought = this.drought;
 
-			this.dom.score.textContent = this.options.format_score
-				? this.numberFormatter.format(this.score)
-				: data.score
-			;
+			do {
+				if (this.options.reliable_field) {
+					if (cur_piece === 'I') {
+						drought = 0;
+					}
+					else {
+						drought++;
+					}
+				}
+				else {
+					try {
+						const piece_stats = this._getPieceStats();
+						const diff = piece_stats.count - this.piece_stats.count
+						const i_diff = piece_stats.I - this.piece_stats.I;
+
+						if (i_diff === 0) {
+							drought += diff;
+						}
+						else if (diff === 1) {
+							cur_piece = 'I';
+							drought = 0;
+						}
+						else {
+							// unknown state, we'll simply store it as new valid state
+						}
+
+						this.piece_stats = piece_stats;
+					}
+					catch(e) {
+						break;
+					}
+				}
+
+				if (drought === 0) {
+					if (this.drought >= 13) {
+						this.onEndDrought(this.drought);
+					}
+				}
+				else if (drought === 13) {
+					if (this.drought < 13) {
+						this.onStartDrought();
+					}
+				}
+
+				this.drought = drought;
+				this.dom.drought.textContent = this.drought;
+				this.pending_piece = false;
+				this.prev_preview = data.preview;
+				this.onPiece(cur_piece);
+			}
+			while(false);
 		}
 
 		if (!isNaN(level)) {
@@ -470,66 +540,87 @@ class Player {
 
 			this.renderField(this.level, data.field);
 			this.renderPreview(this.level, data.preview);
-			this.updateField(data.field, num_blocks);
+
+			if (this.options.reliable_field) {
+				this.updateField(data.field, num_blocks);
+			}
+			else {
+				try {
+					const piece_stats = this._getPieceStats();
+
+					if (this.piece_stats) {
+						if (this.piece_stats.count != piece_stats.count) {
+							this.pending_piece = true;
+						}
+					}
+					else {
+						this.piece_stats = piece_stats;
+					}
+				}
+				catch(e) {}
+			}
 
 			if (num_blocks === 200) {
 				this.game_over = true;
 			}
 		}
 
-		if (this.pending_piece) {
-			const cur_piece = this.prev_preview;
-
-			if (!cur_piece || cur_piece === 'I') {
-				if (this.drought >= 13) {
-					this.onEndDrought();
-				}
-
-				this.drought = 0;
-			}
-			else {
-				this.drought++;
-
-				if (this.drought === 13) {
-					this.onStartDrought();
-				}
+		if (this.pending_score) {
+			if (isNaN(lines) || !data.score) {
+				return;
 			}
 
-			this.dom.drought.textContent = this.drought;
+			const score = this.getScoreFromScoreString(data.score);
 
-			this.prev_preview = data.preview;
-			this.pending_piece = false;
+			if (isNaN(score)) {
+				return;
+			}
 
-			this.onPiece(cur_piece);
+			this.score = score;
+			this.dom.score.textContent = this.options.format_score
+				? this.numberFormatter.format(this.score)
+				: data.score
+			;
+			this.pending_score = false;
+
+			if (lines > this.lines) {
+				const cleared = lines - this.lines;
+
+				if (cleared === 4) {
+					this.lines_trt += 4;
+
+					if (!this.options.reliable_field) {
+						this.onTetris();
+					}
+				}
+
+				const line_value = cleared <= 4 ? EFF_LINE_VALUES[cleared] : EFF_LINE_VALUES[1];
+
+
+				this.total_eff += line_value * cleared;
+
+				const trt = this.lines_trt / lines;
+				const eff = this.total_eff / lines;
+
+				this.clear_events.push({ trt, eff, cleared });
+				this.dom.trt.textContent = getPercent(trt);
+				this.dom.eff.textContent = (Math.round(eff) || 0).toString().padStart(3, '0');
+				this.renderRunningTRT();
+				this.lines = lines;
+			}
 		}
 
-		if (isNaN(lines)
-			|| lines === 0
-			|| lines === this.lines
-			|| this.clear_animation_remaining_frames >= 0
-		) {
-			return;
+		if (data.score) {
+			const score = this.getScoreFromScoreString(data.score);
+
+			if (isNaN(score)) {
+				return;
+			}
+
+			if (score != this.score) {
+				this.pending_score = true;
+			}
 		}
-
-		const cleared = lines - this.lines;
-
-		if (cleared === 4) {
-			this.lines_trt += 4;
-		}
-
-		const line_value = cleared <= 4 ? EFF_LINE_VALUES[cleared] : EFF_LINE_VALUES[1];
-
-
-		this.total_eff += line_value * cleared;
-
-		const trt = this.lines_trt / lines;
-		const eff = this.total_eff / lines;
-
-		this.clear_events.push({ trt, eff, cleared });
-		this.dom.trt.textContent = getPercent(trt);
-		this.dom.eff.textContent = (Math.round(eff) || 0).toString().padStart(3, '0');
-		this.renderRunningTRT();
-		this.lines = lines;
 	}
 
 	renderPreview(level, preview) {

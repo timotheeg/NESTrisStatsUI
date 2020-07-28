@@ -309,13 +309,14 @@ const players = [1, 2].map(num => new Player(
 		running_trt: document.querySelector(`.running_trt.p${num}`),
 		preview:     document.querySelector(`.next_piece.p${num}`),
 		field:       document.querySelector(`.board.p${num}`),
-		drought:     document.querySelector(`.drought.p${num} .value`)
+		drought:     document.querySelector(`.drought.p${num} .value`),
 	},
 	{
 		field_pixel_size: 3,
 		preview_pixel_size: 3,
 		running_trt_rtl: 0,
 		wins_rtl: num === 1,
+		// reliable_field: 0,
 	}
 ));
 
@@ -327,8 +328,8 @@ players.forEach((player, idx) => {
 		player.drought_box.classList.add('active');
 	}
 
-	player.onEndDrought = () => {
-		console.log('onEndDrought', idx + 1);
+	player.onEndDrought = (count) => {
+		console.log('onEndDrought', idx + 1, count);
 		player.drought_box.classList.remove('active');
 	}
 });
@@ -336,6 +337,8 @@ players.forEach((player, idx) => {
 </script>
 <script src="competition.js"></script>
 <script>
+
+const captured_frames = []
 
 class TetrisCompetitionAPI_CTJS extends TetrisCompetitionAPI {
 	setLogo(url) {
@@ -345,6 +348,8 @@ class TetrisCompetitionAPI_CTJS extends TetrisCompetitionAPI {
 	}
 
 	frame(player_num, data, debug) {
+		// captured_frames.push(data);
+
 		const
 			index       = player_num - 1,
 			player      = players[index],
@@ -408,8 +413,8 @@ function onFrame(frame, debug) {
 }
 </script>
 
-<script src="sample_frames/sample_frames_11.js"></script>
-<script src="debug.js"></script>
+<!-- script src="sample_frames/sample_frames_16.js"></script>
+<script src="debug.js"></script -->
 
 
 </body>
