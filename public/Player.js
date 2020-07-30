@@ -437,13 +437,9 @@ class Player {
 				acc[piece] = num;
 				acc.count += num;
 
-				if (piece != 'I') {
-					acc.notICount += num;
-				}
-
 				return acc;
 			},
-			{ count: 0, notICount: 0 }
+			{ count: 0 }
 		);
 	}
 
@@ -482,7 +478,9 @@ class Player {
 		});
 
 		if (this.pending_piece) {
-			const cur_piece = this.prev_preview
+			// console.log('pending piece', this.drought);
+
+			let cur_piece = this.prev_preview
 			let drought = this.drought;
 
 			do {
@@ -496,7 +494,7 @@ class Player {
 				}
 				else {
 					try {
-						const piece_stats = this._getPieceStats();
+						const piece_stats = this._getPieceStats(data);
 						const diff = piece_stats.count - this.piece_stats.count
 						const i_diff = piece_stats.I - this.piece_stats.I;
 
@@ -514,6 +512,7 @@ class Player {
 						this.piece_stats = piece_stats;
 					}
 					catch(e) {
+						console.error(e);
 						break;
 					}
 				}
@@ -549,9 +548,10 @@ class Player {
 			}
 			else {
 				try {
-					const piece_stats = this._getPieceStats();
+					const piece_stats = this._getPieceStats(data);
 
 					if (this.piece_stats) {
+
 						if (this.piece_stats.count != piece_stats.count) {
 							this.pending_piece = true;
 						}
@@ -560,7 +560,9 @@ class Player {
 						this.piece_stats = piece_stats;
 					}
 				}
-				catch(e) {}
+				catch(e) {
+					console.error(e);
+				}
 			}
 
 			if (num_blocks === 200) {
