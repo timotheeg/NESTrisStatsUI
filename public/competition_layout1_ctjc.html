@@ -323,13 +323,18 @@ const players = [1, 2].map(num => new Player(
 players.forEach((player, idx) => {
 	player.drought_box = document.querySelector(`.drought.p${idx + 1}`);
 
-	player.onStartDrought = () => {
-		console.log('onStartDrought', idx + 1);
+	player.onDroughtStart = () => {
+		console.log('onDroughtStart', idx + 1);
 		player.drought_box.classList.add('active');
 	}
 
-	player.onEndDrought = (count) => {
-		console.log('onEndDrought', idx + 1, count);
+	player.onDroughtEnd = (count) => {
+		console.log('onDroughtEnd', idx + 1, count);
+		player.drought_box.classList.remove('active');
+	}
+
+	player.onGameStart = () => {
+		console.log('onGameStart', idx + 1);
 		player.drought_box.classList.remove('active');
 	}
 });

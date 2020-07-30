@@ -331,8 +331,9 @@ class Player {
 	}
 
 	onPiece() {}
-	onStartDrought() {}
-	onEndDrought() {}
+	onDroughtStart() {}
+	onDroughtEnd() {}
+	onGameStart() {}
 
 	onTetris() {
 		if (this.options.tetris_flashes) {
@@ -470,6 +471,8 @@ class Player {
 				// Ideally, we'd want to wait one frame to read cur_piece -_-
 				this.prev_preview = data.cur_piece;
 			}
+
+			this.onGameStart();
 		}
 
 		['lines', 'level'].forEach(field => {
@@ -517,12 +520,12 @@ class Player {
 
 				if (drought === 0) {
 					if (this.drought >= 13) {
-						this.onEndDrought(this.drought);
+						this.onDroughtEnd(this.drought);
 					}
 				}
 				else if (drought === 13) {
 					if (this.drought < 13) {
-						this.onStartDrought();
+						this.onDroughtStart();
 					}
 				}
 
