@@ -391,6 +391,7 @@ class Player {
 		this.clearWinnerAnimation();
 		this.field_bg.style.background = 'rbga(0,0,0,0)';
 
+		this.dom.score.textContent = '0';
 		this.dom.trt.textContent = '---';
 		this.dom.eff.textContent = '---';
 	}
