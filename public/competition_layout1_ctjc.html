@@ -196,6 +196,18 @@ html {
   to { opacity: 1 }
 }
 
+#frame_stats {
+	position: absolute;
+	width: 225px;
+	height: 400px;
+	top: 15px;
+	left: 1100px;
+	color: white;
+	font-family: monospace;
+	font-size: 12px;
+	overflow: hidden;
+}
+
 
 </style>
 </head>
@@ -214,6 +226,7 @@ html {
 
 <div id="stream_bg">
 <div id="bg_pieces"></div>
+<div id="frame_stats"></div>
 
 <div id="playing_fields">
 <div id="logo"></div>
@@ -316,7 +329,7 @@ const players = [1, 2].map(num => new Player(
 		preview_pixel_size: 3,
 		running_trt_rtl: 0,
 		wins_rtl: num === 1,
-		// reliable_field: 0,
+		reliable_field: 0,
 	}
 ));
 
@@ -343,7 +356,42 @@ players.forEach((player, idx) => {
 <script src="competition.js"></script>
 <script>
 
-const captured_frames = []
+const captured_frames = [];
+
+const DEBUG_FRAME_STATS = true;
+
+const frame_stats_dom = document.querySelector('#frame_stats');
+const FRAME_STATS_SAMPLES = 30;
+const frame_stats = [];
+let frame_start;
+
+function startFrame() {
+	frame_start = Date.now();
+}
+
+function endFrame() {
+	if (!DEBUG_FRAME_STATS) return;
+
+	const now = Date.now();
+	const elapsed = now - frame_start;
+
+	frame_stats.push([frame_start, elapsed]);
+
+	if (frame_stats.length > FRAME_STATS_SAMPLES) {
+		frame_stats.shift();
+	}
+
+	// compute frame rate and average processing time
+	const total_elapsed = frame_stats.reduce((sum, cur) => sum += cur[1], 0);
+	const avg_elapsed = total_elapsed / frame_stats.length;
+	const incoming_rate = (now - frame_stats[0][0]) / frame_stats.length;
+
+	frame_stats_dom.innerText =
+		`instant: ${elapsed}\n`
+		+ `last ${frame_stats.length} avg: ${avg_elapsed.toFixed(1)}\n`
+		+ `in rate: ${incoming_rate.toFixed(1)}`;
+
+}
 
 class TetrisCompetitionAPI_CTJS extends TetrisCompetitionAPI {
 	setLogo(url) {
@@ -354,6 +402,8 @@ class TetrisCompetitionAPI_CTJS extends TetrisCompetitionAPI {
 
 	frame(player_num, data, debug) {
 		// captured_frames.push(data);
+
+		startFrame();
 
 		const
 			index       = player_num - 1,
@@ -408,6 +458,8 @@ class TetrisCompetitionAPI_CTJS extends TetrisCompetitionAPI {
 				tdiff_elem.textContent = `${tfmt}T>`;
 			}
 		}
+
+		endFrame();
 	}
 }
 
