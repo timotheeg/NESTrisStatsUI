@@ -89,8 +89,23 @@ Bot.on('join', channel => {
   });
 });
 
+function is_spam(msg) {
+  if (/bigfollows\.com/i.test(msg)) return true;
+
+  return (
+    /become famous/i.test(msg)
+    &&
+    /buy/i.test(msg)
+  );
+}
+
 Bot.on('message', chatter => {
   if (chatter.username && chatter.message) {
+    if (is_spam(chatter.message)) {
+      // TODO: auto ban with chat command
+      return;
+    }
+
     speak(chatter);
   }
 

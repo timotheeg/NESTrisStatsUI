@@ -221,7 +221,6 @@ function say_osx(chatter) {
   _sayNextMessageOSX();
 }
 
-
 module.exports = _.noop;
 
 if (config.chat_voice && config.chat_voice.enabled) {
@@ -236,6 +235,6 @@ if (config.chat_voice && config.chat_voice.enabled) {
 			say({ ...chatter, message: `${chatter.display_name} is now chatting with this voice.` });
 		}
 
-		say({ ...chatter, message: chatter.message.replace(URL_RE, 'a URL') });
+		say({ ...chatter, message: chatter.message.replace(URL_RE, 'a link') });
 	};
 }
