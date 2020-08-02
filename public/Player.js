@@ -86,14 +86,15 @@ const BORDER_BLOCKS = [
 function renderBlock(level, block_index, pixel_size, ctx, pos_x, pos_y) {
 	let color;
 
-	if (block_index < 1 || block_index > 6) {
+	if (block_index < 1) {
 		return;
 	}
 
 	switch (block_index) {
 		case 1:
-			// inefficient because it draws the area twice
-			// check speed and optimize if necessary
+			// maybe inefficient because it draws the area twice
+			// but drawing the zones will bemore function calls
+			// hmmm... check speed and optimize if necessary
 			color = LEVEL_COLORS[level % 10][0];
 
 			ctx.fillStyle = color;
@@ -103,6 +104,34 @@ function renderBlock(level, block_index, pixel_size, ctx, pos_x, pos_y) {
 				pixel_size * 7,
 				pixel_size * 7
 			);
+
+			/*
+			// Drawing just the needed border
+			ctx.fillRect(
+				pos_x,
+				pos_y + pixel_size,
+				pixel_size,
+				pixel_size * 6
+			);
+			ctx.fillRect(
+				pos_x + pixel_size,
+				pos_y,
+				pixel_size * 6,
+				pixel_size
+			);
+			ctx.fillRect(
+				pos_x + pixel_size * 6,
+				pos_y + pixel_size,
+				pixel_size,
+				pixel_size * 6
+			);
+			ctx.fillRect(
+				pos_x + pixel_size,
+				pos_y + pixel_size * 6,
+				pixel_size * 5,
+				pixel_size
+			);
+			/**/
 
 			ctx.fillStyle = 'white';
 			ctx.fillRect(
