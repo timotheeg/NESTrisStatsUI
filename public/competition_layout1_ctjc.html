@@ -358,12 +358,13 @@ players.forEach((player, idx) => {
 
 const captured_frames = [];
 
-const DEBUG_FRAME_STATS = true;
+const DEBUG_FRAME_STATS = false;
 
 const frame_stats_dom = document.querySelector('#frame_stats');
-const FRAME_STATS_SAMPLES = 30;
+const FRAME_STATS_SAMPLES = 60;
 const frame_stats = [];
 let frame_start;
+let total_elapsed = 0;
 
 function startFrame() {
 	frame_start = Date.now();
@@ -376,13 +377,13 @@ function endFrame() {
 	const elapsed = now - frame_start;
 
 	frame_stats.push([frame_start, elapsed]);
+	total_elapsed += elapsed;
 
 	if (frame_stats.length > FRAME_STATS_SAMPLES) {
-		frame_stats.shift();
+		total_elapsed -= frame_stats.shift()[1];
 	}
 
 	// compute frame rate and average processing time
-	const total_elapsed = frame_stats.reduce((sum, cur) => sum += cur[1], 0);
 	const avg_elapsed = total_elapsed / frame_stats.length;
 	const incoming_rate = (now - frame_stats[0][0]) / frame_stats.length;
 
