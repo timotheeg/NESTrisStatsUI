@@ -414,7 +414,7 @@ function renderPastGamesAndPBs(data) {
 		}
 
 		dom.high_scores[category].innerHTML = data.high_scores[category].slice(0, 5).map(record => {
-			if (!record) {
+			if (!record || record.start_level == null) {
 				record = {
 					score: 0,
 					tetris_rate: 0,

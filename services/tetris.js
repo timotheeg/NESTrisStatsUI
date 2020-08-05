@@ -14,6 +14,14 @@ module.exports = async function (fastify, opts) {
 			request.body = JSON.parse(request.body); // let it throw if it's not json
 		}
 
+		if (request.body.start_level == null) {
+			const err = new TypeError("Invalid start_level");
+			err.statusCode = 400;
+
+			reply.done(err);
+			return;
+		}
+
 		const
 			data = {
 				...request.body,
