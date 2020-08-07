@@ -19,13 +19,14 @@ html {
 
 .box {
 	width: 95px;
-	height: 56px;
+	height: 47px;
 	text-align: center;
+	display: none;
 }
 
 .box .header {
 	font-size: 16px;
-	padding-bottom: 0.5em;
+	padding-bottom: 0;
 }
 
 .box .content,
@@ -47,16 +48,16 @@ html {
 
 .next_piece {
 	width: 104px;
-	height: 60px;
+	height: 47px;
 	top: 6px;
 
-	--offset: 177px;
+	--offset: 119px;
 	right: var(--offset)
 }
 
 .lines {
-	left: -107px;
-	top: 160px;
+	right: 246px;
+	top: 6px;
 }
 
 .level {
@@ -65,15 +66,12 @@ html {
 }
 
 .board {
-	border-image: url('./big_border.png');
-	border-image-slice: 16 16 16 16 fill;
-	border-image-width: 16px 16px;
-	padding: 17px;
 	width: 237px;
 	height: 477px;
-	top: 76px;
+	top: -23px;
+	display: block;
 
-	--offset: 106px;
+	--offset: 224px;
 	right: var(--offset)
 }
 
@@ -220,7 +218,7 @@ player.drought_box = document.querySelector(`.drought`);
 
 player.onDroughtStart = () => {
 	console.log("onDroughtStart")
-	player.drought_box.classList.add('active');
+	// player.drought_box.classList.add('active');
 }
 
 player.onDroughtEnd = (count) => {
