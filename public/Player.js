@@ -772,6 +772,13 @@ class Player {
 		// while still being at the top of the field with some block moved out of view
 
 		switch(block_diff) {
+			case -16:
+				// second frame of tetris (Trey's tetris Flash messed up the frames)
+				this.onTetris();
+				this.clear_animation_remaining_frames = CLEAR_ANIMATION_NUM_FRAMES - 2;
+				this.field_num_blocks -= 40;
+				break;
+
 			case -8:
 				this.onTetris();
 			case -6:
