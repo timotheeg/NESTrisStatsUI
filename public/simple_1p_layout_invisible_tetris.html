@@ -349,9 +349,18 @@ function isSecondFrameOfDoubleClearAnimation(board) {
 
 const CLEAR_ANIMATION_FRAMES = 7;
 
-function startClearAnimation(remaining_frames) {
+function startClearAnimation(remaining_frames, board) {
+
+
 	clear_animation_remaining_frames = remaining_frames;
 	clear_animation_covered = false;
+
+	clearedRowsIndexes = [];
+	board.forEach((row, idx) => {
+		if (row.some(cell => cell > 0)) {
+			clearedRowsIndexes.push(idx);
+		}
+	});
 }
 
 function handleFrame(frame) {
@@ -379,11 +388,20 @@ function handleFrame(frame) {
 		if (clear_animation_remaining_frames-- > 0) {
 			new_board._clear = true;
 
-			if (clear_animation_covered) {
+			if (clear_animation_covered || clear_animation_remaining_frames <= 0) {
 				// last frame of clear animation, we need to remove all empty lines
 				// MUST RUN BEFORE NEXT PIECE APPEARS!!!!
-				const empty_rows = combined_board.filter(row => row.every(cell => cell === 0));
-				const filled_rows = combined_board.filter(row => row.some(cell => cell > 0));
+
+				let empty_rows, filled_rows;
+
+				if (clear_animation_covered) {
+					empty_rows = combined_board.filter(row => row.every(cell => cell === 0));
+					filled_rows = combined_board.filter(row => row.some(cell => cell > 0));
+				}
+				else {
+					empty_rows = clearedRowsIndexes.map(_ => Array(10).fill(0));
+					filled_rows = combined_board.filter((row, idx) => !clearedRowsIndexes.includes(idx));
+				}
 
 				combined_board = [
 					...empty_rows,
@@ -414,7 +432,7 @@ function handleFrame(frame) {
 			// end frame of death animation
 			// OR
 			// tetris animation in field in Trey's renderer
-			startClearAnimation(10);
+			startClearAnimation(10, new_board);
 
 			new_board._clear = true;
 
@@ -429,7 +447,7 @@ function handleFrame(frame) {
 		}
 		else if (isFirstFrameOfClearAnimation(new_board)) {
 			// preparing clear animation
-			startClearAnimation(CLEAR_ANIMATION_FRAMES - 1);
+			startClearAnimation(CLEAR_ANIMATION_FRAMES - 1, new_board);
 
 			new_board._clear = true;
 
@@ -451,7 +469,7 @@ function handleFrame(frame) {
 		}
 		else if (isSecondFrameOfDoubleClearAnimation(new_board)) {
 			// preparing clear animation
-			startClearAnimation(CLEAR_ANIMATION_FRAMES - 2);
+			startClearAnimation(CLEAR_ANIMATION_FRAMES - 2, new_board);
 
 			// we now need to correct the previous frame
 
@@ -531,7 +549,7 @@ var captured_frames = []
 
 const API = {
 	frame(data) {
-		// captured_frames.push(data);
+		captured_frames.push(data);
 		try {
 			handleFrame(data);
 		}
@@ -560,7 +578,7 @@ function onFrame(frame, debug) {
 }
 </script>
 
-<script src="sample_frames/invisible_frames.js"></script>
+<script src="sample_frames/invisible_frames.2.js"></script>
 <script src="debug.js"></script>
 
 
