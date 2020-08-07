@@ -13,7 +13,7 @@ html {
 
 #playing_fields {
 	position: absolute;
-	left: 640px;
+	left: 485px;
 	top: 23px;
 }
 
@@ -101,6 +101,30 @@ html {
 	right: var(--offset)
 }
 
+.drought {
+	width: 49px;
+	top: 12px;
+	height: 40px;
+	opacity: 0;
+	color: red;
+	display: none;
+
+	--pos: 304px;
+	right: var(--pos)
+}
+
+.drought .header {
+	padding-bottom: 2px;
+}
+
+.drought.active {
+	display: block;
+	animation: fadeIn ease 1s;
+	animation-fill-mode: forwards;
+}
+
+
+
 </style>
 </head>
 <body>
@@ -155,6 +179,12 @@ html {
 
 <div class="box running_trt"></div>
 
+<div class="box drought">
+	<div class="header">DRT</div>
+	<div class="value">99</div>
+</div>
+
+
 </div><!-- End Playing Fields -->
 </div><!-- End Stream BG -->
 
@@ -163,7 +193,7 @@ html {
 
 <script src="constants.js"></script>
 <script src="utils.js"></script>
-<script src="bg.js"></script>
+<!-- script src="bg.js"></script -->
 <script src="Player.js"></script>
 <script >
 const player = new Player(
@@ -175,12 +205,29 @@ const player = new Player(
 		eff:         document.querySelector(`.efficiency .content`),
 		running_trt: document.querySelector(`.running_trt`),
 		preview:     document.querySelector(`.next_piece`),
-		field:       document.querySelector(`.board`)
+		field:       document.querySelector(`.board`),
+		drought:     document.querySelector(`.drought .value`),
 	},
 	{
 		format_score: 0,
 	}
 );
+
+player.drought_box = document.querySelector(`.drought`);
+
+player.onDroughtStart = () => {
+	player.drought_box.classList.add('active');
+}
+
+player.onDroughtEnd = (count) => {
+	player.drought_box.classList.remove('active');
+}
+
+player.onGameStart = () => {
+	player.drought_box.classList.remove('active');
+}
+
+
 
 const frame_buffer = [];
 let combined_board = Array(20).fill().map(_ => Array(10).fill(0));
@@ -443,7 +490,7 @@ function handleFrame(frame) {
 			// piece is falling, we need to display its temporary location
 			const new_top_empty = new_board.slice(0, 2).filter(row => row.every(cell => cell === 0)).length === 2;
 
-			if (!new_top_empty && last_board) {
+			if (!new_top_empty && last_board && last_board.num_block == 4) { // we only settle pieces, not animation frames
 				// check if last_board's piece was below 16
 				last_top_idx = last_board.map((row, idx) => row.some(cell => cell > 0) ? idx : -1).find(v => v > -1);
 
@@ -510,7 +557,7 @@ function onFrame(frame, debug) {
 }
 </script>
 
-<script src="sample_frames/sample_frames_15.js"></script>
+<script src="sample_frames/invisible_frames.js"></script>
 <script src="debug.js"></script>
 
 
