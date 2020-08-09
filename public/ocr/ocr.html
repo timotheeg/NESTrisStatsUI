@@ -1,0 +1,125 @@
+<html>
+
+<head>
+<style type="text/css">
+video {
+	display: none;
+}
+</style>
+</head>
+
+<body>
+<div id="selector">
+	<select id="device">
+		<option value="0">Select the desired video device.</option>
+	</select>
+</div>
+
+<video id="device_video" playsinline controls="false"></video>
+
+<canvas id="capture"></canvas>
+
+<script>
+	// NTSC NES resolution: 256x224 -> 512x448
+
+// dom nodes
+const
+	device_selector = document.querySelector('#device'),
+	video           = document.querySelector('#device_video');
+	canvas          = document.querySelector('#capture');
+
+let entries;
+
+
+device_selector.addEventListener('change', evt => {
+	playVideoFromDevice(device_selector.value);
+});
+
+// Updates the select element with the provided set of cameras
+function updateDeviceList(devices) {
+    device_selector.innerHTML = '';
+
+    const heading = [{
+    	label: "Select your video device",
+    	deviceId: "0"
+    }];
+
+    entries = heading.concat(devices);
+
+    entries.forEach(camera => {
+        const cameraOption = document.createElement('option');
+        cameraOption.text = camera.label;
+        cameraOption.value = camera.deviceId;
+
+        device_selector.appendChild(cameraOption)
+    });
+}
+
+async function getConnectedDevices(type) {
+    return (await navigator.mediaDevices.enumerateDevices())
+		.filter(device => device.kind === type && device.deviceId)
+}
+
+async function resetDevices() {
+	const devicesList = await getConnectedDevices('videoinput');
+	updateDeviceList(devicesList);
+}
+
+navigator.mediaDevices.addEventListener('devicechange', resetDevices);
+
+
+let stream;
+
+async function playVideoFromDevice(device_id) {
+    try {
+        const constraints = {
+        	audio: false,
+        	video: {
+        		width: { ideal: 4096 },
+        		height: { ideal: 2160 }
+        	}
+        };
+
+        if (device_id) {
+        	constraints.video.deviceId = { exact: device_id };
+        }
+
+        stream = await navigator.mediaDevices.getUserMedia(constraints);
+
+        video.srcObject = stream;
+        video.play();
+
+        startCapture(stream);
+    }
+    catch(error) {
+        console.error('Error opening video camera.', error);
+        video.pause();
+    }
+}
+
+playVideoFromDevice()
+	.then(resetDevices);
+
+let capture_process;
+
+function captureFrame() {
+	canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
+
+	capture_process = window.requestAnimationFrame(captureFrame);
+}
+
+function startCapture(stream) {
+	const settings = stream.getVideoTracks()[0].getSettings();
+
+	console.log(`Video settings: ${settings.width}x${settings.height}@${settings.frameRate.toFixed(1)}fps`);
+
+	canvas.width = settings.width;
+	canvas.height = settings.height;
+
+	captureFrame();
+}
+
+
+</script>
+</body>
+</html>
