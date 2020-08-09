@@ -2,7 +2,7 @@
 
 <head>
 <style type="text/css">
-video {
+video, #capture {
 	display: none;
 }
 </style>
@@ -18,6 +18,7 @@ video {
 <video id="device_video" playsinline controls="false"></video>
 
 <canvas id="capture"></canvas>
+<canvas id="processed"></canvas>
 
 <script>
 	// NTSC NES resolution: 256x224 -> 512x448
@@ -25,8 +26,12 @@ video {
 // dom nodes
 const
 	device_selector = document.querySelector('#device'),
-	video           = document.querySelector('#device_video');
-	canvas          = document.querySelector('#capture');
+	video           = document.querySelector('#device_video'),
+	capture         = document.querySelector('#capture'),
+	capture_ctx     = capture.getContext('2d'),
+	processed       = document.querySelector('#processed'),
+	processed_ctx   = processed.getContext('2d')
+;
 
 let entries;
 
@@ -102,8 +107,17 @@ playVideoFromDevice()
 
 let capture_process;
 
-function captureFrame() {
-	canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
+async function captureFrame() {
+	try {
+		capture_ctx.drawImage(video, 0, 0, capture.width, capture.height);
+
+		const pixels = capture_ctx.getImageData(0, 0, capture.width, capture.height);
+
+		processFrame(pixels);
+	}
+	catch(err) {
+		console.error(err);
+	}
 
 	capture_process = window.requestAnimationFrame(captureFrame);
 }
@@ -113,12 +127,33 @@ function startCapture(stream) {
 
 	console.log(`Video settings: ${settings.width}x${settings.height}@${settings.frameRate.toFixed(1)}fps`);
 
-	canvas.width = settings.width;
-	canvas.height = settings.height;
+	capture.width = settings.width;
+	capture.height = settings.height;
+
+	processed.width = settings.width;
+	processed.height = settings.height / 2;
 
 	captureFrame();
 }
 
+function processFrame(pixels) {
+	// de-interlace: top + drop
+
+	const target = capture_ctx.createImageData(pixels.width, pixels.height / 2);
+	const pixels_per_rows = pixels.width * 4;
+	const max_rows = pixels.height / 2;
+
+	for (let row_idx = 0; row_idx < max_rows; row_idx++) {
+		const slice = pixels.data.slice(
+			pixels_per_rows * row_idx * 2,
+			pixels_per_rows * (row_idx * 2 + 1)
+		);
+
+		target.data.set(slice, pixels_per_rows * row_idx);
+	}
+
+	processed_ctx.putImageData(target, 0, 0);
+}
 
 </script>
 </body>
