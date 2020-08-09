@@ -139,20 +139,19 @@ function startCapture(stream) {
 function processFrame(pixels) {
 	// de-interlace: top + drop
 
-	const target = capture_ctx.createImageData(pixels.width, pixels.height / 2);
 	const pixels_per_rows = pixels.width * 4;
 	const max_rows = pixels.height / 2;
 
-	for (let row_idx = 0; row_idx < max_rows; row_idx++) {
+	for (let row_idx = 1; row_idx < max_rows; row_idx++) {
 		const slice = pixels.data.slice(
 			pixels_per_rows * row_idx * 2,
 			pixels_per_rows * (row_idx * 2 + 1)
 		);
 
-		target.data.set(slice, pixels_per_rows * row_idx);
+		pixels.data.set(slice, pixels_per_rows * row_idx);
 	}
 
-	processed_ctx.putImageData(target, 0, 0);
+	processed_ctx.putImageData(pixels, 0, 0, 0, 0, pixels_per_rows, max_rows);
 }
 
 </script>
