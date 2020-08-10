@@ -21,13 +21,13 @@ async function getTemplateData(digit) {
 	);
 	
 	const img_data = ctx.getImageData(0, 0, 14, 14);
-	const lumas = Array(img_data.width * img_data.height);
+	const lumas = new Uint8ClampedArray(img_data.width * img_data.height).fill(0);
 	const pixel_data = img_data.data;
 
 	for (let idx=0; idx < lumas.length; idx++) {
 		const offset_idx = idx * 4;
 
-		lumas[idx] = luma(
+		lumas[idx] = roundedLuma(
 			pixel_data[offset_idx],
 			pixel_data[offset_idx + 1],
 			pixel_data[offset_idx + 2],
@@ -37,8 +37,8 @@ async function getTemplateData(digit) {
 	return lumas;
 }
 
-function luma(r, g, b) {
-	return r * 0.299 + g * 0.587 + b * 0.114;
+function roundedLuma(r, g, b) {
+	return Math.round(r * 0.299 + g * 0.587 + b * 0.114);
 }
 
 async function loadDigits() {
@@ -46,17 +46,45 @@ async function loadDigits() {
 }
 
 
-async function init() {
+let ready = false;
+let drop_frames = 0;
 
+self.onMessage = function(msg) {
+	switch (msg.command) {
+		case 'set_config': {
+			break;
+		}
+		case 'frame': {
+			if (!ready) return;
+
+			if (working) {
+				// drop frame
+				drop_frames++;
+				break;
+			}
+
+			processFrame();
+		}
+	}
+}
+
+function processFrame(frame) {
+	const res = {};
+
+	tasks.forEach(task => {
+		res[task.name]
+	});
+}
+
+async function init() {
 	try {
 		templates = await loadDigits();
+		console.log(templates);
+		ready = true;
 	}
 	catch(err) {
 		console.error(err);
 	}
-
-	console.log('done');
-	console.log(templates);
 }
 
 init();

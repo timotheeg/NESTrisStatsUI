@@ -17,12 +17,18 @@ video, #capture {
 
 <video id="device_video" playsinline controls="false"></video>
 
-<canvas id="capture"></canvas>
-<canvas id="processed"></canvas>
-<canvas id="digit" width="14" height="14"></canvas>
+<canvas id="capture"></canvas><br />
+<canvas id="processed"></canvas><br />
+<canvas id="score"></canvas><br />
+<canvas id="lines"></canvas><br />
+<canvas id="level"></canvas><br />
+<canvas id="stats"></canvas><br />
+<canvas id="field"></canvas><br />
 
 <script>
-	// NTSC NES resolution: 256x224 -> 512x448
+// NTSC NES resolution: 256x224 -> 512x448
+
+// OffscreenCanvas can be passed by reference
 
 // dom nodes
 const
@@ -31,10 +37,16 @@ const
 	capture         = document.querySelector('#capture'),
 	capture_ctx     = capture.getContext('2d'),
 	processed       = document.querySelector('#processed'),
-	processed_ctx   = processed.getContext('2d')
-	digit           = document.querySelector('#digit'),
-	digit_ctx       = digit.getContext('2d')
-;
+	processed_ctx   = processed.getContext('2d'),
+
+	dom = {
+		score          : document.querySelector('#score'),
+		score_ctx      : processed.getContext('2d'),
+		lines          : document.querySelector('#lines'),
+		lines_ctx      : processed.getContext('2d'),
+		level          : document.querySelector('#level'),
+		level_ctx      : processed.getContext('2d'),
+	};
 
 let entries;
 
@@ -110,6 +122,20 @@ playVideoFromDevice()
 
 let capture_process;
 
+function startCapture(stream) {
+	const settings = stream.getVideoTracks()[0].getSettings();
+
+	console.log(`Video settings: ${settings.width}x${settings.height}@${settings.frameRate.toFixed(1)}fps`);
+
+	capture.width = settings.width;
+	capture.height = settings.height;
+
+	processed.width = settings.width;
+	processed.height = settings.height / 2;
+
+	captureFrame();
+}
+
 async function captureFrame() {
 	try {
 		capture_ctx.drawImage(video, 0, 0, capture.width, capture.height);
@@ -123,20 +149,6 @@ async function captureFrame() {
 	}
 
 	capture_process = window.requestAnimationFrame(captureFrame);
-}
-
-function startCapture(stream) {
-	const settings = stream.getVideoTracks()[0].getSettings();
-
-	console.log(`Video settings: ${settings.width}x${settings.height}@${settings.frameRate.toFixed(1)}fps`);
-
-	capture.width = settings.width;
-	capture.height = settings.height;
-
-	processed.width = settings.width;
-	processed.height = settings.height / 2;
-
-	captureFrame();
 }
 
 function processFrame(pixels) {
@@ -155,10 +167,60 @@ function processFrame(pixels) {
 	}
 
 	processed_ctx.putImageData(pixels, 0, 0, 0, 0, pixels_per_rows, max_rows);
+
+	processTasks();
+
+	/*
+	worker.postMessage(
+		{
+			width: pixels_per_rows,
+			height: max_rows,
+			data: pixels.data,
+		},
+		[
+			pixels.data.buffer
+		]
+	);
+	/**/
 }
 
 console.log('loading worker');
 const worker = new Worker('./worker.js');
+
+const x=0, y=0, w=1, h=1;
+
+const config = {
+	deinterlace: true,
+	tasks: [
+		{name: 'score', crop: [x, y, w, h], pattern: "DDDDDD", red: false},
+		{name: 'level', crop: [x, y, w, h], pattern: "TD", red: false},
+		{name: 'lines', crop: [x, y, w, h], pattern: "TDD", red: false},
+	]
+};
+
+worker.postMessage({
+	command: 'set_config',
+	args: [ config ]
+});
+
+worker.addEventListener('message', function(evt) {
+	// first message is ready
+}, false);
+
+
+function processTasks() {
+	config.tasks.forEach(task => {
+		const canva = dom[task.name];
+		const ctx = dom[`${task.name}_ctx`];
+		const [x, y, w, h] = task.crop;
+
+		canva.width = w;
+		canva.height = h;
+
+		processed_ctx.getImageData(pixels, x, y, w, h);
+		ctx.putImageData(pixels, 0, 0, x, y, w, h);
+	});
+}
 
 </script>
 </body>
