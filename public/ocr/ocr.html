@@ -2,6 +2,9 @@
 
 <head>
 <style type="text/css">
+video {
+	display: none;
+}
 </style>
 </head>
 
@@ -45,6 +48,25 @@ const config = {
 		stats: { crop: [164, 93, 57, 105], red: true },
 	}
 };
+
+let lowest_row;
+
+function getLowestRow() {
+	let lowest = -1;
+
+	for (const { crop } of Object.values(config.tasks)) {
+		const [x, y, w, h] = crop;
+		const bottom = y + h;
+
+		if (bottom > lowest) {
+			lowest = bottom;
+		}
+	}
+
+	lowest_row = lowest + 1; // + 1 for safety
+}
+
+getLowestRow();
 
 // dom nodes
 const
@@ -113,6 +135,8 @@ navigator.mediaDevices.addEventListener('devicechange', resetDevices);
 let stream;
 
 async function playVideoFromDevice(device_id) {
+	return;
+
     try {
         const constraints = {
         	audio: false,
@@ -136,11 +160,9 @@ async function playVideoFromDevice(device_id) {
     catch(error) {
         console.error('Error opening video camera.', error);
         video.pause();
+        capture_process = window.cancelAnimationFrame(capture_process);
     }
 }
-
-playVideoFromDevice()
-	.then(resetDevices);
 
 let capture_process;
 
@@ -170,7 +192,12 @@ let start;
 
 async function captureFrame() {
 	try {
-		const bitmap = await createImageBitmap(video, 0, 0, video.videoWidth, video.videoHeight);
+		// const bitmap = await createImageBitmap(video, 0, 0, video.videoWidth, video.videoHeight);
+
+		const response = await fetch(`./full.png`);
+		const blob = await response.blob();
+		const bitmap = await createImageBitmap(blob);
+
 
 		if (SHOW_LOCAL) {
 			capture_ctx.drawImage(bitmap, 0, 0, capture.width, capture.height);
@@ -203,15 +230,14 @@ function processFrame(pixels) {
 	// de-interlace: top + drop
 
 	const pixels_per_rows = pixels.width * 4;
-	const max_rows = pixels.height / 2;
+	const max_rows = lowest_row; // pixels.height / 2;
 
 	for (let row_idx = 1; row_idx < max_rows; row_idx++) {
-		const slice = pixels.data.slice(
+		pixels.data.copyWithin(
+			pixels_per_rows * row_idx,
 			pixels_per_rows * row_idx * 2,
 			pixels_per_rows * (row_idx * 2 + 1)
 		);
-
-		pixels.data.set(slice, pixels_per_rows * row_idx);
 	}
 
 	processed_ctx.putImageData(pixels, 0, 0, 0, 0, pixels_per_rows, max_rows);
@@ -244,6 +270,28 @@ function processTasks(pixels) {
 		ctx.putImageData(pixels, -x, -y, x, y, w, h);
 	}
 }
+
+/*
+playVideoFromDevice()
+	.then(resetDevices);
+/**/
+
+const fake_stream = {
+	getVideoTracks() {
+		return [{
+			getSettings() {
+				return {
+					width: 720,
+					height: 480,
+					frameRate: 30.0
+				}
+			}
+		}]
+	}
+};
+
+startCapture(fake_stream);
+
 
 </script>
 </body>

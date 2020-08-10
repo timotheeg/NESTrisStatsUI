@@ -15,10 +15,11 @@ let templates;
 
 
 const scale_canvas = new OffscreenCanvas(256, 256);
-scale_canvas_ctx = scale_canvas.getContext('2d');
+scale_canvas_ctx = scale_canvas.getContext('2d', { alpha: false });
 scale_canvas_ctx.imageSmoothingQuality = 'medium';
 
 let raw_canvas;
+let raw_canvas_ctx;
 
 
 // brute force processing
@@ -100,6 +101,7 @@ async function loadDigits() {
 let ready = false;
 let config = null;
 let drop_frames = 0;
+let lowest_row;
 
 self.onmessage = function(msg) {
 	switch (msg.data.command) {
@@ -127,45 +129,89 @@ function setConfig(_config) {
 	config = _config;
 	ready = true;
 
+	getLowestRow();
+
 	raw_canvas = new OffscreenCanvas(config.width, config.height);
+	raw_canvas_ctx = raw_canvas.getContext('2d', { alpha: false });
+}
+
+function getLowestRow() {
+	let lowest = -1;
+
+	for (const { crop } of Object.values(config.tasks)) {
+		const [x, y, w, h] = crop;
+		const bottom = y + h;
+
+		if (bottom > lowest) {
+			lowest = bottom;
+		}
+	}
+
+	lowest_row = lowest + 1; // + 1 for safety
 }
 
 function processFrame(frame) {
-	const start = Date.now();
+	performance.mark('start');
 
 	// load the raw frame
 	raw_canvas.getContext('2d').drawImage(frame, 0, 0, config.width, config.height);
 
+	performance.mark('draw_end');
+
 	deinterlace();
 
-	const res = {
-		score: ocrDigits(config.tasks.score),
-		level: ocrDigits(config.tasks.level),
-		lines: ocrDigits(config.tasks.lines),
-	};
+	performance.mark('deinterlace_end');
 
-	res.elapsed = Date.now() - start;
+	const score = ocrDigits(config.tasks.score);
+
+	performance.mark('score_end');
+
+	const level = ocrDigits(config.tasks.level);
+
+	performance.mark('level_end');
+
+	const lines = ocrDigits(config.tasks.lines);
+
+	performance.mark('lines_end');
+
+	performance.measure('draw', 'start', 'draw_end');
+	performance.measure('deinterlace', 'draw_end', 'deinterlace_end');
+	performance.measure('score', 'deinterlace_end', 'score_end');
+	performance.measure('level', 'score_end', 'level_end');
+	performance.measure('lines', 'level_end', 'lines_end');
+	performance.measure('total', 'start', 'lines_end');
+
+	// console.log(performance.getEntriesByType("measure"));
+
+	const res = { score, level, lines, perf: {} };
+
+	const measures = performance.getEntriesByType("measure").forEach(m => {
+		res.perf[m.name] =  m.duration.toFixed(3);
+	});
+
+
+	performance.clearMarks();
+	performance.clearMeasures();
 
 	self.postMessage(res);
 }
 
-// do with assembly
+// TODO: do with assembly
+// TODO: only deinterlace what's needed (find lowest y crop value)
 function deinterlace() {
-	const ctx = raw_canvas.getContext('2d');
-	const pixels = ctx.getImageData(0, 0, config.width, config.height);
+	const pixels = raw_canvas_ctx.getImageData(0, 0, config.width, config.height);
 	const pixels_per_rows = pixels.width * 4;
-	const max_rows = pixels.height / 2;
+	const max_rows = lowest_row; // pixels.height / 2;
 
 	for (let row_idx = 1; row_idx < max_rows; row_idx++) {
-		const slice = pixels.data.slice(
+		pixels.data.copyWithin(
+			pixels_per_rows * row_idx,
 			pixels_per_rows * row_idx * 2,
 			pixels_per_rows * (row_idx * 2 + 1)
 		);
-
-		pixels.data.set(slice, pixels_per_rows * row_idx);
 	}
 
-	ctx.putImageData(pixels, 0, 0, 0, 0, pixels_per_rows, max_rows);
+	raw_canvas_ctx.putImageData(pixels, 0, 0, 0, 0, pixels_per_rows, max_rows);
 }
 
 function ocrDigits(task) {
