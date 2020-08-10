@@ -170,8 +170,8 @@ let start;
 
 async function captureFrame() {
 	try {
-		const bitmap = createImageBitmap(video, 0, 0, video.videoWidth, video.videoHeight);
-		
+		const bitmap = await createImageBitmap(video, 0, 0, video.videoWidth, video.videoHeight);
+
 		if (SHOW_LOCAL) {
 			capture_ctx.drawImage(bitmap, 0, 0, capture.width, capture.height);
 
@@ -218,7 +218,7 @@ function processFrame(pixels) {
 
 	processTasks(pixels);
 
-	console.log(Date.now() - start);
+	// console.log(Date.now() - start);
 }
 
 console.log('loading worker');
@@ -228,7 +228,7 @@ const x=0, y=0, w=100, h=7;
 
 worker.addEventListener('message', function(evt) {
 	// we're receiving a frame, let's just
-	frame.data.textContent = JSON.stringify(evt.data);
+	frame_data.textContent = JSON.stringify(evt.data);
 }, false);
 
 

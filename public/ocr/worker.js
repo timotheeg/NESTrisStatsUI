@@ -71,7 +71,7 @@ async function getTemplateData(digit) {
 		0, 0,  7,  7,
 		0, 0, 14, 14 // 2x scaling
 	);
-	
+
 	const img_data = scale_canvas_ctx.getImageData(0, 0, 14, 14);
 	const lumas = new Uint8ClampedArray(img_data.width * img_data.height).fill(0);
 	const pixel_data = img_data.data;
@@ -101,11 +101,10 @@ let ready = false;
 let config = null;
 let drop_frames = 0;
 
-self.onMessage = function(msg) {
-	switch (msg.command) {
+self.onmessage = function(msg) {
+	switch (msg.data.command) {
 		case 'set_config': {
-			config = msg.config;
-			ready = true;
+			setConfig(msg.data.config);
 			break;
 		}
 		case 'frame': {
@@ -119,22 +118,23 @@ self.onMessage = function(msg) {
 			}
 			/**/
 
-			processFrame(msg.frame);
+			processFrame(msg.data.frame);
 		}
 	}
 }
 
 function setConfig(_config) {
 	config = _config;
+	ready = true;
 
 	raw_canvas = new OffscreenCanvas(config.width, config.height);
 }
 
 function processFrame(frame) {
 	// load the raw frame
-	raw_canvas.getContext('2d').drawImage(bitmap, 0, 0, config.width, config.height);
+	raw_canvas.getContext('2d').drawImage(frame, 0, 0, config.width, config.height);
 
-	deinterlace(frame);
+	deinterlace();
 
 	const res = {
 		score: ocrDigits(config.tasks.score),
@@ -146,7 +146,7 @@ function processFrame(frame) {
 }
 
 // do with assembly
-function deinterlace(frame) {
+function deinterlace() {
 	const ctx = raw_canvas.getContext('2d');
 	const pixels = ctx.getImageData(0, 0, config.width, config.height);
 	const pixels_per_rows = pixels.width * 4;
@@ -175,7 +175,7 @@ function ocrDigits(task) {
 		0, 0, nominal_width * 2, 14
 	);
 
-	const digits = new Array(6);
+	const digits = new Array(task.pattern.length);
 
 	for (let idx=0; idx<6; idx++) {
 		const char = task.pattern[idx];
@@ -184,7 +184,7 @@ function ocrDigits(task) {
 
 		if (!digit) return null;
 
-		digits.push( digit - 1 );
+		digits[idx] = digit - 1;
 	}
 
 	// TODO: compute the number, rather than returning an array of digits
