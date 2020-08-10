@@ -35,15 +35,14 @@ UI "inspired" from, and improving on, [CTJC's layout](https://www.youtube.com/wa
 
 ![Full UI](./docs/uis/invisible_tetris_1.png)
 
-Sample videos from gameplay at CTWC Invisible Tetris Competition 2019:
-
-* [Alex Kerr](https://www.youtube.com/watch?v=2RwoM0Nu9rs)
-* [Koryan](https://www.youtube.com/watch?v=A-h7Ls0FkcU)
-
-And myself playing (badly) from the renderer itself (it's hard because rendering runs 2 frame behind)
+Here's a demo of my playing from the renderer itself (it's harder than it looks because rendering runs 2 frame behind)
 * [Game 1](https://www.youtube.com/watch?v=eh2bqVe4wOo)
 * [Game 2](https://www.youtube.com/watch?v=6CLdBgV3DW4)
 
+The 2 semi finals and the final match of CTWC 2019's Invisible Tetris Competition have also been rendered with this renderer for demo, as seen from the links below:
+* [Semi 1 - Joseph vs Kauser](https://www.youtube.com/watch?v=OXluTMkbGG4)
+* [Semi 2 - GreenTea vs Alex](https://www.youtube.com/watch?v=JVHS3EaVAA4)
+* [Final - Kauser vs Alex](https://www.youtube.com/watch?v=5nBTSb1zKjc)
 
 
 
