@@ -131,6 +131,8 @@ function setConfig(_config) {
 }
 
 function processFrame(frame) {
+	const start = Date.now();
+
 	// load the raw frame
 	raw_canvas.getContext('2d').drawImage(frame, 0, 0, config.width, config.height);
 
@@ -141,6 +143,8 @@ function processFrame(frame) {
 		level: ocrDigits(config.tasks.level),
 		lines: ocrDigits(config.tasks.lines),
 	};
+
+	res.elapsed = Date.now() - start;
 
 	self.postMessage(res);
 }
@@ -177,7 +181,7 @@ function ocrDigits(task) {
 
 	const digits = new Array(task.pattern.length);
 
-	for (let idx=0; idx<6; idx++) {
+	for (let idx=digits.length; idx--; ) {
 		const char = task.pattern[idx];
 		const image_data = scale_canvas_ctx.getImageData(idx * 16, 0, 14, 14);
 		const digit = getDigit(image_data, PATTERN_MAX_INDEXES[char]); // only check numerical digits and null
