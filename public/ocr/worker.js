@@ -154,7 +154,7 @@ function processFrame(frame) {
 	performance.mark('start');
 
 	// load the raw frame
-	raw_canvas.getContext('2d').drawImage(frame, 0, 0, config.width, config.height);
+	raw_canvas_ctx.drawImage(frame, 0, 0, config.width, config.height);
 
 	performance.mark('draw_end');
 
@@ -199,7 +199,7 @@ function processFrame(frame) {
 // TODO: do with assembly
 // TODO: only deinterlace what's needed (find lowest y crop value)
 function deinterlace() {
-	const pixels = raw_canvas_ctx.getImageData(0, 0, config.width, config.height);
+	const pixels = raw_canvas_ctx.getImageData(0, 0, config.width, lowest_row * 2);
 	const pixels_per_rows = pixels.width * 4;
 	const max_rows = lowest_row; // pixels.height / 2;
 
