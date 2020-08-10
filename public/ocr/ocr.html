@@ -18,12 +18,18 @@ video, #capture {
 <video id="device_video" playsinline controls="false"></video>
 
 <canvas id="capture"></canvas><br />
-<canvas id="processed"></canvas><br />
-<canvas id="score"></canvas><br />
-<canvas id="lines"></canvas><br />
-<canvas id="level"></canvas><br />
-<canvas id="stats"></canvas><br />
-<canvas id="field"></canvas><br />
+<canvas id="processed"></canvas>
+<br /><br />
+<canvas id="score"></canvas>
+<br /><br />
+<canvas id="level"></canvas>
+<br /><br />
+<canvas id="lines"></canvas>
+<br /><br />
+<canvas id="field"></canvas>
+<br /><br />
+<canvas id="stats"></canvas>
+<br /><br />
 
 <script>
 // NTSC NES resolution: 256x224 -> 512x448
@@ -41,12 +47,17 @@ const
 
 	dom = {
 		score          : document.querySelector('#score'),
-		score_ctx      : processed.getContext('2d'),
 		lines          : document.querySelector('#lines'),
-		lines_ctx      : processed.getContext('2d'),
 		level          : document.querySelector('#level'),
-		level_ctx      : processed.getContext('2d'),
+		field          : document.querySelector('#field'),
+		stats          : document.querySelector('#stats'),
 	};
+
+dom.score_ctx = dom.score.getContext('2d');
+dom.lines_ctx = dom.lines.getContext('2d');
+dom.level_ctx = dom.level.getContext('2d');
+dom.field_ctx = dom.field.getContext('2d');
+dom.stats_ctx = dom.stats.getContext('2d');
 
 let entries;
 
@@ -136,9 +147,13 @@ function startCapture(stream) {
 	captureFrame();
 }
 
+let start;
+
 async function captureFrame() {
 	try {
 		capture_ctx.drawImage(video, 0, 0, capture.width, capture.height);
+
+		start = Date.now();
 
 		const pixels = capture_ctx.getImageData(0, 0, capture.width, capture.height);
 
@@ -168,7 +183,9 @@ function processFrame(pixels) {
 
 	processed_ctx.putImageData(pixels, 0, 0, 0, 0, pixels_per_rows, max_rows);
 
-	processTasks();
+	processTasks(pixels);
+
+	console.log(Date.now() - start);
 
 	/*
 	worker.postMessage(
@@ -187,14 +204,16 @@ function processFrame(pixels) {
 console.log('loading worker');
 const worker = new Worker('./worker.js');
 
-const x=0, y=0, w=1, h=1;
+const x=0, y=0, w=100, h=7;
 
 const config = {
 	deinterlace: true,
 	tasks: [
-		{name: 'score', crop: [x, y, w, h], pattern: "DDDDDD", red: false},
-		{name: 'level', crop: [x, y, w, h], pattern: "TD", red: false},
-		{name: 'lines', crop: [x, y, w, h], pattern: "TDD", red: false},
+		{name: 'score', crop: [526, 62, 118, 7], pattern: "DDDDDD", red: false},
+		{name: 'level', crop: [566, 166, 38, 7], pattern: "TD", red: false},
+		{name: 'lines', crop: [426, 22, 57, 7], pattern: "TDD", red: false},
+		{name: 'field', crop: [284, 46, 201, 160]},
+		{name: 'stats', crop: [164, 93, 57, 105]},
 	]
 };
 
@@ -208,7 +227,7 @@ worker.addEventListener('message', function(evt) {
 }, false);
 
 
-function processTasks() {
+function processTasks(pixels) {
 	config.tasks.forEach(task => {
 		const canva = dom[task.name];
 		const ctx = dom[`${task.name}_ctx`];
@@ -217,8 +236,7 @@ function processTasks() {
 		canva.width = w;
 		canva.height = h;
 
-		processed_ctx.getImageData(pixels, x, y, w, h);
-		ctx.putImageData(pixels, 0, 0, x, y, w, h);
+		ctx.putImageData(pixels, -x, -y, x, y, w, h);
 	});
 }
 
