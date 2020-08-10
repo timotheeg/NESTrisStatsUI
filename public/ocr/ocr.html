@@ -36,7 +36,7 @@ video {
 <script>
 // NTSC NES resolution: 256x224 -> 512x448
 
-const SHOW_LOCAL = true;
+const SHOW_LOCAL = false;
 
 const config = {
 	deinterlace: true,
@@ -160,7 +160,7 @@ async function playVideoFromDevice(device_id) {
     catch(error) {
         console.error('Error opening video camera.', error);
         video.pause();
-        capture_process = window.cancelAnimationFrame(capture_process);
+        capture_process = clearTimeout(capture_process); // window.cancelAnimationFrame(capture_process);
     }
 }
 
@@ -223,7 +223,7 @@ async function captureFrame() {
 		console.error(err);
 	}
 
-	capture_process = window.requestAnimationFrame(captureFrame);
+	capture_process = setTimeout(captureFrame, 1000/30); // window.requestAnimationFrame(captureFrame);
 }
 
 function processFrame(pixels) {
