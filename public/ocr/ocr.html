@@ -19,6 +19,7 @@ video, #capture {
 
 <canvas id="capture"></canvas>
 <canvas id="processed"></canvas>
+<canvas id="digit" width="14" height="14"></canvas>
 
 <script>
 	// NTSC NES resolution: 256x224 -> 512x448
@@ -31,6 +32,8 @@ const
 	capture_ctx     = capture.getContext('2d'),
 	processed       = document.querySelector('#processed'),
 	processed_ctx   = processed.getContext('2d')
+	digit           = document.querySelector('#digit'),
+	digit_ctx       = digit.getContext('2d')
 ;
 
 let entries;
@@ -153,6 +156,9 @@ function processFrame(pixels) {
 
 	processed_ctx.putImageData(pixels, 0, 0, 0, 0, pixels_per_rows, max_rows);
 }
+
+console.log('loading worker');
+const worker = new Worker('./worker.js');
 
 </script>
 </body>
