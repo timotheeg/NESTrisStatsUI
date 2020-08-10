@@ -2,9 +2,6 @@
 
 <head>
 <style type="text/css">
-video, #capture {
-	display: none;
-}
 </style>
 </head>
 
@@ -16,8 +13,9 @@ video, #capture {
 </div>
 
 <video id="device_video" playsinline controls="false"></video>
-
-<canvas id="capture"></canvas><br />
+<br /><br />
+<canvas id="capture"></canvas>
+<br /><br />
 <canvas id="processed"></canvas>
 <br /><br />
 <canvas id="score"></canvas>
@@ -30,11 +28,23 @@ video, #capture {
 <br /><br />
 <canvas id="stats"></canvas>
 <br /><br />
+<div id="frame_data"></div>
 
 <script>
 // NTSC NES resolution: 256x224 -> 512x448
 
-// OffscreenCanvas can be passed by reference
+const SHOW_LOCAL = true;
+
+const config = {
+	deinterlace: true,
+	tasks: {
+		score: { crop: [526, 62, 118, 7], pattern: "DDDDDD", red: false },
+		level: { crop: [566, 166, 38, 7], pattern: "TD", red: false },
+		lines: { crop: [426, 22, 57, 7], pattern: "TDD", red: false },
+		field: { crop: [284, 46, 201, 160] },
+		stats: { crop: [164, 93, 57, 105], red: true },
+	}
+};
 
 // dom nodes
 const
@@ -44,6 +54,7 @@ const
 	capture_ctx     = capture.getContext('2d'),
 	processed       = document.querySelector('#processed'),
 	processed_ctx   = processed.getContext('2d'),
+	frame_data      = document.querySelector('#frame_data'),
 
 	dom = {
 		score          : document.querySelector('#score'),
@@ -144,6 +155,14 @@ function startCapture(stream) {
 	processed.width = settings.width;
 	processed.height = settings.height / 2;
 
+	config.width = settings.width;
+	config.height = settings.height;
+
+	worker.postMessage({
+		command: 'set_config',
+		config
+	});
+
 	captureFrame();
 }
 
@@ -151,13 +170,27 @@ let start;
 
 async function captureFrame() {
 	try {
-		capture_ctx.drawImage(video, 0, 0, capture.width, capture.height);
+		const bitmap = createImageBitmap(video, 0, 0, video.videoWidth, video.videoHeight);
+		
+		if (SHOW_LOCAL) {
+			capture_ctx.drawImage(bitmap, 0, 0, capture.width, capture.height);
 
-		start = Date.now();
+			start = Date.now();
 
-		const pixels = capture_ctx.getImageData(0, 0, capture.width, capture.height);
+			const pixels = capture_ctx.getImageData(0, 0, capture.width, capture.height);
 
-		processFrame(pixels);
+			processFrame(pixels);
+		}
+
+		worker.postMessage(
+			{
+				command: 'frame',
+				frame: bitmap
+			},
+			[
+				bitmap
+			]
+		);
 	}
 	catch(err) {
 		console.error(err);
@@ -186,19 +219,6 @@ function processFrame(pixels) {
 	processTasks(pixels);
 
 	console.log(Date.now() - start);
-
-	/*
-	worker.postMessage(
-		{
-			width: pixels_per_rows,
-			height: max_rows,
-			data: pixels.data,
-		},
-		[
-			pixels.data.buffer
-		]
-	);
-	/**/
 }
 
 console.log('loading worker');
@@ -206,38 +226,23 @@ const worker = new Worker('./worker.js');
 
 const x=0, y=0, w=100, h=7;
 
-const config = {
-	deinterlace: true,
-	tasks: [
-		{name: 'score', crop: [526, 62, 118, 7], pattern: "DDDDDD", red: false},
-		{name: 'level', crop: [566, 166, 38, 7], pattern: "TD", red: false},
-		{name: 'lines', crop: [426, 22, 57, 7], pattern: "TDD", red: false},
-		{name: 'field', crop: [284, 46, 201, 160]},
-		{name: 'stats', crop: [164, 93, 57, 105]},
-	]
-};
-
-worker.postMessage({
-	command: 'set_config',
-	args: [ config ]
-});
-
 worker.addEventListener('message', function(evt) {
-	// first message is ready
+	// we're receiving a frame, let's just
+	frame.data.textContent = JSON.stringify(evt.data);
 }, false);
 
 
 function processTasks(pixels) {
-	config.tasks.forEach(task => {
-		const canva = dom[task.name];
-		const ctx = dom[`${task.name}_ctx`];
+	for (const [name, task] of Object.entries(config.tasks)) {
+		const canva = dom[name];
+		const ctx = dom[`${name}_ctx`];
 		const [x, y, w, h] = task.crop;
 
 		canva.width = w;
 		canva.height = h;
 
 		ctx.putImageData(pixels, -x, -y, x, y, w, h);
-	});
+	}
 }
 
 </script>
