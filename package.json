@@ -13,7 +13,8 @@
     "competition": "open ./public/competition_admin.html & node app_competition.js",
     "asbuild:untouched": "asc assembly/index.ts --target debug",
     "asbuild:optimized": "asc assembly/index.ts --target release",
-    "asbuild": "npm run asbuild:untouched && npm run asbuild:optimized"
+    "asbuild": "npm run asbuild:untouched && npm run asbuild:optimized && cp -a build public/ocr",
+    "serve": "cd public && static-server -p 3000"
   },
   "keywords": [],
   "author": "",
@@ -38,6 +39,7 @@
   },
   "devDependencies": {
     "assemblyscript": "^0.14.8",
+    "static-server": "^2.2.1",
     "tap": "^12.5.3"
   }
 }

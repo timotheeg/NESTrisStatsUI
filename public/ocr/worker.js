@@ -244,7 +244,24 @@ function ocrDigits(task) {
 
 
 async function init() {
-	try {
+		try {
+	    const importObject = {
+	        env: {
+	            abort(_msg, _file, line, column) {
+	                console.error("abort called at index.ts:" + line + ":" + column);
+	            }
+	        }
+	    };
+
+	    const module = await WebAssembly.instantiateStreaming(
+	        fetch("./build/optimized.wasm"),
+	        importObject
+	    );
+
+	    const add = module.instance.exports.add;
+
+	    console.log('add in as', add(7, 6));
+
 		templates = await loadDigits();
 		console.log(templates);
 		ready = true;
