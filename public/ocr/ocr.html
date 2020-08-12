@@ -164,9 +164,9 @@ async function playVideoFromDevice(device_id) {
     }
 }
 
-let capture_process;
+let capture_process, blob;
 
-function startCapture(stream) {
+async function startCapture(stream) {
 	const settings = stream.getVideoTracks()[0].getSettings();
 
 	console.log(`Video settings: ${settings.width}x${settings.height}@${settings.frameRate.toFixed(1)}fps`);
@@ -185,6 +185,9 @@ function startCapture(stream) {
 		config
 	});
 
+	const response = await fetch(`./full.png`);
+	blob = await response.blob();
+
 	captureFrame();
 }
 
@@ -194,8 +197,6 @@ async function captureFrame() {
 	try {
 		// const bitmap = await createImageBitmap(video, 0, 0, video.videoWidth, video.videoHeight);
 
-		const response = await fetch(`./full.png`);
-		const blob = await response.blob();
 		const bitmap = await createImageBitmap(blob);
 
 
