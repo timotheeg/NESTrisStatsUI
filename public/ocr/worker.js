@@ -16,8 +16,11 @@ const PATTERN_MAX_INDEXES = {
 
 let templates;
 
-const scale_canvas = new OffscreenCanvas(256, 256);
-scale_canvas_ctx = scale_canvas.getContext('2d', { alpha: false });
+const scale_canvas = new OffscreenCanvas(
+	(6 * 8 - 1) * 2, // longest string is score of 6 digits
+	14
+);
+scale_canvas_ctx = scale_canvas.getContext('2d', { alpha: false, lowLatency: true });
 scale_canvas_ctx.imageSmoothingQuality = 'medium';
 
 let raw_canvas;
@@ -80,7 +83,7 @@ async function getTemplateData(digit) {
 	const pixel_data = img_data.data;
 
 	for (let idx=0; idx < lumas.length; idx++) {
-		const offset_idx = idx * 4;
+		const offset_idx = idx << 2;
 
 		lumas[idx] = roundedLuma(
 			pixel_data[offset_idx],
@@ -89,7 +92,7 @@ async function getTemplateData(digit) {
 		);
 	}
 
- 	return asmodule.__retain(asmodule.__allocArray(asmodule.Uint8ArrayId, lumas))
+	return lumas;
 }
 
 function roundedLuma(r, g, b) {
@@ -103,7 +106,6 @@ async function loadDigits() {
 let ready = false;
 let config = null;
 let drop_frames = 0;
-let lowest_row;
 
 self.onmessage = function(msg) {
 	switch (msg.data.command) {
@@ -130,32 +132,44 @@ self.onmessage = function(msg) {
 function setConfig(_config) {
 	config = _config;
 
-	getLowestRow();
+	getCaptureBounds();
 
 	raw_canvas = new OffscreenCanvas(config.width, config.height);
-	raw_canvas_ctx = raw_canvas.getContext('2d', { alpha: false });
+	raw_canvas_ctx = raw_canvas.getContext('2d', { alpha: false, lowLatency: true });
 }
 
-function getLowestRow() {
-	let lowest = -1;
+let capture_bounds;
+let capture_area;
 
-	for (const { crop } of Object.values(config.tasks)) {
-		const [x, y, w, h] = crop;
-		const bottom = y + h;
-
-		if (bottom > lowest) {
-			lowest = bottom;
-		}
+function getCaptureBounds() {
+	const bounds = {
+		top:    0xFFFFFFFF,
+		left:   0xFFFFFFFF,
+		bottom: -1,
+		right:  -1,
 	}
 
-	lowest_row = lowest + 1; // + 1 for safety
+	for (const { crop: [x, y, w, h] } of Object.values(config.tasks)) {
+		bounds.top    = Math.min(bounds.top,    y);
+		bounds.left   = Math.min(bounds.left,   x);
+		bounds.bottom = Math.max(bounds.bottom, y + h);
+		bounds.right  = Math.max(bounds.right,  x + w);
+	}
+
+	capture_bounds = bounds;
+	capture_area   = {
+		x: bounds.left,
+		y: bounds.top,
+		w: bounds.right - bounds.left,
+		h: bounds.bottom - bounds.top,
+	};
 }
 
 function processFrame(frame) {
 	performance.mark('start');
 
-	// load the raw frame
-	raw_canvas_ctx.drawImage(frame, 0, 0, config.width, config.height);
+		// load the raw frame
+		raw_canvas_ctx.drawImage(frame, 0, 0, config.width, config.height);
 
 	performance.mark('draw_end');
 
@@ -167,20 +181,28 @@ function processFrame(frame) {
 
 	performance.mark('score_end');
 
-	const level = ocrDigits(config.tasks.level);
+	const level = 0; // ocrDigits(config.tasks.level);
 
 	performance.mark('level_end');
 
-	const lines = ocrDigits(config.tasks.lines);
+	const lines = 0; // ocrDigits(config.tasks.lines);
 
 	performance.mark('lines_end');
 
 	performance.measure('draw', 'start', 'draw_end');
+
 	performance.measure('deinterlace', 'draw_end', 'deinterlace_end');
+	performance.measure('di_crop', 'di_start', 'di_crop_end');
+	performance.measure('di_process', 'di_crop_end', 'di_process_end');
+	performance.measure('di_write', 'di_process_end', 'di_write_end');
+
+
 	performance.measure('score', 'deinterlace_end', 'score_end');
 	performance.measure('level', 'score_end', 'level_end');
 	performance.measure('lines', 'level_end', 'lines_end');
 	performance.measure('total', 'start', 'lines_end');
+	performance.measure('ocr_scale', 'ocr_start', 'ocr_scale_end');
+	performance.measure('ocr_reckon', 'ocr_scale_end', 'ocr_reckon_end');
 
 	// console.log(performance.getEntriesByType("measure"));
 
@@ -200,9 +222,14 @@ function processFrame(frame) {
 // TODO: do with assembly
 // TODO: only deinterlace what's needed (find lowest y crop value)
 function deinterlace() {
-	const pixels = raw_canvas_ctx.getImageData(0, 0, config.width, lowest_row * 2);
-	const pixels_per_rows = pixels.width * 4;
-	const max_rows = lowest_row; // pixels.height / 2;
+	performance.mark('di_start');
+
+	const pixels = raw_canvas_ctx.getImageData(capture_area.x, 0, capture_area.w, capture_bounds.bottom * 2);
+
+	performance.mark('di_crop_end');
+
+	const pixels_per_rows = capture_area.w * 4;
+	const max_rows = capture_bounds.bottom + 1;
 
 	for (let row_idx = 1; row_idx < max_rows; row_idx++) {
 		pixels.data.copyWithin(
@@ -212,10 +239,16 @@ function deinterlace() {
 		);
 	}
 
-	raw_canvas_ctx.putImageData(pixels, 0, 0, 0, 0, pixels_per_rows, max_rows);
+	performance.mark('di_process_end');
+
+	raw_canvas_ctx.putImageData(pixels, capture_area.x, 0, 0, 0, pixels_per_rows, max_rows);
+
+	performance.mark('di_write_end');
 }
 
 function ocrDigits(task) {
+	performance.mark('ocr_start');
+
 	const [x, y, w, h] = task.crop;
 	const nominal_width = 8 * task.pattern.length - 1;
 
@@ -226,37 +259,48 @@ function ocrDigits(task) {
 		0, 0, nominal_width * 2, 14
 	);
 
+	let crop = 0;
+	let alloc = 0;
+	let ocr = 0;
+
+	performance.mark('ocr_scale_end');
+
 	const digits = new Array(task.pattern.length);
 
+	let then, now;
+
 	for (let idx=digits.length; idx--; ) {
+		then = performance.now();
 		const char = task.pattern[idx];
 		const image_data = scale_canvas_ctx.getImageData(idx * 16, 0, 14, 14);
 
+		crop += performance.now() - then;
+		then = performance.now();
+
 		// const digit = getDigit(image_data, PATTERN_MAX_INDEXES[char]); // only check numerical digits and null
 		const as_array = asmodule.__retain(asmodule.__allocArray(asmodule.Uint8ArrayId, image_data.data));
+		alloc += performance.now() - then;
+		then = performance.now();
 
-		digits[idx] = asmodule.getLen(as_array);
-
-		asmodule.__release(as_array);
-
-		/*
 		const digit = asmodule.getDigit(
-			image_data.width,
-			image_data.height,
 			as_array,
-			templates,
 			PATTERN_MAX_INDEXES[char]
 		);
 
-		if (!digit) return null;
+		ocr += performance.now() - then;
+
+		asmodule.__release(as_array);
+
+		// if (!digit) return null;
 
 		digits[idx] = digit - 1;
-		/**/
 	}
+
+	performance.mark('ocr_reckon_end');
 
 	// TODO: compute the number, rather than returning an array of digits
 	// TODO: can add in the for loop above
-	return digits;
+	return [...digits, {crop: crop.toFixed(3), alloc: alloc.toFixed(3), ocr: ocr.toFixed(3)}];
 }
 
 
@@ -277,13 +321,17 @@ async function init() {
 
 		asmodule = exports;
 
-		const js_templates = await loadDigits();
+		// load the digit templates for OCR
+		const luma_templates = await loadDigits();
+		const size = luma_templates[0].length;
+		const merged_templates = new Uint8Array(luma_templates.length * size);
 
-		templates = asmodule.__retain(
-			asmodule.__allocArray(
-				asmodule.Uint8Array2dId,
-				js_templates
-			)
+		luma_templates.forEach((template, idx) => {
+			merged_templates.set(template, idx * size);
+		});
+
+		asmodule.setTemplates(
+			asmodule.__retain(asmodule.__allocArray(asmodule.Uint8ArrayId, merged_templates))
 		);
 
 		ready = true;
