@@ -1,4 +1,8 @@
-console.log('w1');
+const exports = {};
+importScripts('./loader.js');
+const loader = exports;
+
+let asmodule;
 
 const DIGITS = "0123456789ABCDEF".split('');
 
@@ -10,9 +14,7 @@ const PATTERN_MAX_INDEXES = {
 	'B': 3
 };
 
-
 let templates;
-
 
 const scale_canvas = new OffscreenCanvas(256, 256);
 scale_canvas_ctx = scale_canvas.getContext('2d', { alpha: false });
@@ -87,7 +89,7 @@ async function getTemplateData(digit) {
 		);
 	}
 
-	return lumas;
+ 	return asmodule.__retain(asmodule.__allocArray(asmodule.Uint8ArrayId, lumas))
 }
 
 function roundedLuma(r, g, b) {
@@ -110,7 +112,7 @@ self.onmessage = function(msg) {
 			break;
 		}
 		case 'frame': {
-			if (!ready) return;
+			if (!ready || !config) return;
 
 			/*
 			if (working) {
@@ -127,7 +129,6 @@ self.onmessage = function(msg) {
 
 function setConfig(_config) {
 	config = _config;
-	ready = true;
 
 	getLowestRow();
 
@@ -230,11 +231,27 @@ function ocrDigits(task) {
 	for (let idx=digits.length; idx--; ) {
 		const char = task.pattern[idx];
 		const image_data = scale_canvas_ctx.getImageData(idx * 16, 0, 14, 14);
-		const digit = getDigit(image_data, PATTERN_MAX_INDEXES[char]); // only check numerical digits and null
+
+		// const digit = getDigit(image_data, PATTERN_MAX_INDEXES[char]); // only check numerical digits and null
+		const as_array = asmodule.__retain(asmodule.__allocArray(asmodule.Uint8ArrayId, image_data.data));
+
+		digits[idx] = asmodule.getLen(as_array);
+
+		asmodule.__release(as_array);
+
+		/*
+		const digit = asmodule.getDigit(
+			image_data.width,
+			image_data.height,
+			as_array,
+			templates,
+			PATTERN_MAX_INDEXES[char]
+		);
 
 		if (!digit) return null;
 
 		digits[idx] = digit - 1;
+		/**/
 	}
 
 	// TODO: compute the number, rather than returning an array of digits
@@ -244,26 +261,31 @@ function ocrDigits(task) {
 
 
 async function init() {
-		try {
-	    const importObject = {
-	        env: {
-	            abort(_msg, _file, line, column) {
-	                console.error("abort called at index.ts:" + line + ":" + column);
-	            }
-	        }
-	    };
+	try {
+		const importObject = {
+			env: {
+				abort(_msg, _file, line, column) {
+					console.error("abort called at index.ts:" + line + ":" + column);
+				}
+			}
+		};
 
-	    const module = await WebAssembly.instantiateStreaming(
-	        fetch("./build/optimized.wasm"),
-	        importObject
-	    );
+		const { exports } = await loader.instantiate(
+			fetch("./build/optimized.wasm"),
+			importObject
+		);
 
-	    const add = module.instance.exports.add;
+		asmodule = exports;
 
-	    console.log('add in as', add(7, 6));
+		const js_templates = await loadDigits();
 
-		templates = await loadDigits();
-		console.log(templates);
+		templates = asmodule.__retain(
+			asmodule.__allocArray(
+				asmodule.Uint8Array2dId,
+				js_templates
+			)
+		);
+
 		ready = true;
 	}
 	catch(err) {

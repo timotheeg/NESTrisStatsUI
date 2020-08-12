@@ -1,35 +1,47 @@
 (module
  (type $i32_i32_=>_none (func (param i32 i32)))
  (type $i32_=>_none (func (param i32)))
- (type $i32_i32_=>_i32 (func (param i32 i32) (result i32)))
  (type $i32_=>_i32 (func (param i32) (result i32)))
+ (type $i32_i32_=>_i32 (func (param i32 i32) (result i32)))
  (type $i32_i32_i32_=>_i32 (func (param i32 i32 i32) (result i32)))
  (type $none_=>_none (func))
  (type $i32_i32_i32_=>_none (func (param i32 i32 i32)))
  (type $i32_i32_i32_i32_=>_none (func (param i32 i32 i32 i32)))
  (type $none_=>_i32 (func (result i32)))
+ (type $i32_i32_i32_i32_i32_=>_i32 (func (param i32 i32 i32 i32 i32) (result i32)))
  (import "env" "abort" (func $~lib/builtins/abort (param i32 i32 i32 i32)))
  (memory $0 1)
  (data (i32.const 16) "\1e\00\00\00\01\00\00\00\01\00\00\00\1e\00\00\00~\00l\00i\00b\00/\00r\00t\00/\00t\00l\00s\00f\00.\00t\00s\00")
  (data (i32.const 64) "(\00\00\00\01\00\00\00\01\00\00\00(\00\00\00a\00l\00l\00o\00c\00a\00t\00i\00o\00n\00 \00t\00o\00o\00 \00l\00a\00r\00g\00e\00")
  (data (i32.const 128) "\1e\00\00\00\01\00\00\00\01\00\00\00\1e\00\00\00~\00l\00i\00b\00/\00r\00t\00/\00p\00u\00r\00e\00.\00t\00s\00")
- (data (i32.const 176) "\04\00\00\00 \00\00\00\00\00\00\00 \00\00\00\00\00\00\00 \00\00\00\00\00\00\00\"\01\00\00\00\00\00\00")
+ (data (i32.const 176) "$\00\00\00\01\00\00\00\01\00\00\00$\00\00\00I\00n\00d\00e\00x\00 \00o\00u\00t\00 \00o\00f\00 \00r\00a\00n\00g\00e\00")
+ (data (i32.const 240) "$\00\00\00\01\00\00\00\01\00\00\00$\00\00\00~\00l\00i\00b\00/\00t\00y\00p\00e\00d\00a\00r\00r\00a\00y\00.\00t\00s\00")
+ (data (i32.const 304) "\t\00\00\00 \00\00\00\00\00\00\00 \00\00\00\00\00\00\00 \00\00\00\00\00\00\00!\01\00\00\02\00\00\00a\00\00\00\02\00\00\00\"A\00\00\00\00\00\00b\00\00\00\00\00\00\00\"\01\00\00\00\00\00\00\"A\00\00\00\00\00\00")
  (table $0 1 funcref)
  (global $~lib/rt/tlsf/ROOT (mut i32) (i32.const 0))
  (global $~lib/ASC_LOW_MEMORY_LIMIT i32 (i32.const 0))
  (global $~lib/rt/tlsf/collectLock (mut i32) (i32.const 0))
  (global $~lib/gc/gc.auto (mut i32) (i32.const 1))
- (global $assembly/index/u32ArrayId i32 (i32.const 3))
- (global $~lib/rt/__rtti_base i32 (i32.const 176))
- (global $~lib/heap/__heap_base i32 (i32.const 212))
+ (global $assembly/index/Uint32ArrayId i32 (i32.const 3))
+ (global $assembly/index/Uint8ArrayId i32 (i32.const 4))
+ (global $assembly/index/Uint8Array2dId i32 (i32.const 5))
+ (global $assembly/index/u8ArrayId i32 (i32.const 6))
+ (global $assembly/index/u32ArrayId i32 (i32.const 7))
+ (global $~lib/rt/__rtti_base i32 (i32.const 304))
+ (global $~lib/heap/__heap_base i32 (i32.const 380))
  (export "memory" (memory $0))
  (export "__alloc" (func $~lib/rt/tlsf/__alloc))
  (export "__retain" (func $~lib/rt/pure/__retain))
  (export "__release" (func $~lib/rt/pure/__release))
  (export "__collect" (func $~lib/rt/pure/__collect))
  (export "__rtti_base" (global $~lib/rt/__rtti_base))
+ (export "Uint32ArrayId" (global $assembly/index/Uint32ArrayId))
+ (export "Uint8ArrayId" (global $assembly/index/Uint8ArrayId))
+ (export "Uint8Array2dId" (global $assembly/index/Uint8Array2dId))
+ (export "u8ArrayId" (global $assembly/index/u8ArrayId))
  (export "u32ArrayId" (global $assembly/index/u32ArrayId))
- (export "add" (func $assembly/index/add))
+ (export "getLen" (func $assembly/index/getLen))
+ (export "getDigit" (func $assembly/index/getDigit))
  (func $~lib/rt/tlsf/removeBlock (param $0 i32) (param $1 i32)
   (local $2 i32)
   (local $3 i32)
@@ -1530,10 +1542,119 @@
    call $~lib/rt/pure/decrement
   end
  )
- (func $assembly/index/add (param $0 i32) (param $1 i32) (result i32)
+ (func $~lib/typedarray/Uint8Array#get:length (param $0 i32) (result i32)
   local.get $0
+  i32.load offset=8
+ )
+ (func $~lib/typedarray/Uint8Array#__get (param $0 i32) (param $1 i32) (result i32)
+  local.get $1
+  local.get $0
+  i32.load offset=8
+  i32.ge_u
+  if
+   i32.const 192
+   i32.const 256
+   i32.const 152
+   i32.const 45
+   call $~lib/builtins/abort
+   unreachable
+  end
+  local.get $0
+  i32.load offset=4
   local.get $1
   i32.add
+  i32.load8_u
+ )
+ (func $assembly/index/roundedLuma (param $0 i32) (param $1 i32) (param $2 i32) (result i32)
+  local.get $0
+  f64.convert_i32_u
+  f64.const 0.299
+  f64.mul
+  local.get $1
+  f64.convert_i32_u
+  f64.const 0.587
+  f64.mul
+  f64.add
+  local.get $2
+  f64.convert_i32_u
+  f64.const 0.114
+  f64.mul
+  f64.add
+  f64.nearest
+  i32.trunc_f64_u
+ )
+ (func $assembly/index/getLen (param $0 i32) (result i32)
+  (local $1 i32)
+  (local $2 i32)
+  (local $3 i32)
+  (local $4 i32)
+  local.get $0
+  call $~lib/rt/pure/__retain
+  local.set $0
+  i32.const 0
+  local.set $1
+  local.get $0
+  call $~lib/typedarray/Uint8Array#get:length
+  i32.const 2
+  i32.shr_u
+  local.set $2
+  loop $for-loop|0
+   local.get $2
+   local.tee $3
+   i32.const 1
+   i32.sub
+   local.set $2
+   local.get $3
+   local.set $3
+   local.get $3
+   if
+    local.get $2
+    i32.const 2
+    i32.shl
+    local.set $4
+    local.get $1
+    local.get $0
+    local.get $4
+    call $~lib/typedarray/Uint8Array#__get
+    local.get $0
+    local.get $4
+    i32.const 1
+    i32.add
+    call $~lib/typedarray/Uint8Array#__get
+    local.get $0
+    local.get $4
+    i32.const 2
+    i32.add
+    call $~lib/typedarray/Uint8Array#__get
+    call $assembly/index/roundedLuma
+    i32.add
+    local.set $1
+    br $for-loop|0
+   end
+  end
+  local.get $1
+  local.set $2
+  local.get $0
+  call $~lib/rt/pure/__release
+  local.get $2
+ )
+ (func $assembly/index/getDigit (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32) (param $4 i32) (result i32)
+  (local $5 i32)
+  local.get $2
+  call $~lib/rt/pure/__retain
+  local.set $2
+  local.get $3
+  call $~lib/rt/pure/__retain
+  local.set $3
+  local.get $2
+  call $~lib/typedarray/Uint8Array#get:length
+  local.set $5
+  local.get $2
+  call $~lib/rt/pure/__release
+  local.get $3
+  call $~lib/rt/pure/__release
+  local.get $5
+  return
  )
  (func $~lib/rt/pure/__collect
   i32.const 1
@@ -1677,6 +1798,59 @@
   i32.sub
   call $~lib/rt/pure/decrement
  )
+ (func $~lib/array/Array<~lib/typedarray/Uint8Array>#__visit_impl (param $0 i32) (param $1 i32)
+  (local $2 i32)
+  (local $3 i32)
+  (local $4 i32)
+  (local $5 i32)
+  i32.const 1
+  drop
+  local.get $0
+  i32.load offset=4
+  local.set $2
+  local.get $2
+  local.get $0
+  i32.load offset=12
+  i32.const 2
+  i32.shl
+  i32.add
+  local.set $3
+  loop $while-continue|0
+   local.get $2
+   local.get $3
+   i32.lt_u
+   local.set $4
+   local.get $4
+   if
+    local.get $2
+    i32.load
+    local.set $5
+    local.get $5
+    if
+     local.get $5
+     local.get $1
+     call $~lib/rt/pure/__visit
+    end
+    local.get $2
+    i32.const 4
+    i32.add
+    local.set $2
+    br $while-continue|0
+   end
+  end
+  local.get $0
+  i32.load
+  local.get $1
+  call $~lib/rt/pure/__visit
+ )
+ (func $~lib/array/Array<u8>#__visit_impl (param $0 i32) (param $1 i32)
+  i32.const 0
+  drop
+  local.get $0
+  i32.load
+  local.get $1
+  call $~lib/rt/pure/__visit
+ )
  (func $~lib/array/Array<u32>#__visit_impl (param $0 i32) (param $1 i32)
   i32.const 0
   drop
@@ -1685,33 +1859,96 @@
   local.get $1
   call $~lib/rt/pure/__visit
  )
- (func $~lib/rt/__visit_members (param $0 i32) (param $1 i32)
+ (func $~lib/array/Array<~lib/array/Array<u8>>#__visit_impl (param $0 i32) (param $1 i32)
   (local $2 i32)
-  block $switch$1$default
-   block $switch$1$case$5
-    block $switch$1$case$4
-     block $switch$1$case$2
-      local.get $0
-      i32.const 8
-      i32.sub
-      i32.load
-      br_table $switch$1$case$2 $switch$1$case$2 $switch$1$case$4 $switch$1$case$5 $switch$1$default
-     end
-     return
-    end
-    local.get $0
+  (local $3 i32)
+  (local $4 i32)
+  (local $5 i32)
+  i32.const 1
+  drop
+  local.get $0
+  i32.load offset=4
+  local.set $2
+  local.get $2
+  local.get $0
+  i32.load offset=12
+  i32.const 2
+  i32.shl
+  i32.add
+  local.set $3
+  loop $while-continue|0
+   local.get $2
+   local.get $3
+   i32.lt_u
+   local.set $4
+   local.get $4
+   if
+    local.get $2
     i32.load
-    local.tee $2
+    local.set $5
+    local.get $5
     if
-     local.get $2
+     local.get $5
      local.get $1
      call $~lib/rt/pure/__visit
     end
+    local.get $2
+    i32.const 4
+    i32.add
+    local.set $2
+    br $while-continue|0
+   end
+  end
+  local.get $0
+  i32.load
+  local.get $1
+  call $~lib/rt/pure/__visit
+ )
+ (func $~lib/rt/__visit_members (param $0 i32) (param $1 i32)
+  (local $2 i32)
+  block $switch$1$default
+   block $switch$1$case$10
+    block $switch$1$case$9
+     block $switch$1$case$8
+      block $switch$1$case$7
+       block $switch$1$case$4
+        block $switch$1$case$2
+         local.get $0
+         i32.const 8
+         i32.sub
+         i32.load
+         br_table $switch$1$case$2 $switch$1$case$2 $switch$1$case$4 $switch$1$case$4 $switch$1$case$4 $switch$1$case$7 $switch$1$case$8 $switch$1$case$9 $switch$1$case$10 $switch$1$default
+        end
+        return
+       end
+       local.get $0
+       i32.load
+       local.tee $2
+       if
+        local.get $2
+        local.get $1
+        call $~lib/rt/pure/__visit
+       end
+       return
+      end
+      local.get $0
+      local.get $1
+      call $~lib/array/Array<~lib/typedarray/Uint8Array>#__visit_impl
+      return
+     end
+     local.get $0
+     local.get $1
+     call $~lib/array/Array<u8>#__visit_impl
+     return
+    end
+    local.get $0
+    local.get $1
+    call $~lib/array/Array<u32>#__visit_impl
     return
    end
    local.get $0
    local.get $1
-   call $~lib/array/Array<u32>#__visit_impl
+   call $~lib/array/Array<~lib/array/Array<u8>>#__visit_impl
    return
   end
   unreachable
