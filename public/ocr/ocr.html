@@ -2,7 +2,7 @@
 
 <head>
 <style type="text/css">
-video, canvas {
+video {
 	display: none;
 }
 </style>
@@ -145,8 +145,6 @@ navigator.mediaDevices.addEventListener('devicechange', resetDevices);
 let stream;
 
 async function playVideoFromDevice(device_id) {
-	return;
-
     try {
         const constraints = {
         	audio: false,
@@ -170,7 +168,7 @@ async function playVideoFromDevice(device_id) {
     catch(error) {
         console.error('Error opening video camera.', error);
         video.pause();
-        capture_process = clearTimeout(capture_process); // window.cancelAnimationFrame(capture_process);
+        capture_process = clearInterval(capture_process); // window.cancelAnimationFrame(capture_process);
     }
 }
 
@@ -202,17 +200,15 @@ async function startCapture(stream) {
 	const response = await fetch(`./full.png`);
 	blob = await response.blob();
 
-	captureFrame();
+	capture_process = setInterval(captureFrame, 1000/30);
 }
 
 let start;
 
 async function captureFrame() {
 	try {
-		// const bitmap = await createImageBitmap(video, 0, 0, video.videoWidth, video.videoHeight);
-
-		const bitmap = await createImageBitmap(blob);
-
+		// const bitmap = await createImageBitmap(blob);
+		const bitmap = await createImageBitmap(video, 0, 0, video.videoWidth, video.videoHeight);
 
 		if (SHOW_LOCAL) {
 			capture_ctx.drawImage(bitmap, 0, 0, capture.width, capture.height);
@@ -241,7 +237,6 @@ async function captureFrame() {
 		console.error(err);
 	}
 
-	capture_process = setTimeout(captureFrame, 1000/30);
 	// window.requestAnimationFrame(captureFrame);
 }
 
@@ -315,11 +310,12 @@ function processTasks(pixels) {
 	}
 }
 
-/*
+/**/
 playVideoFromDevice()
 	.then(resetDevices);
 /**/
 
+/*
 const fake_stream = {
 	getVideoTracks() {
 		return [{
@@ -359,6 +355,7 @@ function dummyInit() {
 }
 
 setTimeout(dummyInit, 500);
+/**/
 
 
 </script>

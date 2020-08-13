@@ -6,6 +6,8 @@ const loader = exports;
 
 let asmodule;
 
+const PALETTE = [[[65, 40, 228], [86, 168, 254]], [[3, 127, 1], [125, 199, 6]], [[139, 14, 179], [211, 96, 255]], [[64, 41, 225], [85, 210, 45]], [[154, 19, 87], [64, 205, 111]], [[65, 206, 112], [134, 131, 255]], [[146, 38, 2], [90, 91, 87]], [[97, 18, 215], [82, 0, 20]], [[64, 40, 227], [151, 43, 4]], [[147, 39, 3], [211, 137, 32]]];
+
 const DIGITS = "0123456789ABCDEF".split('');
 
 DIGITS.unshift('null');
@@ -200,9 +202,14 @@ async function processFrame2(frame) {
 
 	performance.mark('lines_end');
 
-	const field = await scanField(source_img, config.tasks.field);
+	const field = await scanField(source_img, config.tasks.field, PALETTE[level % 10]);
 
 	performance.mark('field_end');
+
+	const preview = await scanPreview(source_img, config.tasks.preview);
+
+	performance.mark('preview_end');
+	performance.mark('end');
 
 
 	performance.measure('draw', 'start', 'draw_end');
@@ -216,11 +223,12 @@ async function processFrame2(frame) {
 	performance.measure('level', 'score_end', 'level_end');
 	performance.measure('lines', 'level_end', 'lines_end');
 	performance.measure('field', 'lines_end', 'field_end');
+	performance.measure('preview', 'field_end', 'preview_end');
 	performance.measure('total', 'start', 'field_end');
 
 	// console.log(performance.getEntriesByType("measure"));
 
-	const res = { score, level, lines, perf: {} };
+	const res = { score, level, lines, field, perf: {} };
 
 	const measures = performance.getEntriesByType("measure").forEach(m => {
 		res.perf[m.name] =  m.duration.toFixed(3);
@@ -267,7 +275,6 @@ function deinterlace() {
 function ocrDigits(source_img, task) {
 	const [raw_x, y, w, h] = task.crop;
 	const nominal_width = 8 * task.pattern.length - 1;
-
 	const x = raw_x - config.capture_area.x;
 
 	crop(source_img, x, y, w, h, task.crop_img);
@@ -283,7 +290,6 @@ function ocrDigits(source_img, task) {
 	for (let idx=digits.length; idx--; ) {
 		then = performance.now();
 		const char = task.pattern[idx];
-		// const image_data = scale_canvas_ctx.getImageData(idx * 16, 0, 14, 14);
 		crop(task.scale_img, idx * 16, 0, 14, 14, config.digit_img)
 
 		t_crop += performance.now() - then;
@@ -293,15 +299,13 @@ function ocrDigits(source_img, task) {
 		const digit = getDigit(config.digit_img.data, PATTERN_MAX_INDEXES[char]); // only check numerical digits and null
 		/**/
 		/*
-		const as_array = asmodule.__retain(asmodule.__allocArray(asmodule.Uint8ArrayId, image_data.data));
+		const as_array = asmodule.__allocArray(asmodule.Uint8ArrayId, config.digit_img.data);
 		then = performance.now();
 
 		const digit = asmodule.getDigit(
 			as_array,
 			PATTERN_MAX_INDEXES[char]
 		);
-
-		asmodule.__release(as_array);
 		/**/
 
 		ocr += performance.now() - then;
@@ -311,19 +315,26 @@ function ocrDigits(source_img, task) {
 		digits[idx] = digit - 1;
 	}
 
-	// TODO: compute the number, rather than returning an array of digits
-	// TODO: can add in the for loop above
-	return digits;
+	return digits.reverse().reduce((acc, v, idx) => acc += v * Math.pow(10, idx), 0);
 }
 
 function scanColors(source_img, task) {}
 
-async function scanField(source_img, task, colors) {
+function scanPreview(source_img, task) {}
+
+async function scanField(source_img, task, _colors) {
 	const [raw_x, y, w, h] = task.crop;
 	const x = raw_x - config.capture_area.x;
+	const colors = [
+		[0, 0, 0],
+		[0xFF, 0xFF, 0xFF],
+		..._colors
+	];
 
+	/*
 	crop(source_img, x, y, w, h, task.crop_img);
-	// bicubic(task.crop_img, task.scale_img);
+	bicubic(task.crop_img, task.scale_img);
+	/**/
 
 	const resized = await createImageBitmap(
 		source_img,
@@ -346,12 +357,52 @@ async function scanField(source_img, task, colors) {
 	const field_img = ctx.getImageData(0, 0, ...task.resize);
 	/**/
 
+	// simple array for now
+	const field = [];
 
-	// console.log(field_img);
+	// we will read 3 judiciously positionned pixels per block
+	const pix_refs = [
+		[2, 4],
+		[4, 4],
+		[5, 2]
+	];
 
-	// dom.field_scaled.getContext('2d').putImageData(task.scale_img, 0, 0);
+	/**/
+	for (let ridx = 0; ridx < 20; ridx++) {
+		for (let cidx = 0; cidx < 10; cidx++) {
+			const block_offset = (ridx * 10 + cidx) * 8 * 4;
 
-	// TODO: get colors from NES logical pixels
+			const channels = pix_refs
+				.map(([x, y]) => {
+					const col_idx = block_offset + x * 10 * 8 * 4 + y * 4
+					return field_img.data.subarray(col_idx, col_idx + 3);
+				})
+				.reduce((acc, col) => {
+					acc[0] += col[0];
+					acc[1] += col[1];
+					acc[2] += col[2];
+					return acc;
+				}, [0, 0, 0])
+				.map(v => Math.round(v / 3));
+
+			let min_diff = 0xFFFFFFFF;
+			let min_idx = -1;
+
+			colors.forEach((col, col_idx) => {
+				const sum = col.reduce((sum, c, idx) => sum += (c - channels[idx]) * (c - channels[idx]), 0);
+
+				if (sum < min_diff) {
+					min_diff = sum;
+					min_idx = col_idx;
+				}
+			})
+
+			field.push(min_idx);
+		}
+	}
+	/**/
+
+	return field.join('');
 }
 
 

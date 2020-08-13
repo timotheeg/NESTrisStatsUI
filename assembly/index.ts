@@ -8,6 +8,7 @@ export const u8ArrayId = idof<u8[]>();
 export const u32ArrayId = idof<u32[]>();
 
 
+// a flattened 2d array of 17 templates of 196 bytes each
 let templates: Uint8Array;
 
 export function setTemplates(_templates: Uint8Array): void {
@@ -54,3 +55,6 @@ export function getDigit(
 }
 
 
+export function crop<T>(data: T[], x: u32, y: u32, w: u32, h: u32): T[] {
+
+}
