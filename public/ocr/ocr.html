@@ -22,21 +22,32 @@ video {
 <canvas id="processed"></canvas>
 <br /><br />
 <canvas id="score"></canvas>
+<canvas id="score_scaled"></canvas>
 <br /><br />
 <canvas id="level"></canvas>
+<canvas id="level_scaled"></canvas>
 <br /><br />
 <canvas id="lines"></canvas>
+<canvas id="lines_scaled"></canvas>
 <br /><br />
 <canvas id="field"></canvas>
+<canvas id="field_scaled"></canvas>
 <br /><br />
 <canvas id="stats"></canvas>
 <br /><br />
+<div id="templates"></div>
 <div id="frame_data"></div>
+<script src="./image_tools.js"></script>
+<script>
+	var exports = {};
+</script>
+<script src="./loader.js"></script>
+<script src="./worker.js"></script>
 
 <script>
 // NTSC NES resolution: 256x224 -> 512x448
 
-const SHOW_LOCAL = false;
+const SHOW_LOCAL = true;
 
 const config = {
 	deinterlace: true,
@@ -80,17 +91,14 @@ const
 
 	dom = {
 		score          : document.querySelector('#score'),
+		score_scaled   : document.querySelector('#score_scaled'),
 		lines          : document.querySelector('#lines'),
+		lines_scaled   : document.querySelector('#lines_scaled'),
 		level          : document.querySelector('#level'),
+		level_scaled   : document.querySelector('#level_scaled'),
 		field          : document.querySelector('#field'),
 		stats          : document.querySelector('#stats'),
 	};
-
-dom.score_ctx = dom.score.getContext('2d');
-dom.lines_ctx = dom.lines.getContext('2d');
-dom.level_ctx = dom.level.getContext('2d');
-dom.field_ctx = dom.field.getContext('2d');
-dom.stats_ctx = dom.stats.getContext('2d');
 
 let entries;
 
@@ -180,10 +188,14 @@ async function startCapture(stream) {
 	config.width = settings.width;
 	config.height = settings.height;
 
+	setConfig();
+
+	/*
 	worker.postMessage({
 		command: 'set_config',
 		config
 	});
+	/**/
 
 	const response = await fetch(`./full.png`);
 	blob = await response.blob();
@@ -210,6 +222,8 @@ async function captureFrame() {
 			processFrame(pixels);
 		}
 
+		processFrame2(bitmap);
+		/*
 		worker.postMessage(
 			{
 				command: 'frame',
@@ -219,12 +233,14 @@ async function captureFrame() {
 				bitmap
 			]
 		);
+		/**/
 	}
 	catch(err) {
 		console.error(err);
 	}
 
-	capture_process = setTimeout(captureFrame, 1000/30); // window.requestAnimationFrame(captureFrame);
+	capture_process = setTimeout(captureFrame, 1000/30);
+	// window.requestAnimationFrame(captureFrame);
 }
 
 function processFrame(pixels) {
@@ -248,27 +264,48 @@ function processFrame(pixels) {
 	// console.log(Date.now() - start);
 }
 
-console.log('loading worker');
-const worker = new Worker('./worker.js');
-
 const x=0, y=0, w=100, h=7;
 
+/*
+console.log('loading worker');
+const worker = new Worker('./worker.js');
 worker.addEventListener('message', function(evt) {
 	// we're receiving a frame, let's just
 	frame_data.textContent = JSON.stringify(evt.data);
 }, false);
+/**/
+
+function onMessage(data) {
+	frame_data.textContent = JSON.stringify(data);
+}
 
 
 function processTasks(pixels) {
 	for (const [name, task] of Object.entries(config.tasks)) {
 		const canva = dom[name];
-		const ctx = dom[`${name}_ctx`];
+		const ctx = canva.getContext('2d');
 		const [x, y, w, h] = task.crop;
 
 		canva.width = w;
 		canva.height = h;
 
-		ctx.putImageData(pixels, -x, -y, x, y, w, h);
+		// ctx.putImageData(pixels, -x, -y, x, y, w, h);
+		const cropped = new ImageData(w, h);
+
+		crop(pixels, x, y, w, h, cropped);
+		ctx.putImageData(cropped, 0, 0);
+
+		const scaled = dom[`${name}_scaled`];
+
+		if (scaled) {
+			scaled.width = (8 * task.pattern.length - 1) * 2;
+			scaled.height = h * 2;
+
+			const scaled_img = new ImageData(scaled.width, scaled.height);
+
+			bicubic(cropped, scaled_img);
+			scaled.getContext('2d').putImageData(scaled_img, 0, 0);
+		}
 	}
 }
 
@@ -292,6 +329,30 @@ const fake_stream = {
 };
 
 startCapture(fake_stream);
+
+function dummyInit() {
+	const tpl = document.querySelector('#templates');
+
+	for (let template of templates) {
+		const canvas = document.createElement('canvas');
+		canvas.width = 14;
+		canvas.height = 14;
+		const ctx = canvas.getContext('2d');
+		const img = new ImageData(14, 14);
+		for (let p_idx=template.length; p_idx--; ) {
+			const luma = template[p_idx];
+			const offset_idx = p_idx << 2;
+			img.data[offset_idx] = luma;
+			img.data[offset_idx + 1] = luma;
+			img.data[offset_idx + 2] = luma;
+			img.data[offset_idx + 3] = 255;
+		}
+		ctx.putImageData(img, 0, 0);
+		tpl.appendChild(canvas);
+	}
+}
+
+setTimeout(dummyInit, 250);
 
 
 </script>
