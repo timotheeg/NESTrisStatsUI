@@ -33,8 +33,11 @@ video {
 <canvas id="field"></canvas>
 <canvas id="field_scaled"></canvas>
 <br /><br />
-<canvas id="stats"></canvas>
+<canvas id="preview"></canvas>
+<canvas id="preview_scaled"></canvas>
 <br /><br />
+<!--canvas id="stats"></canvas>
+<br /><br / -->
 <div id="templates"></div>
 <div id="frame_data"></div>
 <script src="../constants.js"></script>
@@ -53,11 +56,12 @@ const SHOW_LOCAL = true;
 const config = {
 	deinterlace: true,
 	tasks: {
-		score: { crop: [526, 62, 118, 7], pattern: "DDDDDD", red: false },
-		level: { crop: [566, 166, 38, 7], pattern: "TD", red: false },
-		lines: { crop: [426, 22, 57, 7], pattern: "TDD", red: false },
-		field: { crop: [284, 46, 201, 160], resize: [80, 160] },
-		stats: { crop: [164, 93, 57, 105], red: true },
+		score:   { crop: [526, 62, 118, 7], pattern: "DDDDDD", red: false },
+		level:   { crop: [566, 166, 38, 7], pattern: "TD", red: false },
+		lines:   { crop: [426, 22, 57, 7], pattern: "TDD", red: false },
+		field:   { crop: [284, 46, 201, 160], resize: [80, 160] },
+		preview: { crop: [526, 118, 80, 15], resize: [31, 15] },
+		// stats: { crop: [164, 93, 57, 105], red: true },
 	}
 };
 
@@ -99,6 +103,8 @@ const
 		level_scaled   : document.querySelector('#level_scaled'),
 		field          : document.querySelector('#field'),
 		field_scaled   : document.querySelector('#field_scaled'),
+		preview        : document.querySelector('#preview'),
+		preview_scaled : document.querySelector('#preview_scaled'),
 		stats          : document.querySelector('#stats'),
 	};
 
@@ -197,7 +203,7 @@ async function startCapture(stream) {
 	});
 	/**/
 
-	const response = await fetch(`./full.png`);
+	const response = await fetch(`./full2.png`);
 	blob = await response.blob();
 
 	capture_process = setInterval(captureFrame, 1000/30);
@@ -207,8 +213,8 @@ let start;
 
 async function captureFrame() {
 	try {
-		// const bitmap = await createImageBitmap(blob);
-		const bitmap = await createImageBitmap(video, 0, 0, video.videoWidth, video.videoHeight);
+		const bitmap = await createImageBitmap(blob);
+		// const bitmap = await createImageBitmap(video, 0, 0, video.videoWidth, video.videoHeight);
 
 		if (SHOW_LOCAL) {
 			capture_ctx.drawImage(bitmap, 0, 0, capture.width, capture.height);
@@ -304,18 +310,23 @@ function processTasks(pixels) {
 			scaled.getContext('2d').putImageData(scaled_img, 0, 0);
 		}
 		else if (task.resize) {
+			const scaled_img = new ImageData(scaled.width, scaled.height);
+
 			scaled.width = task.resize[0];
 			scaled.height = task.resize[1];
+
+			bicubic(cropped, scaled_img);
+			scaled.getContext('2d').putImageData(scaled_img, 0, 0);
 		}
 	}
 }
 
-/**/
+/*
 playVideoFromDevice()
 	.then(resetDevices);
 /**/
 
-/*
+/**/
 const fake_stream = {
 	getVideoTracks() {
 		return [{

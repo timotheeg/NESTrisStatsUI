@@ -364,17 +364,17 @@ async function scanField(source_img, task, _colors) {
 	const pix_refs = [
 		[2, 4],
 		[4, 4],
-		[5, 2]
+		[4, 2]
 	];
 
 	/**/
 	for (let ridx = 0; ridx < 20; ridx++) {
 		for (let cidx = 0; cidx < 10; cidx++) {
-			const block_offset = (ridx * 10 + cidx) * 8 * 4;
+			const block_offset = ((ridx * 10 * 8 * 8) + cidx * 8) * 4;
 
 			const channels = pix_refs
 				.map(([x, y]) => {
-					const col_idx = block_offset + x * 10 * 8 * 4 + y * 4
+					const col_idx = block_offset + y * 10 * 8 * 4 + x * 4;
 					return field_img.data.subarray(col_idx, col_idx + 3);
 				})
 				.reduce((acc, col) => {
