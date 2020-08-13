@@ -2,7 +2,7 @@
 
 <head>
 <style type="text/css">
-video {
+video, canvas {
 	display: none;
 }
 </style>
@@ -37,6 +37,7 @@ video {
 <br /><br />
 <div id="templates"></div>
 <div id="frame_data"></div>
+<script src="../constants.js"></script>
 <script src="./image_tools.js"></script>
 <script>
 	var exports = {};
@@ -55,7 +56,7 @@ const config = {
 		score: { crop: [526, 62, 118, 7], pattern: "DDDDDD", red: false },
 		level: { crop: [566, 166, 38, 7], pattern: "TD", red: false },
 		lines: { crop: [426, 22, 57, 7], pattern: "TDD", red: false },
-		field: { crop: [284, 46, 201, 160] },
+		field: { crop: [284, 46, 201, 160], resize: [80, 160] },
 		stats: { crop: [164, 93, 57, 105], red: true },
 	}
 };
@@ -97,6 +98,7 @@ const
 		level          : document.querySelector('#level'),
 		level_scaled   : document.querySelector('#level_scaled'),
 		field          : document.querySelector('#field'),
+		field_scaled   : document.querySelector('#field_scaled'),
 		stats          : document.querySelector('#stats'),
 	};
 
@@ -297,7 +299,7 @@ function processTasks(pixels) {
 
 		const scaled = dom[`${name}_scaled`];
 
-		if (scaled) {
+		if (task.pattern) {
 			scaled.width = (8 * task.pattern.length - 1) * 2;
 			scaled.height = h * 2;
 
@@ -305,6 +307,10 @@ function processTasks(pixels) {
 
 			bicubic(cropped, scaled_img);
 			scaled.getContext('2d').putImageData(scaled_img, 0, 0);
+		}
+		else if (task.resize) {
+			scaled.width = task.resize[0];
+			scaled.height = task.resize[1];
 		}
 	}
 }
@@ -352,7 +358,7 @@ function dummyInit() {
 	}
 }
 
-setTimeout(dummyInit, 250);
+setTimeout(dummyInit, 500);
 
 
 </script>

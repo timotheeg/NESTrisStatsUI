@@ -22,8 +22,14 @@ const scale_canvas = new OffscreenCanvas(
 	(6 * 8 - 1) * 2, // longest string is score of 6 digits
 	14
 );
-scale_canvas_ctx = scale_canvas.getContext('2d', { alpha: false, lowLatency: true });
+const scale_canvas_ctx = scale_canvas.getContext('2d', { alpha: false, lowLatency: true });
 scale_canvas_ctx.imageSmoothingQuality = 'medium';
+
+
+const scaled_field_canvas = new OffscreenCanvas(80, 160);
+const scaled_field_canvas_ctx = scaled_field_canvas.getContext('2d');
+scaled_field_canvas_ctx.imageSmoothingQuality = 'medium';
+
 
 let raw_canvas;
 let raw_canvas_ctx;
@@ -149,10 +155,14 @@ function processConfig() {
 		task.crop_img = new ImageData(w, h);
 
 		if (task.pattern) {
+			// scale based on digit pattern
 			task.scale_img = new ImageData(
 				(8 * task.pattern.length - 1) * 2,
 				14
 			);
+		}
+		else if (task.resize) {
+			task.scale_img = new ImageData(...task.resize);
 		}
 	}
 
@@ -166,11 +176,11 @@ function processConfig() {
 	};
 }
 
-function processFrame2(frame) {
+async function processFrame2(frame) {
 	performance.mark('start');
 
-		// load the raw frame
-		raw_canvas_ctx.drawImage(frame, 0, 0, config.width, config.height);
+	// load the raw frame
+	raw_canvas_ctx.drawImage(frame, 0, 0, config.width, config.height);
 
 	performance.mark('draw_end');
 
@@ -190,20 +200,23 @@ function processFrame2(frame) {
 
 	performance.mark('lines_end');
 
+	const field = await scanField(source_img, config.tasks.field);
+
+	performance.mark('field_end');
+
+
 	performance.measure('draw', 'start', 'draw_end');
 
 	performance.measure('deinterlace', 'draw_end', 'deinterlace_end');
 	performance.measure('di_crop', 'di_start', 'di_crop_end');
 	performance.measure('di_process', 'di_crop_end', 'di_process_end');
-	performance.measure('di_write', 'di_process_end', 'di_write_end');
 
 
 	performance.measure('score', 'deinterlace_end', 'score_end');
 	performance.measure('level', 'score_end', 'level_end');
 	performance.measure('lines', 'level_end', 'lines_end');
-	performance.measure('total', 'start', 'lines_end');
-	performance.measure('ocr_scale', 'ocr_start', 'ocr_scale_end');
-	performance.measure('ocr_reckon', 'ocr_scale_end', 'ocr_reckon_end');
+	performance.measure('field', 'lines_end', 'field_end');
+	performance.measure('total', 'start', 'field_end');
 
 	// console.log(performance.getEntriesByType("measure"));
 
@@ -225,7 +238,7 @@ function processFrame2(frame) {
 function deinterlace() {
 	performance.mark('di_start');
 
-	const pixels = raw_canvas_ctx.getImageData(
+	const pixels = capture_ctx.getImageData(
 		config.capture_area.x, 0,
 		config.capture_area.w, config.capture_bounds.bottom * 2 // * 2 to account for interlacing
 	);
@@ -248,8 +261,6 @@ function deinterlace() {
 	// raw_canvas_ctx.putImageData(pixels, capture_area.x, 0, 0, 0, pixels_per_rows, max_rows);
 	// processed_ctx.putImageData(pixels, config.capture_area.x, 0, 0, 0, pixels_per_rows, max_rows);
 
-	performance.mark('di_write_end');
-
 	return pixels;
 }
 
@@ -259,17 +270,10 @@ function ocrDigits(source_img, task) {
 
 	const x = raw_x - config.capture_area.x;
 
-	performance.mark('ocr_start');
-
 	crop(source_img, x, y, w, h, task.crop_img);
 	bicubic(task.crop_img, task.scale_img);
 
-	dom.score_scaled.getContext('2d').putImageData(task.scale_img, 0, 0)
-
-	performance.mark('ocr_scale_end');
-
 	let t_crop = 0;
-	let alloc = 0;
 	let ocr = 0;
 
 	const digits = new Array(task.pattern.length);
@@ -290,7 +294,6 @@ function ocrDigits(source_img, task) {
 		/**/
 		/*
 		const as_array = asmodule.__retain(asmodule.__allocArray(asmodule.Uint8ArrayId, image_data.data));
-		alloc += performance.now() - then;
 		then = performance.now();
 
 		const digit = asmodule.getDigit(
@@ -303,16 +306,52 @@ function ocrDigits(source_img, task) {
 
 		ocr += performance.now() - then;
 
-		// if (!digit) return null;
+		if (!digit) return null;
 
 		digits[idx] = digit - 1;
 	}
 
-	performance.mark('ocr_reckon_end');
-
 	// TODO: compute the number, rather than returning an array of digits
 	// TODO: can add in the for loop above
-	return [...digits, {crop: t_crop.toFixed(3), alloc: alloc.toFixed(3), ocr: ocr.toFixed(3)}];
+	return digits;
+}
+
+function scanColors(source_img, task) {}
+
+async function scanField(source_img, task, colors) {
+	const [raw_x, y, w, h] = task.crop;
+	const x = raw_x - config.capture_area.x;
+
+	crop(source_img, x, y, w, h, task.crop_img);
+	// bicubic(task.crop_img, task.scale_img);
+
+	const resized = await createImageBitmap(
+		source_img,
+		x, y, w, h,
+		{
+			resizeWidth: task.resize[0],
+			resizeHeight: task.resize[1],
+			resizeQuality: 'medium'
+		}
+	);
+
+	/*
+	scaled_field_canvas_ctx.drawImage(resized, 0, 0);
+	const field_img = scaled_field_canvas_ctx.getImageData(0, 0, ...task.resize);
+	/**/
+
+	/**/
+	const ctx = dom.field_scaled.getContext('2d');
+	ctx.drawImage(resized, 0, 0);
+	const field_img = ctx.getImageData(0, 0, ...task.resize);
+	/**/
+
+
+	// console.log(field_img);
+
+	// dom.field_scaled.getContext('2d').putImageData(task.scale_img, 0, 0);
+
+	// TODO: get colors from NES logical pixels
 }
 
 
