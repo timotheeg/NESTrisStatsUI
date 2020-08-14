@@ -2,7 +2,7 @@
 
 <head>
 <style type="text/css">
-video {
+b {
 	display: none;
 }
 
@@ -46,8 +46,8 @@ const config = {
 		lines:   { crop: [426, 22, 57, 7], pattern: "TDD", red: false },
 		field:   { crop: [284, 46, 201, 160], resize: [80, 160], use_canva: true },
 		preview: { crop: [526, 118, 80, 15], resize: [31, 15] },
-		color1:  { crop: [139, 112, 11, 5], resize: [5, 5] },
-		color2:  { crop: [139, 129, 11, 5], resize: [5, 5] },
+		// color1:  { crop: [139, 112, 11, 5], resize: [5, 5] },
+		// color2:  { crop: [139, 129, 11, 5], resize: [5, 5] },
 		// stats: { crop: [164, 93, 57, 105], red: true },
 	}
 };
@@ -281,12 +281,12 @@ const IN_MENU = {};
 		delete data.color1;
 		delete data.color2;
 
-		showParts();
+		// showParts();
 
-		tetris_ocr.send(data);
+		connection.send(data);
 	}
 
-	/*
+	/**/
 	await playVideoFromDevice()
 	resetDevices();
 	return;
