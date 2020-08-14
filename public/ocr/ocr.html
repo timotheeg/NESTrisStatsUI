@@ -22,24 +22,19 @@ video {
 <div id="frame_data"></div>
 <div id="perf_data"></div>
 
-
 <script src="./image_tools.js"></script>
 <script src="./connection.js"></script>
 <script src="./templates.js"></script>
-<script>
-	var exports = {};
-</script>
-<script src="./loader.js"></script>
-<script src="./worker.js"></script>
+<script src="./TetrisOCR.js"></script>
 
 <script>
 // NTSC NES resolution: 256x224 -> 512x448
 
-const SHOW_LOCAL = true;
-
 const config = {
 	deinterlace: true,
+
 	palette: [[[65, 40, 228], [86, 168, 254]], [[3, 127, 1], [125, 199, 6]], [[139, 14, 179], [211, 96, 255]], [[64, 41, 225], [85, 210, 45]], [[154, 19, 87], [64, 205, 111]], [[65, 206, 112], [134, 131, 255]], [[146, 38, 2], [90, 91, 87]], [[97, 18, 215], [82, 0, 20]], [[64, 40, 227], [151, 43, 4]], [[147, 39, 3], [211, 137, 32]]],
+
 	tasks: {
 		score:   { crop: [526, 62, 118, 7], pattern: "DDDDDD", red: false },
 		level:   { crop: [566, 166, 38, 7], pattern: "TD", red: false },
@@ -51,7 +46,6 @@ const config = {
 		// stats: { crop: [164, 93, 57, 105], red: true },
 	}
 };
-
 
 const
 	device_selector = document.querySelector('#device'),
@@ -147,6 +141,7 @@ async function startCapture(stream) {
 	if (stream.asset) {
 		const response = await fetch(stream.asset);
 		blob = await response.blob();
+	}
 
 	frame_ms = 1000 / settings.frameRate;
 	start_time_ms = Date.now();
@@ -173,7 +168,7 @@ async function captureFrame() {
 			);
 		}
 
-		processFrame(bitmap);
+		tetris_ocr.processFrame(bitmap);
 	}
 	catch(err) {
 		console.error(err);
@@ -183,19 +178,6 @@ async function captureFrame() {
 
 	capture_process = setTimeout(captureFrame, Math.ceil(next_frame_time - Date.now()));
 	// window.requestAnimationFrame(captureFrame);
-}
-
-function onMessage(data) {
-	// make frame NESTrisOCR compatible
-	if (data.score !== null) data.score = `${data.score}`.padStart(6, '0');
-	if (data.level !== null) data.level = `${data.level}`.padStart(2, '0');
-	if (data.lines !== null) data.lines = `${data.lines}`.padStart(3, '0');
-
-	frame_data.textContent = JSON.stringify(data);
-
-	if (producer_socket) {
-		producer_socket.send(JSON.stringify(data));
-	}
 }
 
 function showTemplates(templates) {
@@ -220,56 +202,27 @@ function showTemplates(templates) {
 	}
 }
 
-function processConfig() {
-	const bounds = {
-		top:    0xFFFFFFFF,
-		left:   0xFFFFFFFF,
-		bottom: -1,
-		right:  -1,
-	}
-
-	for (const task of Object.values(config.tasks)) {
-		const { crop: [x, y, w, h] } = task;
-
-		bounds.top    = Math.min(bounds.top,    y);
-		bounds.left   = Math.min(bounds.left,   x);
-		bounds.bottom = Math.max(bounds.bottom, y + h);
-		bounds.right  = Math.max(bounds.right,  x + w);
-
-		task.crop_img = new ImageData(w, h);
-
-		if (task.pattern) {
-			// scale based on digit pattern
-			task.scale_img = new ImageData(
-				(8 * task.pattern.length - 1) * 2,
-				14
-			);
-		}
-		else if (task.resize) {
-			task.scale_img = new ImageData(...task.resize);
-		}
-	}
-
-	config.digit_img = new ImageData(14, 14);
-	config.capture_bounds = bounds;
-	config.capture_area = {
-		x: bounds.left,
-		y: bounds.top,
-		w: bounds.right - bounds.left,
-		h: bounds.bottom - bounds.top,
-	};
-}
-
-
-let connection;
+let connection, tetris_ocr;
 
 (async function init() {
-	processConfig();
-	connection = new Connection();
+	connection = new Connection(3337);
 
 	const templates = await loadDigitTemplates();
 
 	showTemplates(templates);
+
+	tetris_ocr = new TetrisOCR(templates, config);
+
+	tetris_ocr.onMessage = function(data) {
+		// make frame NESTrisOCR compatible
+		if (data.score !== null) data.score = `${data.score}`.padStart(6, '0');
+		if (data.level !== null) data.level = `${data.level}`.padStart(2, '0');
+		if (data.lines !== null) data.lines = `${data.lines}`.padStart(3, '0');
+
+		frame_data.textContent = JSON.stringify(data);
+
+		// tetris_ocr.send(data);
+	}
 
 	/*
 	await playVideoFromDevice()
@@ -278,7 +231,7 @@ let connection;
 	/**/
 
 	const fake_stream = {
-		asset: './full3.png'
+		asset: './full3.png',
 		addEventListener: function() {},
 		getVideoTracks() {
 			return [{
@@ -295,6 +248,7 @@ let connection;
 
 	startCapture(fake_stream);
 })();
+
 
 </script>
 </body>

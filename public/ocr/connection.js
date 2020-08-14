@@ -40,7 +40,7 @@ class Connection {
 			this.clearSocket();
 		}
 
-		this.socket = new WebSocket(`ws://${host}:${port}`);
+		this.socket = new WebSocket(`ws://${this.host}:${this.port}`);
 
 		this.socket.addEventListener('error', this._handleError);
 		this.socket.addEventListener('close', this._handleClose);

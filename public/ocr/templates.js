@@ -17,7 +17,7 @@ async function loadDigitTemplates() {
 	// we crop the scaled digits from their expected new location
 
 	const width = DIGITS.length * 8 + 1;
-	const height = 8 + 1;
+	const height = 7;
 	const canvas = new OffscreenCanvas(width, height);
 	const ctx = canvas.getContext('2d');
 
@@ -26,21 +26,21 @@ async function loadDigitTemplates() {
 	ctx.fillRect(0, 0, width, height);
 
 	// draw all templates with one pixel border on each side
-	imgs.forEach((img, idx) => ctx.drawImage(img, 1 + idx * 8, 1));
+	imgs.forEach((img, idx) => ctx.drawImage(img, 1 + idx * 8, 0));
 
 	const source = ctx.getImageData(0, 0, width, height);
 	const scaled = new ImageData(width * 2, height * 2);
 
 	bicubic(source, scaled);
 
-	return imgs.map((digit, idx) => {
-		const digit = crop(scaled, 2 + idx * 16, 2, 14, 14);
+	return imgs.map((_, idx) => {
+		const digit = crop(scaled, 2 + idx * 16, 0, 14, 14);
 
 		// and now we compute the luma for the digit
-		const lumas = new Uint8ClampedArray(digit.width * digit.height).fill(0);
+		const lumas = new Uint8ClampedArray(14 * 14).fill(0);
 		const pixel_data = digit.data;
 
-		for (let idx=0; idx < lumas.length; idx++) {
+		for (let idx=0; idx<lumas.length; idx++) {
 			const offset_idx = idx << 2;
 
 			lumas[idx] = roundedLuma(

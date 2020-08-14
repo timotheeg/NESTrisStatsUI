@@ -6,6 +6,8 @@ const PATTERN_MAX_INDEXES = {
 
 class TetrisOCR extends EventTarget {
 	constructor(templates, config) {
+		super();
+
 		this.templates = templates;
 		this.config = config;
 
@@ -67,7 +69,7 @@ class TetrisOCR extends EventTarget {
 			);
 
 			for (let t_idx=max_check_index; t_idx--; ) {
-				const diff = luma - templates[t_idx][p_idx];
+				const diff = luma - this.templates[t_idx][p_idx];
 				sums[t_idx] += diff * diff;
 			}
 		}
@@ -165,7 +167,7 @@ class TetrisOCR extends EventTarget {
 	}
 
 	deinterlace() {
-		const pixels = capture_canvas_ctx.getImageData(
+		const pixels = this.capture_canvas_ctx.getImageData(
 			this.config.capture_area.x, 0,
 			this.config.capture_area.w, this.config.capture_bounds.bottom * 2 // * 2 to account for interlacing
 		);
@@ -235,27 +237,27 @@ class TetrisOCR extends EventTarget {
 		bicubic(task.crop_img, task.scale_img);
 
 		// Trying side i blocks
-		if (isBlock(crop(task.scale_img, 0, 3, 4, 7), 28)
-			&& isBlock(crop(task.scale_img, 27, 3, 4, 7), 28)
+		if (TetrisOCR.isBlock(crop(task.scale_img, 0, 3, 4, 7), 28)
+			&& TetrisOCR.isBlock(crop(task.scale_img, 27, 3, 4, 7), 28)
 		) {
 			return 'I';
 		}
 
 		// now trying the 3x2 matrix for T, L, J, S, Z
 		const top_row = [
-			isBlock(crop(task.scale_img, 4, 0, 7, 7, this.block_img)),
-			isBlock(crop(task.scale_img, 12, 0, 7, 7, this.block_img)),
-			isBlock(crop(task.scale_img, 20, 0, 7, 7, this.block_img))
+			TetrisOCR.isBlock(crop(task.scale_img, 4, 0, 7, 7, this.block_img)),
+			TetrisOCR.isBlock(crop(task.scale_img, 12, 0, 7, 7, this.block_img)),
+			TetrisOCR.isBlock(crop(task.scale_img, 20, 0, 7, 7, this.block_img))
 		];
 
 		if (top_row[0] && top_row[1] && top_row[2]) { // J, T, L
-			if (isBlock(crop(task.scale_img, 4, 8, 7, 7, this.block_img))) {
+			if (TetrisOCR.isBlock(crop(task.scale_img, 4, 8, 7, 7, this.block_img))) {
 				return 'L';
 			}
-			if (isBlock(crop(task.scale_img, 12, 8, 7, 7, this.block_img))) {
+			if (TetrisOCR.isBlock(crop(task.scale_img, 12, 8, 7, 7, this.block_img))) {
 				return 'T';
 			}
-			if (isBlock(crop(task.scale_img, 20, 8, 7, 7, this.block_img))) {
+			if (TetrisOCR.isBlock(crop(task.scale_img, 20, 8, 7, 7, this.block_img))) {
 				return 'T';
 			}
 
@@ -263,16 +265,16 @@ class TetrisOCR extends EventTarget {
 		}
 
 		if (top_row[1] && top_row[2]) {
-			if (isBlock(crop(task.scale_img, 4, 8, 7, 7, this.block_img))
-				&& isBlock(crop(task.scale_img, 12, 8, 7, 7, this.block_img))
+			if (TetrisOCR.isBlock(crop(task.scale_img, 4, 8, 7, 7, this.block_img))
+				&& TetrisOCR.isBlock(crop(task.scale_img, 12, 8, 7, 7, this.block_img))
 			) {
 				return 'S';
 			}
 		}
 
 		if (top_row[0] && top_row[1]) {
-			if (isBlock(crop(task.scale_img, 12, 8, 7, 7, this.block_img))
-				&& isBlock(crop(task.scale_img, 20, 8, 7, 7, this.block_img))
+			if (TetrisOCR.isBlock(crop(task.scale_img, 12, 8, 7, 7, this.block_img))
+				&& TetrisOCR.isBlock(crop(task.scale_img, 20, 8, 7, 7, this.block_img))
 			) {
 				return 'Z';
 			}
@@ -280,10 +282,10 @@ class TetrisOCR extends EventTarget {
 
 		// lastly check for O
 		if (
-			isBlock(crop(task.scale_img, 8, 0, 7, 7, this.block_img))
-			&& isBlock(crop(task.scale_img, 16, 0, 7, 7, this.block_img))
-			&& isBlock(crop(task.scale_img, 8, 8, 7, 7, this.block_img))
-			&& isBlock(crop(task.scale_img, 16, 8, 7, 7, this.block_img))
+			TetrisOCR.isBlock(crop(task.scale_img, 8, 0, 7, 7, this.block_img))
+			&& TetrisOCR.isBlock(crop(task.scale_img, 16, 0, 7, 7, this.block_img))
+			&& TetrisOCR.isBlock(crop(task.scale_img, 8, 8, 7, 7, this.block_img))
+			&& TetrisOCR.isBlock(crop(task.scale_img, 16, 8, 7, 7, this.block_img))
 		) {
 			return 'O';
 		}
@@ -319,7 +321,7 @@ class TetrisOCR extends EventTarget {
 		);
 
 		this.scaled_field_canvas_ctx.drawImage(resized, 0, 0);
-		const field_img = scaled_field_canvas_ctx.getImageData(0, 0, ...task.resize);
+		const field_img = this.scaled_field_canvas_ctx.getImageData(0, 0, ...task.resize);
 		/**/
 
 		// simple array for now
