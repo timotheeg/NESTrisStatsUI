@@ -50,8 +50,6 @@ const config = {
 const
 	device_selector = document.querySelector('#device'),
 	video           = document.querySelector('#device_video'),
-	capture         = document.createElement('canvas'),
-	capture_ctx     = capture.getContext('2d'),
 	frame_data      = document.querySelector('#frame_data'),
 	perf_data       = document.querySelector('#perf_data')
 ;
@@ -202,6 +200,30 @@ function showTemplates(templates) {
 	}
 }
 
+function showParts() {
+	const capture = document.querySelector('#capture')
+
+	let canvas;
+
+	capture.innerHTML = '';
+
+	for (const [name, task] of Object.entries(config.tasks)) {
+		canvas = document.createElement('canvas');
+		canvas.width = task.crop_img.width;
+		canvas.height = task.crop_img.height;
+		canvas.getContext('2d').putImageData(task.crop_img, 0, 0);
+		capture.appendChild(canvas);
+
+		canvas = document.createElement('canvas');
+		canvas.width = task.scale_img.width;
+		canvas.height = task.scale_img.height;
+		canvas.getContext('2d').putImageData(task.scale_img, 0, 0);
+		capture.appendChild(canvas);
+
+		capture.appendChild(document.createElement('br'));
+	}
+}
+
 let connection, tetris_ocr;
 
 (async function init() {
@@ -220,6 +242,8 @@ let connection, tetris_ocr;
 		if (data.lines !== null) data.lines = `${data.lines}`.padStart(3, '0');
 
 		frame_data.textContent = JSON.stringify(data);
+
+		showParts();
 
 		// tetris_ocr.send(data);
 	}

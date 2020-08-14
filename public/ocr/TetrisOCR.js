@@ -188,8 +188,9 @@ class TetrisOCR extends EventTarget {
 
 	ocrDigits(source_img, task) {
 		const [raw_x, y, w, h] = task.crop;
-		const nominal_width = 8 * task.pattern.length - 1;
 		const x = raw_x - this.config.capture_area.x;
+
+		const nominal_width = 8 * task.pattern.length - 1;
 		const digits = new Array(task.pattern.length);
 
 		crop(source_img, x, y, w, h, task.crop_img);
@@ -302,17 +303,17 @@ class TetrisOCR extends EventTarget {
 			..._colors
 		];
 
-		/*
 		crop(source_img, x, y, w, h, task.crop_img);
-		bicubic(task.crop_img, task.scale_img);
 
+		/*
+		bicubic(task.crop_img, task.scale_img);
 		const field_img = task.scale_img;
 		/**/
 
 		/**/
 		const resized = await createImageBitmap(
-			source_img,
-			x, y, w, h,
+			task.crop_img,
+			0, 0, w, h,
 			{
 				resizeWidth: task.resize[0],
 				resizeHeight: task.resize[1],
@@ -322,6 +323,8 @@ class TetrisOCR extends EventTarget {
 
 		this.scaled_field_canvas_ctx.drawImage(resized, 0, 0);
 		const field_img = this.scaled_field_canvas_ctx.getImageData(0, 0, ...task.resize);
+
+		task.scale_img.data.set(field_img.data);
 		/**/
 
 		// simple array for now
