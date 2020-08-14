@@ -55,6 +55,3 @@ export function getDigit(
 }
 
 
-export function crop<T>(data: T[], x: u32, y: u32, w: u32, h: u32): T[] {
-
-}

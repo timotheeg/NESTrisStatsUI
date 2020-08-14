@@ -2,7 +2,7 @@
 
 <head>
 <style type="text/css">
-canvas {
+video {
 	display: none;
 }
 </style>
@@ -16,38 +16,16 @@ canvas {
 </div>
 
 <video id="device_video" playsinline controls="false"></video>
-<canvas id="capture"></canvas>
-<br /><br />
-<canvas id="processed"></canvas>
-<br /><br />
-<canvas id="score"></canvas>
-<canvas id="score_scaled"></canvas>
-<br /><br />
-<canvas id="level"></canvas>
-<canvas id="level_scaled"></canvas>
-<br /><br />
-<canvas id="lines"></canvas>
-<canvas id="lines_scaled"></canvas>
-<br /><br />
-<canvas id="field"></canvas>
-<canvas id="field_scaled"></canvas>
-<br /><br />
-<canvas id="preview"></canvas>
-<canvas id="preview_scaled"></canvas>
-<br /><br />
-<canvas id="color1"></canvas>
-<canvas id="color1_scaled"></canvas>
-<br /><br />
-<canvas id="color2"></canvas>
-<canvas id="color2_scaled"></canvas>
-<br /><br />
-<!--canvas id="stats"></canvas>
-<br /><br / -->
+
+<div id="capture"></div>
 <div id="templates"></div>
 <div id="frame_data"></div>
 <div id="perf_data"></div>
-<script src="../constants.js"></script>
+
+
 <script src="./image_tools.js"></script>
+<script src="./connection.js"></script>
+<script src="./templates.js"></script>
 <script>
 	var exports = {};
 </script>
@@ -57,15 +35,16 @@ canvas {
 <script>
 // NTSC NES resolution: 256x224 -> 512x448
 
-const SHOW_LOCAL = false;
+const SHOW_LOCAL = true;
 
 const config = {
 	deinterlace: true,
+	palette: [[[65, 40, 228], [86, 168, 254]], [[3, 127, 1], [125, 199, 6]], [[139, 14, 179], [211, 96, 255]], [[64, 41, 225], [85, 210, 45]], [[154, 19, 87], [64, 205, 111]], [[65, 206, 112], [134, 131, 255]], [[146, 38, 2], [90, 91, 87]], [[97, 18, 215], [82, 0, 20]], [[64, 40, 227], [151, 43, 4]], [[147, 39, 3], [211, 137, 32]]],
 	tasks: {
 		score:   { crop: [526, 62, 118, 7], pattern: "DDDDDD", red: false },
 		level:   { crop: [566, 166, 38, 7], pattern: "TD", red: false },
 		lines:   { crop: [426, 22, 57, 7], pattern: "TDD", red: false },
-		field:   { crop: [284, 46, 201, 160], resize: [80, 160] },
+		field:   { crop: [284, 46, 201, 160], resize: [80, 160], use_canva: true },
 		preview: { crop: [526, 118, 80, 15], resize: [31, 15] },
 		// color1:  { crop: [80, 118, 8, 5], resize: [31, 15] },
 		// color2:  { crop: [80, 200, 8, 5], resize: [31, 15] },
@@ -74,73 +53,14 @@ const config = {
 };
 
 
-let lowest_row;
-
-function getLowestRow() {
-	let lowest = -1;
-
-	for (const { crop } of Object.values(config.tasks)) {
-		const [x, y, w, h] = crop;
-		const bottom = y + h;
-
-		if (bottom > lowest) {
-			lowest = bottom;
-		}
-	}
-
-	lowest_row = lowest + 1; // + 1 for safety
-}
-
-getLowestRow();
-
-// dom nodes
 const
 	device_selector = document.querySelector('#device'),
 	video           = document.querySelector('#device_video'),
-	capture         = document.querySelector('#capture'),
+	capture         = document.createElement('canvas'),
 	capture_ctx     = capture.getContext('2d'),
-	processed       = document.querySelector('#processed'),
-	processed_ctx   = processed.getContext('2d'),
 	frame_data      = document.querySelector('#frame_data'),
-	perf_data       = document.querySelector('#perf_data'),
-
-	dom = {
-		score          : document.querySelector('#score'),
-		score_scaled   : document.querySelector('#score_scaled'),
-		lines          : document.querySelector('#lines'),
-		lines_scaled   : document.querySelector('#lines_scaled'),
-		level          : document.querySelector('#level'),
-		level_scaled   : document.querySelector('#level_scaled'),
-		field          : document.querySelector('#field'),
-		field_scaled   : document.querySelector('#field_scaled'),
-		preview        : document.querySelector('#preview'),
-		preview_scaled : document.querySelector('#preview_scaled'),
-		stats          : document.querySelector('#stats'),
-	};
-
-let entries;
-
-(function setupCanvasFromConfig() {
-	for (const [name, task] of Object.entries(config.tasks)) {
-		const canva = dom[name];
-		const ctx = canva.getContext('2d');
-		const [x, y, w, h] = task.crop;
-
-		canva.width = w;
-		canva.height = h;
-
-		const scaled = dom[`${name}_scaled`];
-
-		if (task.pattern) {
-			scaled.width = (8 * task.pattern.length - 1) * 2;
-			scaled.height = h * 2;
-		}
-		else if (task.resize) {
-			scaled.width = task.resize[0];
-			scaled.height = task.resize[1];
-		}
-	}
-})();
+	perf_data       = document.querySelector('#perf_data')
+;
 
 
 device_selector.addEventListener('change', evt => {
@@ -156,7 +76,7 @@ function updateDeviceList(devices) {
     	deviceId: "0"
     }];
 
-    entries = heading.concat(devices);
+    const entries = heading.concat(devices);
 
     entries.forEach(camera => {
         const cameraOption = document.createElement('option');
@@ -180,8 +100,6 @@ async function resetDevices() {
 navigator.mediaDevices.addEventListener('devicechange', resetDevices);
 
 
-let stream;
-
 async function playVideoFromDevice(device_id) {
     try {
         const constraints = {
@@ -196,12 +114,16 @@ async function playVideoFromDevice(device_id) {
         	constraints.video.deviceId = { exact: device_id };
         }
 
-        stream = await navigator.mediaDevices.getUserMedia(constraints);
+        const stream = await navigator.mediaDevices.getUserMedia(constraints);
 
+        // we only prompt for permission withthe first call
         if (device_id === undefined) return;
 
+        // when an actual device id is supplied, we start everything
         video.srcObject = stream;
         video.play();
+
+		stream.addEventListener('inactive', console.log('stream is inactive'));
 
         startCapture(stream);
     }
@@ -220,30 +142,11 @@ let start_time_ms;
 async function startCapture(stream) {
 	const settings = stream.getVideoTracks()[0].getSettings();
 
-	stream.addEventListener('inactive', console.log('stream is inactive'));
-
 	console.log(`Video settings: ${settings.width}x${settings.height}@${settings.frameRate.toFixed(1)}fps`);
 
-	capture.width = settings.width;
-	capture.height = settings.height;
-
-	processed.width = settings.width;
-	processed.height = settings.height / 2;
-
-	config.width = settings.width;
-	config.height = settings.height;
-
-	setConfig();
-
-	/*
-	worker.postMessage({
-		command: 'set_config',
-		config
-	});
-	/**/
-
-	const response = await fetch(`./full2.png`);
-	blob = await response.blob();
+	if (stream.asset) {
+		const response = await fetch(stream.asset);
+		blob = await response.blob();
 
 	frame_ms = 1000 / settings.frameRate;
 	start_time_ms = Date.now();
@@ -259,31 +162,18 @@ async function captureFrame() {
 	last_frame_time = now;
 
 	try {
-		// const bitmap = await createImageBitmap(blob);
-		const bitmap = await createImageBitmap(video, 0, 0, video.videoWidth, video.videoHeight);
+		let bitmap;
 
-		if (SHOW_LOCAL) {
-			capture_ctx.drawImage(bitmap, 0, 0, capture.width, capture.height);
-
-			start = Date.now();
-
-			const pixels = capture_ctx.getImageData(0, 0, capture.width, capture.height);
-
-			processFrame(pixels);
+		if (blob) {
+			bitmap = await createImageBitmap(blob);
+		}
+		else {
+			bitmap = await createImageBitmap(video,
+				0, 0, video.videoWidth, video.videoHeight
+			);
 		}
 
-		processFrame2(bitmap);
-		/*
-		worker.postMessage(
-			{
-				command: 'frame',
-				frame: bitmap
-			},
-			[
-				bitmap
-			]
-		);
-		/**/
+		processFrame(bitmap);
 	}
 	catch(err) {
 		console.error(err);
@@ -294,38 +184,6 @@ async function captureFrame() {
 	capture_process = setTimeout(captureFrame, Math.ceil(next_frame_time - Date.now()));
 	// window.requestAnimationFrame(captureFrame);
 }
-
-function processFrame(pixels) {
-	// de-interlace: top + drop
-
-	const pixels_per_rows = pixels.width * 4;
-	const max_rows = lowest_row; // pixels.height / 2;
-
-	for (let row_idx = 1; row_idx < max_rows; row_idx++) {
-		pixels.data.copyWithin(
-			pixels_per_rows * row_idx,
-			pixels_per_rows * row_idx * 2,
-			pixels_per_rows * (row_idx * 2 + 1)
-		);
-	}
-
-	processed_ctx.putImageData(pixels, 0, 0, 0, 0, pixels_per_rows, max_rows);
-
-	processTasks(pixels);
-
-	// console.log(Date.now() - start);
-}
-
-const x=0, y=0, w=100, h=7;
-
-/*
-console.log('loading worker');
-const worker = new Worker('./worker.js');
-worker.addEventListener('message', function(evt) {
-	// we're receiving a frame, let's just
-	frame_data.textContent = JSON.stringify(evt.data);
-}, false);
-/**/
 
 function onMessage(data) {
 	// make frame NESTrisOCR compatible
@@ -340,68 +198,7 @@ function onMessage(data) {
 	}
 }
 
-
-function processTasks(pixels) {
-	for (const [name, task] of Object.entries(config.tasks)) {
-		const canva = dom[name];
-		const ctx = canva.getContext('2d');
-		const [x, y, w, h] = task.crop;
-
-		canva.width = w;
-		canva.height = h;
-
-		// ctx.putImageData(pixels, -x, -y, x, y, w, h);
-		const cropped = new ImageData(w, h);
-
-		crop(pixels, x, y, w, h, cropped);
-		ctx.putImageData(cropped, 0, 0);
-
-		const scaled = dom[`${name}_scaled`];
-
-		if (task.pattern) {
-			scaled.width = (8 * task.pattern.length - 1) * 2;
-			scaled.height = h * 2;
-
-			const scaled_img = new ImageData(scaled.width, scaled.height);
-
-			bicubic(cropped, scaled_img);
-			scaled.getContext('2d').putImageData(scaled_img, 0, 0);
-		}
-		else if (task.resize) {
-			const scaled_img = new ImageData(scaled.width, scaled.height);
-
-			scaled.width = task.resize[0];
-			scaled.height = task.resize[1];
-
-			bicubic(cropped, scaled_img);
-			scaled.getContext('2d').putImageData(scaled_img, 0, 0);
-		}
-	}
-}
-
-/**/
-playVideoFromDevice()
-	.then(resetDevices);
-/**/
-
-/*
-const fake_stream = {
-	getVideoTracks() {
-		return [{
-			getSettings() {
-				return {
-					width: 720,
-					height: 480,
-					frameRate: 10
-				}
-			}
-		}]
-	}
-};
-
-startCapture(fake_stream);
-
-function dummyInit() {
+function showTemplates(templates) {
 	const tpl = document.querySelector('#templates');
 
 	for (let template of templates) {
@@ -423,43 +220,81 @@ function dummyInit() {
 	}
 }
 
-setTimeout(dummyInit, 500);
-/**/
-
-let producer_socket;
-
-function handleWSError(err) {
-	// ignore
-}
-
-function handleWSClose(evt) {
-	// console.log('Socket close');
-	clearSocket();
-	setTimeout(connect, 25); // schedule reconnect
-}
-
-function clearSocket() {
-	try {
-		producer_socket.removeEventListener('error',  handleWSError);
-		producer_socket.removeEventListener('close',  handleWSClose);
-		producer_socket.close();
-		producer_socket = null;
-	}
-	catch(e) {}
-}
-
-function connect() {
-	if (producer_socket) {
-		clearSocket();
+function processConfig() {
+	const bounds = {
+		top:    0xFFFFFFFF,
+		left:   0xFFFFFFFF,
+		bottom: -1,
+		right:  -1,
 	}
 
-	producer_socket = new WebSocket('ws://127.0.0.1:3337');
-	producer_socket.addEventListener('error',  handleWSError);
-	producer_socket.addEventListener('close',  handleWSClose);
+	for (const task of Object.values(config.tasks)) {
+		const { crop: [x, y, w, h] } = task;
+
+		bounds.top    = Math.min(bounds.top,    y);
+		bounds.left   = Math.min(bounds.left,   x);
+		bounds.bottom = Math.max(bounds.bottom, y + h);
+		bounds.right  = Math.max(bounds.right,  x + w);
+
+		task.crop_img = new ImageData(w, h);
+
+		if (task.pattern) {
+			// scale based on digit pattern
+			task.scale_img = new ImageData(
+				(8 * task.pattern.length - 1) * 2,
+				14
+			);
+		}
+		else if (task.resize) {
+			task.scale_img = new ImageData(...task.resize);
+		}
+	}
+
+	config.digit_img = new ImageData(14, 14);
+	config.capture_bounds = bounds;
+	config.capture_area = {
+		x: bounds.left,
+		y: bounds.top,
+		w: bounds.right - bounds.left,
+		h: bounds.bottom - bounds.top,
+	};
 }
 
-connect()
 
+let connection;
+
+(async function init() {
+	processConfig();
+	connection = new Connection();
+
+	const templates = await loadDigitTemplates();
+
+	showTemplates(templates);
+
+	/*
+	await playVideoFromDevice()
+	resetDevices();
+	return;
+	/**/
+
+	const fake_stream = {
+		asset: './full3.png'
+		addEventListener: function() {},
+		getVideoTracks() {
+			return [{
+				getSettings() {
+					return {
+						width: 720,
+						height: 480,
+						frameRate: 10
+					}
+				}
+			}]
+		}
+	};
+
+	startCapture(fake_stream);
+})();
 
 </script>
 </body>

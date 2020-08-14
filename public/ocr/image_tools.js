@@ -1,7 +1,6 @@
 // bicubic interpolation taken from
 // https://www.strauss-engineering.ch/js-bilinear-interpolation.html
 
-
 function TERP(t, a, b, c, d){
 	return 0.5 * (c - a + (2.0*a - 5.0*b + 4.0*c - d + (3.0*(b - c) + d - a)*t)*t)*t + b;
 }
@@ -14,6 +13,7 @@ function BicubicInterpolation(x, y, values){
 
 	return TERP(y, i0, i1, i2, i3);
 }
+
 
 function bicubic(srcImg, destImg) {
 	const sdata = srcImg.data;
@@ -81,6 +81,7 @@ function bicubic(srcImg, destImg) {
 	}
 }
 
+
 function crop(source, x, y, w, h, target=null) {
 	if (!target) {
 		target = new ImageData(w, h);
@@ -97,3 +98,11 @@ function crop(source, x, y, w, h, target=null) {
 
 	return target;
 }
+
+
+function roundedLuma(r, g, b) {
+	return Math.round(r * 0.299 + g * 0.587 + b * 0.114);
+}
+
+
+
