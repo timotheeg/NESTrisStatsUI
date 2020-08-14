@@ -24,6 +24,8 @@ function bicubic(srcImg, destImg) {
 	const yscale = dh / sh;
 	const xscale = dw / sw;
 
+	const buffer = new Uint8Array(16);
+
 	for (let i = 0; i < dh; ++i) {
 		const iyv = i / yscale;
 		const iy0 = Math.floor(iyv);
@@ -63,17 +65,17 @@ function bicubic(srcImg, destImg) {
 			const dy = iyv - iy0;
 			const idxD = (i * dw + j) << 2;
 
-			const red_pixels = offsets.map(offset => sdata[offset]);
-			destImg.data[idxD] = BicubicInterpolation(dx, dy, red_pixels);
+			offsets.forEach((offset, idx) => buffer[idx] = sdata[offset]);
+			destImg.data[idxD] = BicubicInterpolation(dx, dy, buffer);
 
-			const green_pixels = offsets.map(offset => sdata[offset+1]);
-			destImg.data[idxD+1] = BicubicInterpolation(dx, dy, green_pixels);
+			offsets.forEach((offset, idx) => buffer[idx] = sdata[offset+1]);
+			destImg.data[idxD+1] = BicubicInterpolation(dx, dy, buffer);
 
-			const blue_pixels = offsets.map(offset => sdata[offset+2]);
-			destImg.data[idxD+2] = BicubicInterpolation(dx, dy, blue_pixels);
+			offsets.forEach((offset, idx) => buffer[idx] = sdata[offset+2]);
+			destImg.data[idxD+2] = BicubicInterpolation(dx, dy, buffer);
 
-			// const alpha_pixels = offsets.map(offset => sdata[offset+2]);
-			// destImg.data[idxD+3] = BicubicInterpolation(dx, dy, alpha_pixels);
+			// offsets.forEach((offset, idx) => buffer[idx] = sdata[offset+3]);
+			// destImg.data[idxD+3] = BicubicInterpolation(dx, dy, buffer);
 			destImg.data[idxD+3] = 255;
 		}
 	}
