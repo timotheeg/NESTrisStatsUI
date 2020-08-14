@@ -2,7 +2,7 @@
 
 <head>
 <style type="text/css">
-video {
+canvas {
 	display: none;
 }
 </style>
@@ -57,7 +57,7 @@ video {
 <script>
 // NTSC NES resolution: 256x224 -> 512x448
 
-const SHOW_LOCAL = true;
+const SHOW_LOCAL = false;
 
 const config = {
 	deinterlace: true,
@@ -72,6 +72,7 @@ const config = {
 		// stats: { crop: [164, 93, 57, 105], red: true },
 	}
 };
+
 
 let lowest_row;
 
@@ -118,6 +119,28 @@ const
 	};
 
 let entries;
+
+(function setupCanvasFromConfig() {
+	for (const [name, task] of Object.entries(config.tasks)) {
+		const canva = dom[name];
+		const ctx = canva.getContext('2d');
+		const [x, y, w, h] = task.crop;
+
+		canva.width = w;
+		canva.height = h;
+
+		const scaled = dom[`${name}_scaled`];
+
+		if (task.pattern) {
+			scaled.width = (8 * task.pattern.length - 1) * 2;
+			scaled.height = h * 2;
+		}
+		else if (task.resize) {
+			scaled.width = task.resize[0];
+			scaled.height = task.resize[1];
+		}
+	}
+})();
 
 
 device_selector.addEventListener('change', evt => {
@@ -175,6 +198,8 @@ async function playVideoFromDevice(device_id) {
 
         stream = await navigator.mediaDevices.getUserMedia(constraints);
 
+        if (device_id === undefined) return;
+
         video.srcObject = stream;
         video.play();
 
@@ -194,6 +219,8 @@ let start_time_ms;
 
 async function startCapture(stream) {
 	const settings = stream.getVideoTracks()[0].getSettings();
+
+	stream.addEventListener('inactive', console.log('stream is inactive'));
 
 	console.log(`Video settings: ${settings.width}x${settings.height}@${settings.frameRate.toFixed(1)}fps`);
 
@@ -218,6 +245,7 @@ async function startCapture(stream) {
 	const response = await fetch(`./full2.png`);
 	blob = await response.blob();
 
+	frame_ms = 1000 / settings.frameRate;
 	start_time_ms = Date.now();
 	last_frame_time = start_time_ms;
 	captureFrame();
@@ -301,9 +329,9 @@ worker.addEventListener('message', function(evt) {
 
 function onMessage(data) {
 	// make frame NESTrisOCR compatible
-	data.score = `${data.score}`.padStart(6, '0');
-	data.level = `${data.level}`.padStart(2, '0');
-	data.lines = `${data.lines}`.padStart(3, '0');
+	if (data.score !== null) data.score = `${data.score}`.padStart(6, '0');
+	if (data.level !== null) data.level = `${data.level}`.padStart(2, '0');
+	if (data.lines !== null) data.lines = `${data.lines}`.padStart(3, '0');
 
 	frame_data.textContent = JSON.stringify(data);
 
@@ -364,7 +392,7 @@ const fake_stream = {
 				return {
 					width: 720,
 					height: 480,
-					frameRate: 30.0
+					frameRate: 10
 				}
 			}
 		}]
