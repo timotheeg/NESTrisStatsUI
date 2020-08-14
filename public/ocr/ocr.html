@@ -5,6 +5,11 @@
 video {
 	display: none;
 }
+
+#capture canvas {
+	margin: 0.5em;
+}
+
 </style>
 </head>
 
@@ -41,8 +46,8 @@ const config = {
 		lines:   { crop: [426, 22, 57, 7], pattern: "TDD", red: false },
 		field:   { crop: [284, 46, 201, 160], resize: [80, 160], use_canva: true },
 		preview: { crop: [526, 118, 80, 15], resize: [31, 15] },
-		// color1:  { crop: [80, 118, 8, 5], resize: [31, 15] },
-		// color2:  { crop: [80, 200, 8, 5], resize: [31, 15] },
+		color1:  { crop: [139, 112, 11, 5], resize: [5, 5] },
+		color2:  { crop: [139, 129, 11, 5], resize: [5, 5] },
 		// stats: { crop: [164, 93, 57, 105], red: true },
 	}
 };
@@ -203,24 +208,28 @@ function showTemplates(templates) {
 function showParts() {
 	const capture = document.querySelector('#capture')
 
-	let canvas;
-
-	capture.innerHTML = '';
-
 	for (const [name, task] of Object.entries(config.tasks)) {
-		canvas = document.createElement('canvas');
-		canvas.width = task.crop_img.width;
-		canvas.height = task.crop_img.height;
-		canvas.getContext('2d').putImageData(task.crop_img, 0, 0);
-		capture.appendChild(canvas);
+		if (!task.crop_canvas) {
+			const holder = document.createElement('div');
 
-		canvas = document.createElement('canvas');
-		canvas.width = task.scale_img.width;
-		canvas.height = task.scale_img.height;
-		canvas.getContext('2d').putImageData(task.scale_img, 0, 0);
-		capture.appendChild(canvas);
+			const crop_canvas = document.createElement('canvas');
+			crop_canvas.width = task.crop_img.width;
+			crop_canvas.height = task.crop_img.height;
+			holder.appendChild(crop_canvas);
 
-		capture.appendChild(document.createElement('br'));
+			const scale_canvas = document.createElement('canvas');
+			scale_canvas.width = task.scale_img.width;
+			scale_canvas.height = task.scale_img.height;
+			holder.appendChild(scale_canvas);
+
+			capture.appendChild(holder);
+
+			task.crop_canvas = crop_canvas;
+			task.scale_canvas = scale_canvas;
+		}
+
+		task.crop_canvas.getContext('2d').putImageData(task.crop_img, 0, 0);
+		task.scale_canvas.getContext('2d').putImageData(task.scale_img, 0, 0);
 	}
 }
 

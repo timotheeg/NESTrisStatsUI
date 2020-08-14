@@ -94,6 +94,7 @@ class TetrisOCR extends EventTarget {
 		this.capture_canvas.height = frame.height;
 
 		this.capture_canvas_ctx = this.capture_canvas.getContext('2d');
+		this.capture_canvas_ctx.imageSmoothingEnabled = 'false';
 
 		// On top of the capture context, we need one more canvas for the scaled field
 		// because the performance of OffScreenCanvas are horrible, and same gvoes for the bicubic lib for any image that's not super small :(
@@ -103,9 +104,10 @@ class TetrisOCR extends EventTarget {
 		this.scaled_field_canvas = document.createElement('canvas');
 
 		this.scaled_field_canvas.width = this.config.tasks.field.resize[0];
-		this.scaled_field_canvas.heiht = this.config.tasks.field.resize[1];
+		this.scaled_field_canvas.height = this.config.tasks.field.resize[1];
 
 		this.scaled_field_canvas_ctx = this.scaled_field_canvas.getContext('2d');
+		this.scaled_field_canvas_ctx.imageSmoothingQuality = 'medium';
 	}
 
 	async processFrame(frame) {
@@ -136,13 +138,30 @@ class TetrisOCR extends EventTarget {
 
 		performance.mark('lines_end');
 
-		const field = await this.scanField(source_img, this.config.tasks.field, this.config.palette[level % 10]);
+		let color1, color2;
+
+		if (this.config.tasks.color1) {
+			color1 = await this.scanColor(source_img, this.config.tasks.color1);
+		}
+
+		performance.mark('color1_end');
+
+		if (this.config.tasks.color2) {
+			color2 = await this.scanColor(source_img, this.config.tasks.color2);
+		}
+
+		performance.mark('color2_end');
+
+		const colors = color1 && color2 ? [color1, color2] : this.config.palette[level % 10];
+
+		const field = await this.scanField(source_img, this.config.tasks.field, colors);
 
 		performance.mark('field_end');
 
 		const preview = await this.scanPreview(source_img, this.config.tasks.preview);
 
 		performance.mark('preview_end');
+
 		performance.mark('end');
 
 		performance.measure('draw', 'start', 'draw_end');
@@ -150,7 +169,9 @@ class TetrisOCR extends EventTarget {
 		performance.measure('score', 'deinterlace_end', 'score_end');
 		performance.measure('level', 'score_end', 'level_end');
 		performance.measure('lines', 'level_end', 'lines_end');
-		performance.measure('field', 'lines_end', 'field_end');
+		performance.measure('color1', 'lines_end', 'color1_end');
+		performance.measure('color2', 'color1_end', 'color2_end');
+		performance.measure('field', 'color2_end', 'field_end');
 		performance.measure('preview', 'field_end', 'preview_end');
 		performance.measure('total', 'start', 'end');
 
@@ -294,6 +315,33 @@ class TetrisOCR extends EventTarget {
 		return null;
 	}
 
+	async scanColor(source_img, task) {
+		const [raw_x, y, w, h] = task.crop;
+		const x = raw_x - this.config.capture_area.x;
+
+		crop(source_img, x, y, w, h, task.crop_img);
+		bicubic(task.crop_img, task.scale_img);
+
+		const pix_refs = [
+			[3, 2],
+			[3, 3],
+			[2, 3]
+		];
+
+		return pix_refs
+			.map(([x, y]) => {
+				const col_idx = y * w * 4 + x * 4;
+				return task.scale_img.data.subarray(col_idx, col_idx + 3);
+			})
+			.reduce((acc, col) => {
+				acc[0] += col[0];
+				acc[1] += col[1];
+				acc[2] += col[2];
+				return acc;
+			}, [0, 0, 0])
+			.map(v => Math.round(v / pix_refs.length));
+	}
+
 	async scanField(source_img, task, _colors) {
 		const [raw_x, y, w, h] = task.crop;
 		const x = raw_x - this.config.capture_area.x;
@@ -352,7 +400,7 @@ class TetrisOCR extends EventTarget {
 						acc[2] += col[2];
 						return acc;
 					}, [0, 0, 0])
-					.map(v => Math.round(v / 3));
+					.map(v => Math.round(v / pix_refs.length));
 
 				let min_diff = 0xFFFFFFFF;
 				let min_idx = -1;
