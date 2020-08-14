@@ -2,7 +2,7 @@
 
 <head>
 <style type="text/css">
-video {
+canvas {
 	display: none;
 }
 </style>
@@ -213,8 +213,8 @@ let start;
 
 async function captureFrame() {
 	try {
-		const bitmap = await createImageBitmap(blob);
-		// const bitmap = await createImageBitmap(video, 0, 0, video.videoWidth, video.videoHeight);
+		// const bitmap = await createImageBitmap(blob);
+		const bitmap = await createImageBitmap(video, 0, 0, video.videoWidth, video.videoHeight);
 
 		if (SHOW_LOCAL) {
 			capture_ctx.drawImage(bitmap, 0, 0, capture.width, capture.height);
@@ -279,7 +279,16 @@ worker.addEventListener('message', function(evt) {
 /**/
 
 function onMessage(data) {
+	// make frame NESTrisOCR compatible
+	data.score = `${data.score}`.padStart(6, '0');
+	data.level = `${data.level}`.padStart(2, '0');
+	data.lines = `${data.lines}`.padStart(3, '0');
+
 	frame_data.textContent = JSON.stringify(data);
+
+	if (producer_socket) {
+		producer_socket.send(JSON.stringify(data));
+	}
 }
 
 
@@ -321,12 +330,12 @@ function processTasks(pixels) {
 	}
 }
 
-/*
+/**/
 playVideoFromDevice()
 	.then(resetDevices);
 /**/
 
-/**/
+/*
 const fake_stream = {
 	getVideoTracks() {
 		return [{
@@ -367,6 +376,40 @@ function dummyInit() {
 
 setTimeout(dummyInit, 500);
 /**/
+
+let producer_socket;
+
+function handleWSError(err) {
+	// ignore
+}
+
+function handleWSClose(evt) {
+	// console.log('Socket close');
+	clearSocket();
+	setTimeout(connect, 25); // schedule reconnect
+}
+
+function clearSocket() {
+	try {
+		producer_socket.removeEventListener('error',  handleWSError);
+		producer_socket.removeEventListener('close',  handleWSClose);
+		producer_socket.close();
+		producer_socket = null;
+	}
+	catch(e) {}
+}
+
+function connect() {
+	if (producer_socket) {
+		clearSocket();
+	}
+
+	producer_socket = new WebSocket('ws://127.0.0.1:3337');
+	producer_socket.addEventListener('error',  handleWSError);
+	producer_socket.addEventListener('close',  handleWSClose);
+}
+
+connect()
 
 
 </script>

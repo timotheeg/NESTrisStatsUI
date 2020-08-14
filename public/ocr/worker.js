@@ -77,12 +77,24 @@ async function getTemplateData(digit) {
 	const blob = await response.blob();
 	const data = await createImageBitmap(blob);
 
+	/**/ // Most visually correct
 	scale_canvas_ctx.drawImage(data,
 		0, 0,  7,  7,
 		0, 0, 14, 14 // 2x scaling
 	);
-
 	const img_data = scale_canvas_ctx.getImageData(0, 0, 14, 14);
+	/**/
+
+	/* // Fastest, but looking weird for
+	scale_canvas_ctx.drawImage(data,
+		0, 0,  7,  7,
+		0, 0, 7, 7 // 2x scaling
+	);
+	const source_data = scale_canvas_ctx.getImageData(0, 0, 7, 7);
+	const img_data = new ImageData(14, 14);
+	bicubic(source_data, img_data);
+	/**/
+
 	const lumas = new Uint8ClampedArray(img_data.width * img_data.height).fill(0);
 	const pixel_data = img_data.data;
 
@@ -228,7 +240,7 @@ async function processFrame2(frame) {
 
 	// console.log(performance.getEntriesByType("measure"));
 
-	const res = { score, level, lines, field, perf: {} };
+	const res = { score, level, lines, field, preview, perf: {} };
 
 	const measures = performance.getEntriesByType("measure").forEach(m => {
 		res.perf[m.name] =  m.duration.toFixed(3);
@@ -320,7 +332,97 @@ function ocrDigits(source_img, task) {
 
 function scanColors(source_img, task) {}
 
-function scanPreview(source_img, task) {}
+// all extractions are atomic and synchornous
+// so we'll use a single block buffer
+const block_img = new ImageData(7, 7);
+
+function isBlock(img, expected_count=49) {
+	const block_presence_threshold = 0.7;
+	const black_luma_limit = 15;
+	const img_data = img.data;
+
+	const lumas = new Uint8Array(img.width * img.height);
+	let sum = 0;
+
+	// Can we increase contrast first? Maybe not needed
+
+	for (let idx=lumas.length; idx--; ) {
+		const offset_idx = idx << 2;
+		sum += roundedLuma(
+			img_data[offset_idx],
+			img_data[offset_idx + 1],
+			img_data[offset_idx + 2],
+		) <  black_luma_limit ? 0 : 1;
+	};
+
+	return sum >= Math.floor(expected_count * block_presence_threshold);
+}
+
+function scanPreview(source_img, task) {
+	const [raw_x, y, w, h] = task.crop;
+	const x = raw_x - config.capture_area.x;
+
+	crop(source_img, x, y, w, h, task.crop_img);
+	bicubic(task.crop_img, task.scale_img);
+
+	// Trying side i blocks
+	if (isBlock(crop(task.scale_img, 0, 3, 4, 7), 28)
+		&& isBlock(crop(task.scale_img, 27, 3, 4, 7), 28)
+	) {
+		return 'I';
+	}
+
+	// now trying the 3x2 matrix for T, L, J, S, Z
+	const top_row = [
+		isBlock(crop(task.scale_img, 4, 0, 7, 7, block_img)),
+		isBlock(crop(task.scale_img, 12, 0, 7, 7, block_img)),
+		isBlock(crop(task.scale_img, 20, 0, 7, 7, block_img))
+	];
+
+	if (top_row[0] && top_row[1] && top_row[2]) { // J, T, L
+		if (isBlock(crop(task.scale_img, 4, 8, 7, 7, block_img))) {
+			return 'L';
+		}
+		if (isBlock(crop(task.scale_img, 12, 8, 7, 7, block_img))) {
+			return 'T';
+		}
+		if (isBlock(crop(task.scale_img, 20, 8, 7, 7, block_img))) {
+			return 'T';
+		}
+
+		return null;
+	}
+
+	if (top_row[1] && top_row[2]) {
+		if (isBlock(crop(task.scale_img, 4, 8, 7, 7, block_img))
+			&& isBlock(crop(task.scale_img, 12, 8, 7, 7, block_img))
+		) {
+			return 'S';
+		}
+		// return null here?
+	}
+
+	if (top_row[0] && top_row[1]) {
+		if (isBlock(crop(task.scale_img, 12, 8, 7, 7, block_img))
+			&& isBlock(crop(task.scale_img, 20, 8, 7, 7, block_img))
+		) {
+			return 'Z';
+		}
+		// return null here?
+	}
+
+	// lastly check for O
+	if (
+		isBlock(crop(task.scale_img, 8, 0, 7, 7, block_img))
+		&& isBlock(crop(task.scale_img, 16, 0, 7, 7, block_img))
+		&& isBlock(crop(task.scale_img, 8, 8, 7, 7, block_img))
+		&& isBlock(crop(task.scale_img, 16, 8, 7, 7, block_img))
+	) {
+		return 'O';
+	}
+
+	return null;
+}
 
 async function scanField(source_img, task, _colors) {
 	const [raw_x, y, w, h] = task.crop;

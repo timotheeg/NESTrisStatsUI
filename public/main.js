@@ -58,6 +58,7 @@ function clearSocket() {
 		chat_and_pbs_socket.removeEventListener('error',  handleWSError);
 		chat_and_pbs_socket.removeEventListener('close',  handleWSClose);
 		chat_and_pbs_socket.close();
+		chat_and_pbs_socket = null;
 	}
 	catch(e) {}
 }

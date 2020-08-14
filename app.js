@@ -48,17 +48,17 @@ const connections = new Set();
 
 wss.on('connection', function connection(ws) {
 
-  console.log('connection on 3339');
+  console.log('View connected');
 
   connections.add(ws);
 
+  ws.on('error', () => {});
   ws.on('close', () => {
     connections.delete(ws);
   });
 
   ws.on('message', console.log);
 });
-
 
 
 const ClientConnectionAPI = new Proxy({}, {
@@ -114,6 +114,7 @@ Bot.on('message', chatter => {
 
 
 
+// NEStrisOCR Server
 const server = new NEStrisServer(3338, 'default');
 
 server.on('frame', data => {
@@ -121,6 +122,20 @@ server.on('frame', data => {
   ClientConnectionAPI.frame(data);
 });
 
+// Web producer server
+const web_producer_wss = new WebSocket.Server({ port: 3337 });
+
+web_producer_wss.on('connection', function connection(ws) {
+
+  console.log('Web producer connected');
+
+  ws.on('error', () => {});
+  ws.on('close', () => {});
+  ws.on('message', message => {
+    console.log(message);
+    ClientConnectionAPI.frame(JSON.parse(message));
+  });
+});
 
 
 // Listen for player change to force score update immediately
@@ -128,5 +143,3 @@ server.on('frame', data => {
 TetrisDAO.onScoreUpdate = function(data) {
   ClientConnectionAPI.player_data(data);
 }
-
-setInterval(() => console.log('heartbeat'), 2000);
