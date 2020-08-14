@@ -194,7 +194,7 @@ async function processFrame2(frame) {
 	performance.mark('start');
 
 	// load the raw frame
-	raw_canvas_ctx.drawImage(frame, 0, 0, config.width, config.height);
+	capture_ctx.drawImage(frame, 0, 0, config.width, config.height);
 
 	performance.mark('draw_end');
 

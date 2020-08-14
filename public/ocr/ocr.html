@@ -2,7 +2,7 @@
 
 <head>
 <style type="text/css">
-canvas {
+video {
 	display: none;
 }
 </style>
@@ -16,7 +16,6 @@ canvas {
 </div>
 
 <video id="device_video" playsinline controls="false"></video>
-<br /><br />
 <canvas id="capture"></canvas>
 <br /><br />
 <canvas id="processed"></canvas>
@@ -36,10 +35,17 @@ canvas {
 <canvas id="preview"></canvas>
 <canvas id="preview_scaled"></canvas>
 <br /><br />
+<canvas id="color1"></canvas>
+<canvas id="color1_scaled"></canvas>
+<br /><br />
+<canvas id="color2"></canvas>
+<canvas id="color2_scaled"></canvas>
+<br /><br />
 <!--canvas id="stats"></canvas>
 <br /><br / -->
 <div id="templates"></div>
 <div id="frame_data"></div>
+<div id="perf_data"></div>
 <script src="../constants.js"></script>
 <script src="./image_tools.js"></script>
 <script>
@@ -61,6 +67,8 @@ const config = {
 		lines:   { crop: [426, 22, 57, 7], pattern: "TDD", red: false },
 		field:   { crop: [284, 46, 201, 160], resize: [80, 160] },
 		preview: { crop: [526, 118, 80, 15], resize: [31, 15] },
+		// color1:  { crop: [80, 118, 8, 5], resize: [31, 15] },
+		// color2:  { crop: [80, 200, 8, 5], resize: [31, 15] },
 		// stats: { crop: [164, 93, 57, 105], red: true },
 	}
 };
@@ -93,6 +101,7 @@ const
 	processed       = document.querySelector('#processed'),
 	processed_ctx   = processed.getContext('2d'),
 	frame_data      = document.querySelector('#frame_data'),
+	perf_data       = document.querySelector('#perf_data'),
 
 	dom = {
 		score          : document.querySelector('#score'),
@@ -174,11 +183,14 @@ async function playVideoFromDevice(device_id) {
     catch(error) {
         console.error('Error opening video camera.', error);
         video.pause();
-        capture_process = clearInterval(capture_process); // window.cancelAnimationFrame(capture_process);
+        capture_process = clearTimeout(capture_process); // window.cancelAnimationFrame(capture_process);
     }
 }
 
 let capture_process, blob;
+let frame_count = 0;
+let frame_ms = 1000/30;
+let start_time_ms;
 
 async function startCapture(stream) {
 	const settings = stream.getVideoTracks()[0].getSettings();
@@ -206,12 +218,18 @@ async function startCapture(stream) {
 	const response = await fetch(`./full2.png`);
 	blob = await response.blob();
 
-	capture_process = setInterval(captureFrame, 1000/30);
+	start_time_ms = Date.now();
+	last_frame_time = start_time_ms;
+	captureFrame();
 }
 
-let start;
-
 async function captureFrame() {
+	++frame_count;
+	const now = Date.now();
+
+	perf_data.textContent = now - last_frame_time;
+	last_frame_time = now;
+
 	try {
 		// const bitmap = await createImageBitmap(blob);
 		const bitmap = await createImageBitmap(video, 0, 0, video.videoWidth, video.videoHeight);
@@ -243,6 +261,9 @@ async function captureFrame() {
 		console.error(err);
 	}
 
+	const next_frame_time = start_time_ms + frame_ms * frame_count;
+
+	capture_process = setTimeout(captureFrame, Math.ceil(next_frame_time - Date.now()));
 	// window.requestAnimationFrame(captureFrame);
 }
 
