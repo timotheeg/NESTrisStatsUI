@@ -180,7 +180,6 @@ async function captureFrame() {
 	const next_frame_time = start_time_ms + frame_ms * frame_count;
 
 	capture_process = setTimeout(captureFrame, Math.ceil(next_frame_time - Date.now()));
-	// window.requestAnimationFrame(captureFrame);
 }
 
 function showTemplates(templates) {
@@ -235,6 +234,9 @@ function showParts() {
 
 let connection, tetris_ocr;
 
+const IN_GAME = {};
+const IN_MENU = {};
+
 (async function init() {
 	connection = new Connection(3337);
 
@@ -244,17 +246,44 @@ let connection, tetris_ocr;
 
 	tetris_ocr = new TetrisOCR(templates, config);
 
+	let game_state = IN_GAME;
+	let gameid = 1;
+
 	tetris_ocr.onMessage = function(data) {
 		// make frame NESTrisOCR compatible
 		if (data.score !== null) data.score = `${data.score}`.padStart(6, '0');
 		if (data.level !== null) data.level = `${data.level}`.padStart(2, '0');
 		if (data.lines !== null) data.lines = `${data.lines}`.padStart(3, '0');
 
+		data.field = data.field.join('');
+
+		// replicate NESTrisOCR gameid logic
+		if (game_state === IN_GAME) {
+			if (data.lines === null) {
+				game_state = IN_MENU;
+			}
+		}
+		else {
+			if (data.score && data.lines) {
+				game_state = IN_GAME;
+
+				if (data.score === '000000' && (data.lines === '000' || data.lines === "025")) {
+					gameid++;
+				}
+			}
+		}
+
+		data.gameid = gameid;
+
 		frame_data.textContent = JSON.stringify(data);
+
+		delete data.perf;
+		delete data.color1;
+		delete data.color2;
 
 		showParts();
 
-		// tetris_ocr.send(data);
+		tetris_ocr.send(data);
 	}
 
 	/*

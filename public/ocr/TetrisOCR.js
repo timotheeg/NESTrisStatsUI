@@ -175,7 +175,7 @@ class TetrisOCR extends EventTarget {
 		performance.measure('preview', 'field_end', 'preview_end');
 		performance.measure('total', 'start', 'end');
 
-		const res = { score, level, lines, field, preview, perf: {} };
+		const res = { score, level, lines, field, preview, color1, color2, perf: {} };
 
 		const measures = performance.getEntriesByType("measure").forEach(m => {
 			res.perf[m.name] =  m.duration.toFixed(3);
@@ -330,7 +330,7 @@ class TetrisOCR extends EventTarget {
 
 		return pix_refs
 			.map(([x, y]) => {
-				const col_idx = y * w * 4 + x * 4;
+				const col_idx = y * 5 * 4 + x * 4;
 				return task.scale_img.data.subarray(col_idx, col_idx + 3);
 			})
 			.reduce((acc, col) => {
