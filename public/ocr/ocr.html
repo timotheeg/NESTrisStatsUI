@@ -49,6 +49,11 @@ const config = {
 		// color1:  { crop: [139, 112, 11, 5], resize: [5, 5] },
 		// color2:  { crop: [139, 129, 11, 5], resize: [5, 5] },
 		// stats: { crop: [164, 93, 57, 105], red: true },
+		/**/
+		instant_das:   { crop: [143, 38, 38, 7], pattern: "BD", red: false },
+		cur_piece_das: { crop: [183, 54, 38, 7], pattern: "BD", red: false },
+		cur_piece:     { crop: [83, 50, 59, 12], resize: [23, 12] }
+		/**/
 	}
 };
 
@@ -205,7 +210,26 @@ function showTemplates(templates) {
 }
 
 function showParts() {
-	const capture = document.querySelector('#capture')
+	const capture = document.querySelector('#capture');
+
+	const half_di_height = Math.floor(config.deinterlaced_img.height / 2);
+
+	if (!config.di_canvas) {
+		const holder = document.createElement('div');
+		const di_canvas = document.createElement('canvas');
+		di_canvas.width = config.deinterlaced_img.width;
+		di_canvas.height = half_di_height;
+		holder.appendChild(di_canvas);
+		capture.appendChild(holder);
+
+		config.di_canvas = di_canvas;
+	}
+
+	config.di_canvas.getContext('2d').putImageData(config.deinterlaced_img,
+		0, 0,
+		0, 0,
+		config.deinterlaced_img.width, half_di_height
+	);
 
 	for (const [name, task] of Object.entries(config.tasks)) {
 		if (!task.crop_canvas) {
@@ -281,7 +305,7 @@ const IN_MENU = {};
 		delete data.color1;
 		delete data.color2;
 
-		// showParts();
+		showParts();
 
 		connection.send(data);
 	}
@@ -293,7 +317,7 @@ const IN_MENU = {};
 	/**/
 
 	const fake_stream = {
-		asset: './full3.png',
+		asset: './full.png',
 		addEventListener: function() {},
 		getVideoTracks() {
 			return [{
