@@ -249,9 +249,9 @@ function onFrame(event, debug) {
 	// check if a change to cur_piece_stats
 	if (pending_piece) {
 		if (transformed.cur_piece && transformed.next_piece && !isNaN(transformed.cur_piece_das) && transformed.cur_piece_das <= 16) {
+			pending_piece = false;
 			game.onPiece(transformed);
 			renderPiece(transformed);
-			pending_piece = false;
 
 			Object.assign(last_valid_state, {
 				cur_piece: transformed.cur_piece,

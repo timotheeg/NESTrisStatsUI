@@ -225,11 +225,17 @@ function showParts() {
 		config.di_canvas = di_canvas;
 	}
 
-	config.di_canvas.getContext('2d').putImageData(config.deinterlaced_img,
+	const di_ctx = config.di_canvas.getContext('2d');
+
+	di_ctx.putImageData(config.deinterlaced_img,
 		0, 0,
 		0, 0,
 		config.deinterlaced_img.width, half_di_height
 	);
+
+	di_ctx.fillStyle = '#FFA50080';
+
+	const x_offset = config.capture_area.x;
 
 	for (const [name, task] of Object.entries(config.tasks)) {
 		if (!task.crop_canvas) {
@@ -253,6 +259,10 @@ function showParts() {
 
 		task.crop_canvas.getContext('2d').putImageData(task.crop_img, 0, 0);
 		task.scale_canvas.getContext('2d').putImageData(task.scale_img, 0, 0);
+
+		const [x, y, w, h] = task.crop;
+
+		di_ctx.fillRect(x - x_offset, y, w, h);
 	}
 }
 
@@ -310,7 +320,7 @@ const IN_MENU = {};
 		connection.send(data);
 	}
 
-	/**/
+	/*
 	await playVideoFromDevice()
 	resetDevices();
 	return;
@@ -325,7 +335,7 @@ const IN_MENU = {};
 					return {
 						width: 720,
 						height: 480,
-						frameRate: 10
+						frameRate: 4
 					}
 				}
 			}]
