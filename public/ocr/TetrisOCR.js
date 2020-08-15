@@ -4,6 +4,27 @@ const PATTERN_MAX_INDEXES = {
 	'B': 3
 };
 
+function snakeToCamel(snake) {
+	return (snake
+		.split('_')
+		.map(token => `${token[0].toUpperCase()}${token.slice(1)}`)
+		.join(''));
+}
+
+// timing decorator
+function timingDecorator(name, func) { // func must be prebound
+	return function(...args) {
+		performance.mark(`start_${name}`);
+
+		const res = func(...args);
+
+		performance.mark(`end_${name}`);
+		performance.measure(name, `start_${name}`, `end_${name}`);
+
+		return res;
+	}
+}
+
 class TetrisOCR extends EventTarget {
 	constructor(templates, config) {
 		super();
@@ -15,6 +36,27 @@ class TetrisOCR extends EventTarget {
 
 		this.block_img = new ImageData(7, 7);
 		this.small_block_img = new ImageData(5, 5);
+
+		// decorate relevant functions to capture timings
+		this.deinterlace = timingDecorator('deinterlace', this.deinterlace.bind(this));
+
+		[
+			'score',
+			'level',
+			'lines',
+			'color1',
+			'color2',
+			'preview',
+			'field',
+			'instant_das',
+			'cur_piece_das',
+			'cur_piece',
+		]
+		.forEach(name => {
+			const camel_name = `scan${snakeToCamel(name)}`;
+			const method = this[camel_name].bind(this);
+			this[camel_name] = timingDecorator(name, method);
+		});
 	}
 
 	processConfig() {
@@ -125,70 +167,48 @@ class TetrisOCR extends EventTarget {
 
 		const source_img = this.deinterlace();
 
-		performance.mark('deinterlace_end');
-
-		const score = this.ocrDigits(source_img, this.config.tasks.score);
-
-		performance.mark('score_end');
-
-		const level = this.ocrDigits(source_img, this.config.tasks.level);
-
-		performance.mark('level_end');
-
-		const lines = this.ocrDigits(source_img, this.config.tasks.lines);
-
-		performance.mark('lines_end');
+		const score = this.scanScore(source_img);
+		const level = this.scanLevel(source_img);
+		const lines = this.scanLines(source_img);
 
 		let color1, color2;
 
-		if (this.config.tasks.color1) {
-			color1 = await this.scanColor(source_img, this.config.tasks.color1);
+		if (this.config.tasks.color1) { // assumes the color tasks are a unit
+			color1 = this.scanColor1(source_img);
+			color2 = this.scanColor2(source_img);
 		}
-
-		performance.mark('color1_end');
-
-		if (this.config.tasks.color2) {
-			color2 = await this.scanColor(source_img, this.config.tasks.color2);
-		}
-
-		performance.mark('color2_end');
 
 		const colors = color1 && color2 ? [color1, color2] : this.config.palette[level % 10];
 
-		const field = await this.scanField(source_img, this.config.tasks.field, colors);
+		const field = await this.scanField(source_img, colors);
+		const preview = this.scanPreview(source_img);
 
-		performance.mark('field_end');
+		let instant_das, cur_piece_das, cur_piece;
 
-		const preview = await this.scanPreview(source_img, this.config.tasks.preview);
-
-		performance.mark('preview_end');
-
-		const instant_das = this.ocrDigits(source_img, this.config.tasks.instant_das);
-
-		performance.mark('das_end');
-
-		const cur_piece_das = this.ocrDigits(source_img, this.config.tasks.cur_piece_das);
-
-		performance.mark('cur_piece_das_end');
-
-		const cur_piece = this.scanCurPiece(source_img, this.config.tasks.cur_piece);
-
-		performance.mark('cur_piece');
+		if (this.config.tasks.instant_das) { // assumes all 3 das tasks are a unit
+			instant_das = this.scanInstantDas(source_img);
+			cur_piece_das = this.scanCurPieceDas(source_img);
+			cur_piece = this.scanCurPiece(source_img);
+		}
 
 		performance.mark('end');
 
-		performance.measure('draw', 'start', 'draw_end');
-		performance.measure('deinterlace', 'draw_end', 'deinterlace_end');
-		performance.measure('score', 'deinterlace_end', 'score_end');
-		performance.measure('level', 'score_end', 'level_end');
-		performance.measure('lines', 'level_end', 'lines_end');
-		performance.measure('color1', 'lines_end', 'color1_end');
-		performance.measure('color2', 'color1_end', 'color2_end');
-		performance.measure('field', 'color2_end', 'field_end');
-		performance.measure('preview', 'field_end', 'preview_end');
+		performance.measure('draw_frame', 'start', 'draw_end');
 		performance.measure('total', 'start', 'end');
 
-		const res = { score, level, lines, preview, instant_das, cur_piece_das, cur_piece, field, color1, color2, perf: {} };
+		const res = {
+			score,
+			level,
+			lines,
+			preview,
+			instant_das,
+			cur_piece_das,
+			cur_piece,
+			field,
+			color1,
+			color2,
+			perf: {},
+		};
 
 		const measures = performance.getEntriesByType("measure").forEach(m => {
 			res.perf[m.name] =  m.duration.toFixed(3);
@@ -199,6 +219,35 @@ class TetrisOCR extends EventTarget {
 
 		this.onMessage(res);
 	}
+
+	scanScore(source_img) {
+		return this.ocrDigits(source_img, this.config.tasks.score);
+	}
+
+	scanLevel(source_img) {
+		return this.ocrDigits(source_img, this.config.tasks.level);
+	}
+
+	scanLines(source_img) {
+		return this.ocrDigits(source_img, this.config.tasks.lines);
+	}
+
+	scanColor1(source_img) {
+		return this.scanColor(source_img, this.config.tasks.color1);
+	}
+
+	scanColor2(source_img) {
+		return this.scanColor(source_img, this.config.tasks.color2);
+	}
+
+	scanInstantDas(source_img) {
+		return this.ocrDigits(source_img, this.config.tasks.instant_das);
+	}
+
+	scanCurPieceDas(source_img) {
+		return this.ocrDigits(source_img, this.config.tasks.cur_piece_das);
+	}
+
 
 	deinterlace() {
 		const pixels = this.capture_canvas_ctx.getImageData(
@@ -266,7 +315,8 @@ class TetrisOCR extends EventTarget {
 		return sum >= Math.floor(expected_count * block_presence_threshold);
 	}
 
-	scanPreview(source_img, task) {
+	scanPreview(source_img) {
+		const task = this.config.tasks.preview;
 		const [raw_x, y, w, h] = task.crop;
 		const x = raw_x - this.config.capture_area.x;
 
@@ -330,7 +380,8 @@ class TetrisOCR extends EventTarget {
 		return null;
 	}
 
-	scanCurPiece(source_img, task) {
+	scanCurPiece(source_img) {
+		const task = this.config.tasks.cur_piece;
 		const [raw_x, y, w, h] = task.crop;
 		const x = raw_x - this.config.capture_area.x;
 
@@ -408,7 +459,7 @@ class TetrisOCR extends EventTarget {
 		return null;
 	}
 
-	async scanColor(source_img, task) {
+	scanColor(source_img, task) {
 		const [raw_x, y, w, h] = task.crop;
 		const x = raw_x - this.config.capture_area.x;
 
@@ -435,7 +486,8 @@ class TetrisOCR extends EventTarget {
 			.map(v => Math.round(v / pix_refs.length));
 	}
 
-	async scanField(source_img, task, _colors) {
+	async scanField(source_img, _colors) {
+		const task = this.config.tasks.field;
 		const [raw_x, y, w, h] = task.crop;
 		const x = raw_x - this.config.capture_area.x;
 		const colors = [
