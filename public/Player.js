@@ -607,7 +607,8 @@ class Player {
 
 			const score = this.getScoreFromScoreString(data.score);
 
-			if (isNaN(score)) {
+			// weird readings... wait one more frame
+			if (isNaN(score) || score < this.score || lines < this.lines) {
 				return;
 			}
 

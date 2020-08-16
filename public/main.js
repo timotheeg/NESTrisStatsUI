@@ -267,6 +267,8 @@ function onFrame(event, debug) {
 			transformed.score
 			&& !isNaN(transformed.lines)
 			&& !isNaN(transformed.level)
+			&& diff.score >= 0
+			&& diff.lines >= 0
 		) {
 			pending_line = false;
 
