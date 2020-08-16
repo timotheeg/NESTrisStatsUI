@@ -526,6 +526,7 @@ class TetrisOCR extends EventTarget {
 		// we will read 3 judiciously positionned pixels per block
 		const pix_refs = [
 			[2, 4],
+			[3, 3],
 			[4, 4],
 			[4, 2]
 		];

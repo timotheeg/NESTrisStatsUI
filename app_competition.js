@@ -88,4 +88,23 @@ server_p1.on('frame', data => RPCToViewers('frame', 1, data));
 server_p2.on('frame', data => RPCToViewers('frame', 2, data));
 
 
+// Adding a temporary producing web socket server for player 1
+// Web producer server
+
+const web_producer_wss = new WebSocket.Server({ port: 3336 });
+
+web_producer_wss.on('connection', function connection(ws) {
+	console.log('Web producer connected');
+
+	ws.on('error', () => {});
+	ws.on('close', () => {
+		console.log('Web producer disconnected');
+	});
+	ws.on('message', message => {
+		RPCToViewers('frame', 1, JSON.parse(message));
+	});
+});
+
+
+
 module.exports = ViewAPI;

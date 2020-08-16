@@ -24,7 +24,7 @@ class Connection {
 		setTimeout(this.connect, 25);
 	}
 
-	clearSocket() {
+	_clearSocket() {
 		try {
 			this.socket.removeEventListener('error', this._handleError);
 			this.socket.removeEventListener('close', this._handleClose);
@@ -37,7 +37,7 @@ class Connection {
 
 	connect() {
 		if (this.socket) {
-			this.clearSocket();
+			this._clearSocket();
 		}
 
 		this.socket = new WebSocket(`ws://${this.host}:${this.port}`);
@@ -45,6 +45,10 @@ class Connection {
 		this.socket.addEventListener('error', this._handleError);
 		this.socket.addEventListener('close', this._handleClose);
 		this.socket.addEventListener('message', this._handleMessage);
+	}
+
+	close() {
+		this._clearSocket();
 	}
 
 	send(data) {

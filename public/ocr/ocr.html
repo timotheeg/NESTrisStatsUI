@@ -14,10 +14,14 @@ b {
 </head>
 
 <body>
-<div id="selector">
+<div id="inputs">
 	<select id="device">
 		<option value="0">Select the desired video device.</option>
 	</select>
+	Target Host
+	<input type="text" id="conn_host" value="localhost"></input>
+	port
+	<input type="number" id="conn_port" value="3337"></input>
 </div>
 
 <video id="device_video" playsinline controls="false"></video>
@@ -59,15 +63,33 @@ const config = {
 
 const
 	device_selector = document.querySelector('#device'),
+	conn_host       = document.querySelector('#conn_host'),
+	conn_port       = document.querySelector('#conn_port'),
 	video           = document.querySelector('#device_video'),
 	frame_data      = document.querySelector('#frame_data'),
 	perf_data       = document.querySelector('#perf_data')
 ;
 
 
+let connection;
+
 device_selector.addEventListener('change', evt => {
 	playVideoFromDevice(device_selector.value);
 });
+
+function connect() {
+	if (connection) {
+		connection.close();
+	}
+
+	connection = new Connection(
+		conn_port.value,
+		conn_host.value
+	);
+}
+
+conn_host.addEventListener('change', connect);
+conn_port.addEventListener('change', connect);
 
 // Updates the select element with the provided set of cameras
 function updateDeviceList(devices) {
@@ -103,6 +125,8 @@ navigator.mediaDevices.addEventListener('devicechange', resetDevices);
 
 
 async function playVideoFromDevice(device_id) {
+	capture_process = clearTimeout(capture_process);
+
     try {
         const constraints = {
         	audio: false,
@@ -132,7 +156,8 @@ async function playVideoFromDevice(device_id) {
     catch(error) {
         console.error('Error opening video camera.', error);
         video.pause();
-        capture_process = clearTimeout(capture_process); // window.cancelAnimationFrame(capture_process);
+        capture_process = clearTimeout(capture_process);
+         // window.cancelAnimationFrame(capture_process);
     }
 }
 
@@ -266,17 +291,15 @@ function showParts() {
 	}
 }
 
-let connection, tetris_ocr;
+let tetris_ocr;
 
 const IN_GAME = {};
 const IN_MENU = {};
 
 (async function init() {
-	connection = new Connection(3337);
+	connect();
 
 	const templates = await loadDigitTemplates();
-
-	showTemplates(templates);
 
 	tetris_ocr = new TetrisOCR(templates, config);
 
@@ -315,19 +338,21 @@ const IN_MENU = {};
 		delete data.color1;
 		delete data.color2;
 
-		showParts();
+		data.ctime = Date.now();
 
+		// showParts();
+		// showTemplates(templates);
 		connection.send(data);
 	}
 
-	/*
+	/**/
 	await playVideoFromDevice()
 	resetDevices();
 	return;
 	/**/
 
 	const fake_stream = {
-		asset: './full.png',
+		asset: './full2.png',
 		addEventListener: function() {},
 		getVideoTracks() {
 			return [{
