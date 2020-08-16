@@ -202,7 +202,7 @@ function onFrame(event, debug) {
 
 		line_animation_remaining_frames = 0;
 
-		pending_piece = pending_line = true;
+		pending_piece = true;
 	}
 
 	if (!game.over) {
@@ -268,7 +268,7 @@ function onFrame(event, debug) {
 			&& !isNaN(transformed.lines)
 			&& !isNaN(transformed.level)
 			&& diff.score >= 0
-			&& diff.lines >= 0
+			&& diff.cleared_lines >= 0
 		) {
 			pending_line = false;
 

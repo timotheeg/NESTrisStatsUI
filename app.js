@@ -1,5 +1,6 @@
 'use strict'
 
+const fs = require('fs');
 const net = require('net');
 const path = require('path');
 const AutoLoad = require('fastify-autoload');
@@ -125,14 +126,22 @@ server.on('frame', data => {
 // Web producer server
 const web_producer_wss = new WebSocket.Server({ port: 3337 });
 
-web_producer_wss.on('connection', function connection(ws) {
+const noop = function() {};
 
+web_producer_wss.on('connection', function connection(ws) {
   console.log('Web producer connected');
 
+  const frame_log_fd = fs.openSync('./public/sample_frames/last_session.js', 'w');
+
+  fs.writeSync(frame_log_fd, 'var frames = [');
+
   ws.on('error', () => {});
-  ws.on('close', () => {});
+  ws.on('close', () => {
+    fs.write(frame_log_fd, `];`, noop);
+  });
   ws.on('message', message => {
-    console.log(message);
+    // console.log(message);
+    fs.write(frame_log_fd, `${message},`, noop);
     ClientConnectionAPI.frame(JSON.parse(message));
   });
 });
