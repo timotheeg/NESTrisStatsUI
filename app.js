@@ -133,7 +133,7 @@ web_producer_wss.on('connection', function connection(ws) {
 
   const frame_log_fd = fs.openSync('./public/sample_frames/last_session.js', 'w');
 
-  fs.writeSync(frame_log_fd, 'var frames = [');
+  fs.writeSync(frame_log_fd, 'var frames = [\n');
 
   ws.on('error', () => {});
   ws.on('close', () => {
@@ -141,7 +141,7 @@ web_producer_wss.on('connection', function connection(ws) {
   });
   ws.on('message', message => {
     // console.log(message);
-    fs.write(frame_log_fd, `${message},`, noop);
+    fs.write(frame_log_fd, `${message},\n`, noop);
     ClientConnectionAPI.frame(JSON.parse(message));
   });
 });
