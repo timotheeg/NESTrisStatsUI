@@ -26,10 +26,10 @@ b {
 
 <video id="device_video" playsinline controls="false"></video>
 
-<div id="capture"></div>
-<div id="templates"></div>
 <div id="frame_data"></div>
 <div id="perf_data"></div>
+<div id="capture"></div>
+<div id="templates"></div>
 
 <script src="./image_tools.js"></script>
 <script src="./connection.js"></script>
@@ -236,7 +236,7 @@ function showTemplates(templates) {
 	}
 }
 
-function showParts() {
+async function showParts() {
 	const capture = document.querySelector('#capture');
 
 	const half_di_height = Math.floor(config.deinterlaced_img.height / 2);
@@ -265,27 +265,43 @@ function showParts() {
 	const x_offset = config.capture_area.x;
 
 	for (const [name, task] of Object.entries(config.tasks)) {
-		if (!task.crop_canvas) {
+		if (!task.crop_canvas_ctx) {
+			// create canvas at 2x resolution to make it easier to see the areas
 			const holder = document.createElement('div');
 
 			const crop_canvas = document.createElement('canvas');
-			crop_canvas.width = task.crop_img.width;
-			crop_canvas.height = task.crop_img.height;
+			crop_canvas.width = task.crop_img.width * 2;
+			crop_canvas.height = task.crop_img.height * 2;
 			holder.appendChild(crop_canvas);
 
 			const scale_canvas = document.createElement('canvas');
-			scale_canvas.width = task.scale_img.width;
-			scale_canvas.height = task.scale_img.height;
+			scale_canvas.width = task.scale_img.width * 2;
+			scale_canvas.height = task.scale_img.height * 2;
 			holder.appendChild(scale_canvas);
 
 			capture.appendChild(holder);
 
-			task.crop_canvas = crop_canvas;
-			task.scale_canvas = scale_canvas;
+			task.crop_canvas_ctx = crop_canvas.getContext('2d');
+			task.scale_canvas_ctx = scale_canvas.getContext('2d');
+
+			task.crop_canvas_ctx.imageSmoothingEnabled = false;
+			task.scale_canvas_ctx.imageSmoothingEnabled = false;
 		}
 
-		task.crop_canvas.getContext('2d').putImageData(task.crop_img, 0, 0);
-		task.scale_canvas.getContext('2d').putImageData(task.scale_img, 0, 0);
+		const cropped = await createImageBitmap(task.crop_img, 0, 0, task.crop_img.width, task.crop_img.height, {
+			resizeWidth: task.crop_img.width * 2,
+			resizeHeight: task.crop_img.height * 2,
+			resizeQuality: 'pixelated'
+		});
+
+		const scaled = await createImageBitmap(task.scale_img, 0, 0, task.scale_img.width, task.scale_img.height, {
+			resizeWidth: task.scale_img.width * 2,
+			resizeHeight: task.scale_img.height * 2,
+			resizeQuality: 'pixelated'
+		});
+
+		task.crop_canvas_ctx.drawImage(cropped, 0, 0);
+		task.scale_canvas_ctx.drawImage(scaled, 0, 0);
 
 		const [x, y, w, h] = task.crop;
 
