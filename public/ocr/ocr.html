@@ -1,0 +1,376 @@
+<html>
+
+<head>
+<style type="text/css">
+b {
+	display: none;
+}
+
+#capture canvas {
+	margin: 0.5em;
+}
+
+</style>
+</head>
+
+<body>
+<div id="inputs">
+	<select id="device">
+		<option value="0">Select the desired video device.</option>
+	</select>
+	Target Host
+	<input type="text" id="conn_host" value="localhost"></input>
+	port
+	<input type="number" id="conn_port" value="3337"></input>
+</div>
+
+<video id="device_video" playsinline controls="false"></video>
+
+<div id="capture"></div>
+<div id="templates"></div>
+<div id="frame_data"></div>
+<div id="perf_data"></div>
+
+<script src="./image_tools.js"></script>
+<script src="./connection.js"></script>
+<script src="./templates.js"></script>
+<script src="./TetrisOCR.js"></script>
+
+<script>
+// NTSC NES resolution: 256x224 -> 512x448
+
+const config = {
+	deinterlace: true,
+
+	palette: [[[65, 40, 228], [86, 168, 254]], [[3, 127, 1], [125, 199, 6]], [[139, 14, 179], [211, 96, 255]], [[64, 41, 225], [85, 210, 45]], [[154, 19, 87], [64, 205, 111]], [[65, 206, 112], [134, 131, 255]], [[146, 38, 2], [90, 91, 87]], [[97, 18, 215], [82, 0, 20]], [[64, 40, 227], [151, 43, 4]], [[147, 39, 3], [211, 137, 32]]],
+
+	tasks: {
+		score:   { crop: [526, 62, 118, 7], pattern: "DDDDDD", red: false },
+		level:   { crop: [566, 166, 38, 7], pattern: "TD", red: false },
+		lines:   { crop: [426, 22, 57, 7], pattern: "TDD", red: false },
+		field:   { crop: [284, 46, 201, 160], resize: [80, 160], use_canva: true },
+		preview: { crop: [526, 118, 80, 15], resize: [31, 15] },
+		// color1:  { crop: [139, 112, 11, 5], resize: [5, 5] },
+		// color2:  { crop: [139, 129, 11, 5], resize: [5, 5] },
+		// stats: { crop: [164, 93, 57, 105], red: true },
+		/**/
+		instant_das:   { crop: [143, 38, 38, 7], pattern: "BD", red: false },
+		cur_piece_das: { crop: [183, 54, 38, 7], pattern: "BD", red: false },
+		cur_piece:     { crop: [83, 50, 59, 12], resize: [23, 12] }
+		/**/
+	}
+};
+
+const
+	device_selector = document.querySelector('#device'),
+	conn_host       = document.querySelector('#conn_host'),
+	conn_port       = document.querySelector('#conn_port'),
+	video           = document.querySelector('#device_video'),
+	frame_data      = document.querySelector('#frame_data'),
+	perf_data       = document.querySelector('#perf_data')
+;
+
+
+let connection;
+
+device_selector.addEventListener('change', evt => {
+	playVideoFromDevice(device_selector.value);
+});
+
+function connect() {
+	if (connection) {
+		connection.close();
+	}
+
+	connection = new Connection(
+		conn_port.value,
+		conn_host.value
+	);
+}
+
+conn_host.addEventListener('change', connect);
+conn_port.addEventListener('change', connect);
+
+// Updates the select element with the provided set of cameras
+function updateDeviceList(devices) {
+    device_selector.innerHTML = '';
+
+    const heading = [{
+    	label: "Select your video device",
+    	deviceId: "0"
+    }];
+
+    const entries = heading.concat(devices);
+
+    entries.forEach(camera => {
+        const cameraOption = document.createElement('option');
+        cameraOption.text = camera.label;
+        cameraOption.value = camera.deviceId;
+
+        device_selector.appendChild(cameraOption)
+    });
+}
+
+async function getConnectedDevices(type) {
+    return (await navigator.mediaDevices.enumerateDevices())
+		.filter(device => device.kind === type && device.deviceId)
+}
+
+async function resetDevices() {
+	const devicesList = await getConnectedDevices('videoinput');
+	updateDeviceList(devicesList);
+}
+
+navigator.mediaDevices.addEventListener('devicechange', resetDevices);
+
+
+async function playVideoFromDevice(device_id) {
+	capture_process = clearTimeout(capture_process);
+
+    try {
+        const constraints = {
+        	audio: false,
+        	video: {
+        		width: { ideal: 4096 },
+        		height: { ideal: 2160 }
+        	}
+        };
+
+        if (device_id) {
+        	constraints.video.deviceId = { exact: device_id };
+        }
+
+        const stream = await navigator.mediaDevices.getUserMedia(constraints);
+
+        // we only prompt for permission withthe first call
+        if (device_id === undefined) return;
+
+        // when an actual device id is supplied, we start everything
+        video.srcObject = stream;
+        video.play();
+
+		stream.addEventListener('inactive', console.log('stream is inactive'));
+
+        startCapture(stream);
+    }
+    catch(error) {
+        console.error('Error opening video camera.', error);
+        video.pause();
+        capture_process = clearTimeout(capture_process);
+         // window.cancelAnimationFrame(capture_process);
+    }
+}
+
+let capture_process, blob;
+let frame_count = 0;
+let frame_ms = 1000/30;
+let start_time_ms;
+
+async function startCapture(stream) {
+	const settings = stream.getVideoTracks()[0].getSettings();
+
+	console.log(`Video settings: ${settings.width}x${settings.height}@${settings.frameRate.toFixed(1)}fps`);
+
+	if (stream.asset) {
+		const response = await fetch(stream.asset);
+		blob = await response.blob();
+	}
+
+	frame_ms = 1000 / settings.frameRate;
+	start_time_ms = Date.now();
+	last_frame_time = start_time_ms;
+	captureFrame();
+}
+
+async function captureFrame() {
+	++frame_count;
+	const now = Date.now();
+
+	perf_data.textContent = now - last_frame_time;
+	last_frame_time = now;
+
+	try {
+		let bitmap;
+
+		if (blob) {
+			bitmap = await createImageBitmap(blob);
+		}
+		else {
+			bitmap = await createImageBitmap(video,
+				0, 0, video.videoWidth, video.videoHeight
+			);
+		}
+
+		tetris_ocr.processFrame(bitmap);
+	}
+	catch(err) {
+		console.error(err);
+	}
+
+	const next_frame_time = start_time_ms + frame_ms * frame_count;
+
+	capture_process = setTimeout(captureFrame, Math.ceil(next_frame_time - Date.now()));
+}
+
+function showTemplates(templates) {
+	const tpl = document.querySelector('#templates');
+
+	for (let template of templates) {
+		const canvas = document.createElement('canvas');
+		canvas.width = 14;
+		canvas.height = 14;
+		const ctx = canvas.getContext('2d');
+		const img = new ImageData(14, 14);
+		for (let p_idx=template.length; p_idx--; ) {
+			const luma = template[p_idx];
+			const offset_idx = p_idx << 2;
+			img.data[offset_idx] = luma;
+			img.data[offset_idx + 1] = luma;
+			img.data[offset_idx + 2] = luma;
+			img.data[offset_idx + 3] = 255;
+		}
+		ctx.putImageData(img, 0, 0);
+		tpl.appendChild(canvas);
+	}
+}
+
+function showParts() {
+	const capture = document.querySelector('#capture');
+
+	const half_di_height = Math.floor(config.deinterlaced_img.height / 2);
+
+	if (!config.di_canvas) {
+		const holder = document.createElement('div');
+		const di_canvas = document.createElement('canvas');
+		di_canvas.width = config.deinterlaced_img.width;
+		di_canvas.height = half_di_height;
+		holder.appendChild(di_canvas);
+		capture.appendChild(holder);
+
+		config.di_canvas = di_canvas;
+	}
+
+	const di_ctx = config.di_canvas.getContext('2d');
+
+	di_ctx.putImageData(config.deinterlaced_img,
+		0, 0,
+		0, 0,
+		config.deinterlaced_img.width, half_di_height
+	);
+
+	di_ctx.fillStyle = '#FFA50080';
+
+	const x_offset = config.capture_area.x;
+
+	for (const [name, task] of Object.entries(config.tasks)) {
+		if (!task.crop_canvas) {
+			const holder = document.createElement('div');
+
+			const crop_canvas = document.createElement('canvas');
+			crop_canvas.width = task.crop_img.width;
+			crop_canvas.height = task.crop_img.height;
+			holder.appendChild(crop_canvas);
+
+			const scale_canvas = document.createElement('canvas');
+			scale_canvas.width = task.scale_img.width;
+			scale_canvas.height = task.scale_img.height;
+			holder.appendChild(scale_canvas);
+
+			capture.appendChild(holder);
+
+			task.crop_canvas = crop_canvas;
+			task.scale_canvas = scale_canvas;
+		}
+
+		task.crop_canvas.getContext('2d').putImageData(task.crop_img, 0, 0);
+		task.scale_canvas.getContext('2d').putImageData(task.scale_img, 0, 0);
+
+		const [x, y, w, h] = task.crop;
+
+		di_ctx.fillRect(x - x_offset, y, w, h);
+	}
+}
+
+let tetris_ocr;
+
+const IN_GAME = {};
+const IN_MENU = {};
+
+(async function init() {
+	connect();
+
+	const templates = await loadDigitTemplates();
+
+	tetris_ocr = new TetrisOCR(templates, config);
+
+	let game_state = IN_GAME;
+	let gameid = 1;
+
+	tetris_ocr.onMessage = function(data) {
+		// make frame NESTrisOCR compatible
+		if (data.score !== null) data.score = `${data.score}`.padStart(6, '0');
+		if (data.level !== null) data.level = `${data.level}`.padStart(2, '0');
+		if (data.lines !== null) data.lines = `${data.lines}`.padStart(3, '0');
+
+		data.field = data.field.join('');
+
+		// replicate NESTrisOCR gameid logic
+		if (game_state === IN_GAME) {
+			if (data.lines === null) {
+				game_state = IN_MENU;
+			}
+		}
+		else {
+			if (data.score && data.lines) {
+				game_state = IN_GAME;
+
+				if (data.score === '000000' && (data.lines === '000' || data.lines === "025")) {
+					gameid++;
+				}
+			}
+		}
+
+		data.gameid = gameid;
+
+		frame_data.textContent = JSON.stringify(data);
+
+		delete data.perf;
+		delete data.color1;
+		delete data.color2;
+
+		data.ctime = Date.now();
+
+		showParts();
+		// showTemplates(templates);
+		connection.send(data);
+	}
+
+	/**/
+	await playVideoFromDevice()
+	resetDevices();
+	return;
+	/**/
+
+	const fake_stream = {
+		asset: './full2.png',
+		addEventListener: function() {},
+		getVideoTracks() {
+			return [{
+				getSettings() {
+					return {
+						width: 720,
+						height: 480,
+						frameRate: 4
+					}
+				}
+			}]
+		}
+	};
+
+	startCapture(fake_stream);
+})();
+
+
+</script>
+</body>
+</html>

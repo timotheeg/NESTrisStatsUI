@@ -1,0 +1,80 @@
+<html>
+<head>
+</head>
+<body>
+Canvas
+<br />
+<canvas id="cv" width="500" height="500"></canvas>
+<br />
+<br />
+<div id="results"></div>
+
+<script>
+function clear(ctx) {
+	ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+}
+
+const results = document.querySelector('#results');
+
+const cv = document.querySelector('#cv');
+const cv_ctx = cv.getContext('2d');
+
+const ocv = new OffscreenCanvas(500, 500);
+const ocv_ctx = ocv.getContext('2d');
+const img = new Image()
+
+img.onload = startTest;
+img.src = './google_chrome_logo-500x500.png';
+
+function startTest() {
+	const ITERATIONS = 1000;
+	const res_cv = [0, 0]
+	const res_ocv = [0, 0];
+
+	for (let iterations = ITERATIONS; iterations--; ) {
+		const [cur_cv, cur_ocv] = run();
+		res_cv[0] += cur_cv[0];
+		res_cv[1] += cur_cv[1];
+		res_ocv[0] += cur_ocv[0];
+		res_ocv[1] += cur_ocv[1];
+	}
+
+	results.textContent = JSON.stringify({
+		cv: res_cv.map(v => (v / ITERATIONS).toFixed(3)),
+		ocv: res_ocv.map(v => (v / ITERATIONS).toFixed(3)),
+	});
+}
+
+function run() {
+	clear(cv_ctx);
+	clear(ocv_ctx);
+
+	const ocv = draw_and_read('ocv', img, ocv_ctx);
+	const cv = draw_and_read('cv', img, cv_ctx);
+
+	return [ cv, ocv ];
+}
+
+function draw_and_read(label, img, ctx) {
+	performance.mark('start');
+
+	ctx.drawImage(img, 0, 0);
+	performance.mark('draw_end');
+
+	ctx.getImageData(0, 0, 500, 500);
+	performance.mark('read_end');
+
+	const res = [
+		performance.measure('draw', 'start', 'draw_end').duration,
+		performance.measure('read', 'draw_end', 'read_end').duration
+	];
+
+	performance.clearMarks();
+	performance.clearMeasures();
+
+	return res;
+}
+
+</script>
+</body>
+</html>

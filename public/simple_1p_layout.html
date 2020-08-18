@@ -101,6 +101,34 @@ html {
 	right: var(--offset)
 }
 
+.drought {
+	width: 49px;
+	top: 12px;
+	height: 40px;
+	opacity: 0;
+	color: red;
+	display: none;
+
+	--pos: 304px;
+	right: var(--pos)
+}
+
+.drought .header {
+	padding-bottom: 2px;
+}
+
+.drought.active {
+	display: block;
+	animation: fadeIn ease 1s;
+	animation-fill-mode: forwards;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0 }
+  to { opacity: 1 }
+}
+
+
 </style>
 </head>
 <body>
@@ -155,6 +183,11 @@ html {
 
 <div class="box running_trt"></div>
 
+<div class="box drought">
+	<div class="header">DRT</div>
+	<div class="value">99</div>
+</div>
+
 </div><!-- End Playing Fields -->
 </div><!-- End Stream BG -->
 
@@ -176,7 +209,8 @@ const player = new Player(
 		eff:         document.querySelector(`.efficiency .content`),
 		running_trt: document.querySelector(`.running_trt`),
 		preview:     document.querySelector(`.next_piece`),
-		field:       document.querySelector(`.board`)
+		field:       document.querySelector(`.board`),
+		drought:     document.querySelector(`.drought .value`),
 	},
 	{
 		format_score: 0,
@@ -184,13 +218,30 @@ const player = new Player(
 	}
 );
 
+player.drought_box = document.querySelector(`.drought`);
+
+player.onDroughtStart = () => {
+	console.log("onDroughtStart")
+	player.drought_box.classList.add('active');
+}
+
+player.onDroughtEnd = (count) => {
+	console.log("onDroughtEnd", count)
+	player.drought_box.classList.remove('active');
+}
+
+player.onGameStart = () => {
+	player.drought_box.classList.remove('active');
+}
+
+
 const API = {
-	frame(player_num, data) {
+	frame(data) {
 		player.setFrame(data);
 	}
 }
 
-const socket = new WebSocket('ws://127.0.0.1:4003');
+const socket = new WebSocket('ws://127.0.0.1:3339');
 
 socket.addEventListener('message', (frame => {
 	try{

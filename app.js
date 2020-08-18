@@ -1,5 +1,6 @@
 'use strict'
 
+const fs = require('fs');
 const net = require('net');
 const path = require('path');
 const AutoLoad = require('fastify-autoload');
@@ -48,17 +49,17 @@ const connections = new Set();
 
 wss.on('connection', function connection(ws) {
 
-  console.log('connection on 3339');
+  console.log('View connected');
 
   connections.add(ws);
 
+  ws.on('error', () => {});
   ws.on('close', () => {
     connections.delete(ws);
   });
 
   ws.on('message', console.log);
 });
-
 
 
 const ClientConnectionAPI = new Proxy({}, {
@@ -114,6 +115,7 @@ Bot.on('message', chatter => {
 
 
 
+// NEStrisOCR Server
 const server = new NEStrisServer(3338, 'default');
 
 server.on('frame', data => {
@@ -121,6 +123,28 @@ server.on('frame', data => {
   ClientConnectionAPI.frame(data);
 });
 
+// Web producer server
+const web_producer_wss = new WebSocket.Server({ port: 3337 });
+
+const noop = function() {};
+
+web_producer_wss.on('connection', function connection(ws) {
+  console.log('Web producer connected');
+
+  const frame_log_fd = fs.openSync('./public/sample_frames/last_session.js', 'w');
+
+  fs.writeSync(frame_log_fd, 'var frames = [\n');
+
+  ws.on('error', () => {});
+  ws.on('close', () => {
+    fs.write(frame_log_fd, `];`, noop);
+  });
+  ws.on('message', message => {
+    // console.log(message);
+    fs.write(frame_log_fd, `${message},\n`, noop);
+    ClientConnectionAPI.frame(JSON.parse(message));
+  });
+});
 
 
 // Listen for player change to force score update immediately
@@ -128,5 +152,3 @@ server.on('frame', data => {
 TetrisDAO.onScoreUpdate = function(data) {
   ClientConnectionAPI.player_data(data);
 }
-
-setInterval(() => console.log('heartbeat'), 2000);

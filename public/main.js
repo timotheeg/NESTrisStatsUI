@@ -58,6 +58,7 @@ function clearSocket() {
 		chat_and_pbs_socket.removeEventListener('error',  handleWSError);
 		chat_and_pbs_socket.removeEventListener('close',  handleWSClose);
 		chat_and_pbs_socket.close();
+		chat_and_pbs_socket = null;
 	}
 	catch(e) {}
 }
@@ -201,7 +202,7 @@ function onFrame(event, debug) {
 
 		line_animation_remaining_frames = 0;
 
-		pending_piece = pending_line = true;
+		pending_piece = true;
 	}
 
 	if (!game.over) {
@@ -248,9 +249,9 @@ function onFrame(event, debug) {
 	// check if a change to cur_piece_stats
 	if (pending_piece) {
 		if (transformed.cur_piece && transformed.next_piece && !isNaN(transformed.cur_piece_das) && transformed.cur_piece_das <= 16) {
+			pending_piece = false;
 			game.onPiece(transformed);
 			renderPiece(transformed);
-			pending_piece = false;
 
 			Object.assign(last_valid_state, {
 				cur_piece: transformed.cur_piece,
@@ -266,6 +267,8 @@ function onFrame(event, debug) {
 			transformed.score
 			&& !isNaN(transformed.lines)
 			&& !isNaN(transformed.level)
+			&& diff.score >= 0
+			&& diff.cleared_lines >= 0
 		) {
 			pending_line = false;
 

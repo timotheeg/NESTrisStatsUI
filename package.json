@@ -10,29 +10,36 @@
     "test": "tap test/**/*.test.js",
     "start": "fastify start -l info app.js",
     "dev": "fastify start -l info -P app.js",
-    "competition": "open ./public/competition_admin.html & node app_competition.js"
+    "competition": "open ./public/competition_admin.html & node app_competition.js",
+    "asbuild:untouched": "asc assembly/index.ts --target debug --runtime full",
+    "asbuild:optimized": "asc assembly/index.ts --target release --runtime full -O3",
+    "asbuild": "npm run asbuild:untouched && npm run asbuild:optimized && cp -a build public/ocr",
+    "serve": "cd public && static-server -p 3000"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@google-cloud/text-to-speech": "^1.4.1",
-    "better-sqlite3": "^5.4.1",
+    "@assemblyscript/loader": "^0.14.8",
+    "@google-cloud/text-to-speech": "^3.1.0",
+    "better-sqlite3": "^7.1.0",
     "bluebird": "^3.7.2",
     "bufferutil": "^4.0.1",
-    "fastify": "^2.0.0",
-    "fastify-autoload": "^1.0.0",
-    "fastify-cli": "^1.1.0",
-    "fastify-formbody": "^3.1.0",
-    "fastify-plugin": "^1.5.0",
-    "fastify-static": "^2.5.0",
-    "lodash": "^4.17.15",
+    "fastify": "^3.2.0",
+    "fastify-autoload": "^3.0.7",
+    "fastify-cli": "^2.1.0",
+    "fastify-formbody": "^4.0.3",
+    "fastify-plugin": "^2.3.0",
+    "fastify-static": "^3.2.0",
+    "lodash": "^4.17.19",
     "play-sound": "^1.1.3",
     "twitch-bot": "^1.3.5",
     "utf-8-validate": "^5.0.2",
-    "ws": "^7.3.0"
+    "ws": "^7.3.1"
   },
   "devDependencies": {
-    "tap": "^12.5.3"
+    "assemblyscript": "^0.14.8",
+    "static-server": "^2.2.1",
+    "tap": "^14.10.8"
   }
 }
