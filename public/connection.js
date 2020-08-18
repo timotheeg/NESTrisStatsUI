@@ -16,7 +16,7 @@ class Connection {
 	_handleError() {}
 
 	_handleMessage(event) {
-		this.onMessage(event.data);
+		this.onMessage(JSON.parse(event.data));
 	}
 
 	_handleClose() {
