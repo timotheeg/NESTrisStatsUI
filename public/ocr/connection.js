@@ -52,6 +52,10 @@ class Connection {
 	}
 
 	send(data) {
+		if (!this.socket || this.socket.readyState !== 1) { // 1 === OPEN
+			return;
+		}
+
 		try {
 			this.socket.send(JSON.stringify(data));
 		}
