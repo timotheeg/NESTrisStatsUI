@@ -4,12 +4,19 @@ const PATTERN_MAX_INDEXES = {
 	'B': 3
 };
 
-function snakeToCamel(snake) {
-	return (snake
-		.split('_')
-		.map(token => `${token[0].toUpperCase()}${token.slice(1)}`)
-		.join(''));
-}
+const PERF_METHODS = [
+	'deinterlace',
+	'scanScore',
+	'scanLevel',
+	'scanLines',
+	'scanColor1',
+	'scanColor2',
+	'scanPreview',
+	'scanField',
+	'scanInstantDas',
+	'scanCurPieceDas',
+	'scanCurPiece',
+];
 
 // timing decorator
 function timingDecorator(name, func) { // func must be prebound
@@ -37,26 +44,12 @@ class TetrisOCR extends EventTarget {
 		this.block_img = new ImageData(7, 7);
 		this.small_block_img = new ImageData(5, 5);
 
-		// decorate relevant functions to capture timings
-		this.deinterlace = timingDecorator('deinterlace', this.deinterlace.bind(this));
-
-		[
-			'score',
-			'level',
-			'lines',
-			'color1',
-			'color2',
-			'preview',
-			'field',
-			'instant_das',
-			'cur_piece_das',
-			'cur_piece',
-		]
-		.forEach(name => {
-			const camel_name = `scan${snakeToCamel(name)}`;
-			const method = this[camel_name].bind(this);
-			this[camel_name] = timingDecorator(name, method);
-		});
+		// decorate relevant methods to capture timings
+		PERF_METHODS
+			.forEach(name => {
+				const method = this[name].bind(this);
+				this[name] = timingDecorator(name, method);
+			});
 	}
 
 	processConfig() {
