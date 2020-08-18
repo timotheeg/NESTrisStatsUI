@@ -40,6 +40,8 @@ b {
 // NTSC NES resolution: 256x224 -> 512x448
 
 const config = {
+	show_parts: true,
+
 	deinterlace: true,
 
 	palette: [[[65, 40, 228], [86, 168, 254]], [[3, 127, 1], [125, 199, 6]], [[139, 14, 179], [211, 96, 255]], [[64, 41, 225], [85, 210, 45]], [[154, 19, 87], [64, 205, 111]], [[65, 206, 112], [134, 131, 255]], [[146, 38, 2], [90, 91, 87]], [[97, 18, 215], [82, 0, 20]], [[64, 40, 227], [151, 43, 4]], [[147, 39, 3], [211, 137, 32]]],
@@ -301,11 +303,17 @@ const IN_MENU = {};
 
 	const templates = await loadDigitTemplates();
 
+	if (config.show_parts) {
+		showTemplates(templates);
+	}
+
+
 	tetris_ocr = new TetrisOCR(templates, config);
 
 	let game_state = IN_GAME;
 	let gameid = 1;
 
+	// TODO: better event system and name for frame data events
 	tetris_ocr.onMessage = function(data) {
 		// make frame NESTrisOCR compatible
 		if (data.score !== null) data.score = `${data.score}`.padStart(6, '0');
@@ -340,8 +348,10 @@ const IN_MENU = {};
 
 		data.ctime = Date.now();
 
-		showParts();
-		// showTemplates(templates);
+		if (config.show_parts) {
+			showParts();
+		}
+
 		connection.send(data);
 	}
 
