@@ -4,37 +4,7 @@ const dom = {
 	p1_name:  document.querySelector('#bestof'),
 };
 
-let socket;
-
-function handleWSOpen() {
-	console.log('connected');
-}
-function handleWSError() {}
-function handleWSClose() {
-	clearSocket();
-	setTimeout(connect, 25);
-}
-
-function clearSocket() {
-	try {
-		socket.removeEventListener('open',  handleWSOpen);
-		socket.removeEventListener('error',  handleWSError);
-		socket.removeEventListener('close',  handleWSClose);
-		socket.close();
-	}
-	catch(e) {}
-}
-
-function connect() {
-	if (socket) {
-		clearSocket()
-	}
-
-	socket = new WebSocket('ws://localhost:4000');
-	socket.addEventListener('open',  handleWSOpen);
-	socket.addEventListener('error',  handleWSError);
-	socket.addEventListener('close',  handleWSClose);
-}
+const connection = new Connection(4000);
 
 const state = {
 	maxBestof: 13,
@@ -46,31 +16,24 @@ const state = {
 	},
 };
 
-function send(...args) {
-	try {
-		socket.send(JSON.stringify(args));
-	}
-	catch(e) {}
-}
-
 const remoteAPI = {
 	setBestOf: function(n) {
-		send('setBestOf', n);
+		connection.send('setBestOf', n);
 	},
 	setVictories: function(player_num, num_wins) {
-		send('setVictories', player_num, num_wins);
+		connection.send('setVictories', player_num, num_wins);
 	},
 	setName: function(player_num, name) {
-		send('setName', player_num, name);
+		connection.send('setName', player_num, name);
 	},
 	setAvatar: function(player_num, url) {
-		send('setAvatar', player_num, url);
+		connection.send('setAvatar', player_num, url);
 	},
 	resetVictories: function() {
-		send('resetVictories');
+		connection.send('resetVictories');
 	},
 	setLogo: function(url) {
-		send('setLogo', url);
+		connection.send('setLogo', url);
 	}
 };
 
@@ -166,8 +129,6 @@ function reset() {
 }
 
 function bootstrap() {
-	connect();
-
 	setBestOfOptions(state.maxBestof, state.bestof);
 	setBestOf(state.bestof);
 

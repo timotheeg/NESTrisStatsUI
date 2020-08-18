@@ -197,6 +197,7 @@ html {
 <script src="sample_frames_11.js"></script>
 <script src="constants.js"></script>
 <script src="utils.js"></script>
+<script src="connection.js"></script>
 <script src="bg.js"></script>
 <script src="Player.js"></script>
 <script >
@@ -241,18 +242,18 @@ const API = {
 	}
 }
 
-const socket = new WebSocket('ws://127.0.0.1:3339');
+const connection = new Connection(3339);
 
-socket.addEventListener('message', (frame => {
+connection.onMessage = function(frame) {
 	try{
-		const [method, ...args] = JSON.parse(frame.data); // expect array of format [api_method_name, arg1, arg2, ...]
+		const [method, ...args] = frame;
 
 		API[method].apply(API, args);
 	}
 	catch(e) {
 		console.error(e);
 	}
-}));
+};
 
 function onFrame(frame, debug) {
 	API.frame(1, frame, debug);

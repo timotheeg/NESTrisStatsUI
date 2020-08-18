@@ -29,11 +29,12 @@ const API = {
 	frame:       onFrame,
 };
 
-let chat_and_pbs_socket;
+const chat_and_pbs_conn = new Connection(3339);
 
-function handleWSFrame(frame) {
+chat_and_pbs_conn.onMessage = function(frame) {
 	try{
-		const [type, ...args] = JSON.parse(frame.data);
+		const [type, ...args] = frame;
+
 		API[type](...args);
 	}
 	catch(e) {
@@ -41,41 +42,6 @@ function handleWSFrame(frame) {
 		console.error(e);
 	}
 }
-
-function handleWSError(err) {
-	// ignore
-}
-
-function handleWSClose(evt) {
-	// console.log('Socket close');
-	clearSocket();
-	setTimeout(connect, 25); // schedule reconnect
-}
-
-function clearSocket() {
-	try {
-		chat_and_pbs_socket.removeEventListener('message', handleWSFrame);
-		chat_and_pbs_socket.removeEventListener('error',  handleWSError);
-		chat_and_pbs_socket.removeEventListener('close',  handleWSClose);
-		chat_and_pbs_socket.close();
-		chat_and_pbs_socket = null;
-	}
-	catch(e) {}
-}
-
-function connect() {
-	if (chat_and_pbs_socket) {
-		clearSocket();
-	}
-
-	chat_and_pbs_socket = new WebSocket('ws://127.0.0.1:3339');
-
-	chat_and_pbs_socket.addEventListener('message', handleWSFrame);
-	chat_and_pbs_socket.addEventListener('error',  handleWSError);
-	chat_and_pbs_socket.addEventListener('close',  handleWSClose);
-}
-
-connect();
 
 // get High Scores
 getStats();
