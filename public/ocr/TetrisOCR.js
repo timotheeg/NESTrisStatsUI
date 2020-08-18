@@ -159,11 +159,9 @@ class TetrisOCR extends EventTarget {
 		}
 
 		performance.mark('start');
-
-		// load the raw frame
 		this.capture_canvas_ctx.drawImage(frame, 0, 0, frame.width, frame.height);
-
 		performance.mark('draw_end');
+		performance.measure('draw_frame', 'start', 'draw_end');
 
 		const source_img = this.deinterlace();
 
@@ -192,8 +190,6 @@ class TetrisOCR extends EventTarget {
 		}
 
 		performance.mark('end');
-
-		performance.measure('draw_frame', 'start', 'draw_end');
 		performance.measure('total', 'start', 'end');
 
 		const res = {
@@ -523,7 +519,7 @@ class TetrisOCR extends EventTarget {
 		// simple array for now
 		const field = [];
 
-		// we will read 3 judiciously positionned pixels per block
+		// we read 4 judiciously positionned logical pixels per block
 		const pix_refs = [
 			[2, 4],
 			[3, 3],
