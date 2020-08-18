@@ -100,7 +100,7 @@ class TetrisOCR extends EventTarget {
 	}
 
 	getDigit(pixel_data, max_check_index) {
-		const sums = new Uint32Array(max_check_index).fill(0);
+		const sums = new Uint32Array(max_check_index);
 		const size = pixel_data.length >>> 2;
 
 		for (let p_idx = size; p_idx--; ) {
@@ -244,11 +244,10 @@ class TetrisOCR extends EventTarget {
 		return this.ocrDigits(source_img, this.config.tasks.cur_piece_das);
 	}
 
-
 	deinterlace() {
 		const pixels = this.capture_canvas_ctx.getImageData(
 			this.config.capture_area.x, 0,
-			this.config.capture_area.w, this.config.capture_bounds.bottom * 2 // * 2 to account for interlacing
+			this.config.capture_area.w, this.config.capture_bounds.bottom * 2
 		);
 
 		const pixels_per_rows = this.config.capture_area.w * 4;
@@ -280,7 +279,7 @@ class TetrisOCR extends EventTarget {
 		for (let idx=digits.length; idx--; ) {
 			const char = task.pattern[idx];
 
-			crop(task.scale_img, idx * 16, 0, 14, 14, this.config.digit_img)
+			crop(task.scale_img, idx * 16, 0, 14, 14, this.config.digit_img);
 
 			const digit = this.getDigit(this.config.digit_img.data, PATTERN_MAX_INDEXES[char]);
 
