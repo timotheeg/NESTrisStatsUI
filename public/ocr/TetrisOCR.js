@@ -18,6 +18,20 @@ const PERF_METHODS = [
 	'scanCurPiece',
 ];
 
+// Resize based on logical NES pixels (2x for digits)
+const TASK_RESIZE = {
+	score:         [16 * 6 - 2, 14],
+	level:         [16 * 2 - 2, 14],
+	lines:         [16 * 2 - 2, 14],
+	field:         [80, 160],
+	preview:       [31, 15],
+	cur_piece:     [23, 12],
+	instant_das:   [16 * 2 - 2, 14],
+	cur_piece_das: [16 * 2 - 2, 14],
+	color1:        [5, 5],
+	color2:        [5, 5],
+};
+
 // timing decorator
 function timingDecorator(name, func) { // func must be prebound
 	return function(...args) {
@@ -143,7 +157,7 @@ class TetrisOCR extends EventTarget {
 		this.scaled_field_canvas.height = this.config.tasks.field.resize[1];
 
 		this.scaled_field_canvas_ctx = this.scaled_field_canvas.getContext('2d');
-		this.scaled_field_canvas_ctx.imageSmoothingQuality = 'medium';
+		this.scaled_field_canvas_ctx.imageSmoothingEnabled = 'false';
 	}
 
 	async processFrame(frame) {
@@ -484,17 +498,18 @@ class TetrisOCR extends EventTarget {
 			..._colors
 		];
 
-		crop(source_img, x, y, w, h, task.crop_img);
 
 		/*
-		bicubic(task.crop_img, task.scale_img);
+		crop(source_img, x, y, w, h, task.crop_img);
+		bicubic(task.crop_img, task.scale_img);fscanfield
 		const field_img = task.scale_img;
 		/**/
 
 		/**/
+		// crop and scale with canva
 		const resized = await createImageBitmap(
-			task.crop_img,
-			0, 0, w, h,
+			source_img,
+			x, y, w, h,
 			{
 				resizeWidth: task.resize[0],
 				resizeHeight: task.resize[1],
@@ -505,7 +520,7 @@ class TetrisOCR extends EventTarget {
 		this.scaled_field_canvas_ctx.drawImage(resized, 0, 0);
 		const field_img = this.scaled_field_canvas_ctx.getImageData(0, 0, ...task.resize);
 
-		task.scale_img.data.set(field_img.data);
+		// task.scale_img.data.set(field_img.data);
 		/**/
 
 		// simple array for now
