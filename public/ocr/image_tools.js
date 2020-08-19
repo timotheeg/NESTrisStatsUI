@@ -14,6 +14,66 @@ function BicubicInterpolation(x, y, values){
 	return TERP(y, i0, i1, i2, i3);
 }
 
+//
+function getBicubicPixels(srcImg, [dw, dh], destCoords) {
+	const sdata = srcImg.data;
+	const sw = srcImg.width;
+	const sh = srcImg.height;
+	const yscale = dh / sh;
+	const xscale = dw / sw;
+
+	const buffer = new Uint8Array(16);
+
+	// [x, y] are in the destination reference
+	return destCoords.map(([x, y]) => {
+		const ixv = x / xscale;
+		const iyv = y / yscale;
+		const ix0 = Math.floor(ixv);
+		const iy0 = Math.floor(iyv);
+
+		// We have to special-case the pixels along the border and repeat their values if neccessary
+		let repeatY = 0;
+		if(iy0 < 1) repeatY = -1;
+		else if(iy0 > sh - 3) repeatY = iy0 - (sh - 3);
+
+		// We have to special-case the pixels along the border and repeat their values if neccessary
+		let repeatX = 0;
+		if(ix0 < 1) repeatX = -1;
+		else if(ix0 > sw - 3) repeatX = ix0 - (sw - 3);
+
+		const offset_row1 = ((iy0)   * sw + ix0) * 4;
+		const offset_row0 = repeatY < 0 ? offset_row1 : ((iy0-1) * sw + ix0) * 4;
+		const offset_row2 = repeatY > 1 ? offset_row1 : ((iy0+1) * sw + ix0) * 4;
+		const offset_row3 = repeatY > 0 ? offset_row2 : ((iy0+2) * sw + ix0) * 4;
+
+		const offset_col1 = 0;
+		const offset_col0 = repeatX < 0 ? offset_col1 : -4;
+		const offset_col2 = repeatX > 1 ? offset_col1 : 4;
+		const offset_col3 = repeatX > 0 ? offset_col2 : 8;
+
+		const offsets = [
+			offset_row0+offset_col0, offset_row0+offset_col1, offset_row0+offset_col2, offset_row0+offset_col3,
+			offset_row1+offset_col0, offset_row1+offset_col1, offset_row1+offset_col2, offset_row1+offset_col3,
+			offset_row2+offset_col0, offset_row2+offset_col1, offset_row2+offset_col2, offset_row2+offset_col3,
+			offset_row3+offset_col0, offset_row3+offset_col1, offset_row3+offset_col2, offset_row3+offset_col3,
+		];
+
+		const dx = ixv - ix0;
+		const dy = iyv - iy0;
+		const res = new Uint8ClampedArray(3);
+
+		offsets.forEach((offset, idx) => buffer[idx] = sdata[offset]);
+		res[0] = BicubicInterpolation(dx, dy, buffer);
+
+		offsets.forEach((offset, idx) => buffer[idx] = sdata[offset + 1]);
+		res[1] = BicubicInterpolation(dx, dy, buffer);
+
+		offsets.forEach((offset, idx) => buffer[idx] = sdata[offset + 2]);
+		res[2] = BicubicInterpolation(dx, dy, buffer);
+
+		return res;
+	});
+}
 
 function bicubic(srcImg, destImg) {
 	const sdata = srcImg.data;

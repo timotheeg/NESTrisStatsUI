@@ -519,6 +519,40 @@ class TetrisOCR extends EventTarget {
 			[4, 2]
 		];
 
+		/*
+		for (let ridx = 0; ridx < 20; ridx++) {
+			for (let cidx = 0; cidx < 10; cidx++) {
+				const blockX = cidx * 8;
+				const blockY = ridx * 8;
+				const destCoords = pix_refs.map(([dx, dy]) => [blockX + dx, blockY + dy]);
+
+				const channels = getBicubicPixels(task.crop_img, task.resize, destCoords)
+					.reduce((acc, col) => {
+						acc[0] += col[0];
+						acc[1] += col[1];
+						acc[2] += col[2];
+						return acc;
+					}, [0, 0, 0])
+					.map(v => Math.round(v / pix_refs.length));
+
+				let min_diff = 0xFFFFFFFF;
+				let min_idx = -1;
+
+				colors.forEach((col, col_idx) => {
+					const sum = col.reduce((sum, c, idx) => sum += (c - channels[idx]) * (c - channels[idx]), 0);
+
+					if (sum < min_diff) {
+						min_diff = sum;
+						min_idx = col_idx;
+					}
+				})
+
+				field.push(min_idx);
+			}
+		}
+		/**/
+
+		/**/
 		for (let ridx = 0; ridx < 20; ridx++) {
 			for (let cidx = 0; cidx < 10; cidx++) {
 				const block_offset = ((ridx * 10 * 8 * 8) + cidx * 8) * 4;
@@ -551,6 +585,7 @@ class TetrisOCR extends EventTarget {
 				field.push(min_idx);
 			}
 		}
+		/**/
 
 		return field;
 	}
