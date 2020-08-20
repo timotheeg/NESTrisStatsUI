@@ -314,16 +314,33 @@ function showTemplates(templates) {
 	}
 }
 
+function updateCanvasSizeIfNeeded(canvas, w, h) {
+	if (canvas.width != w || canvas.height != h) {
+		canvas.width = w;
+		canvas.height = h;
+	}
+}
+
 function resetConfig(config, task_name, task_crop) {
 	config.tasks[task_name].crop = task_crop;
 
 	// update display canvas with new data
 	const canvas = config.tasks[task_name].crop_canvas_ctx.canvas;
-	canvas.width = task_crop[2] * 2;
-	canvas.height = task_crop[3] * 2;
+	updateCanvasSizeIfNeeded(
+		canvas,
+		task_crop[2] * 2,
+		task_crop[3] * 2
+	);
 	config.tasks[task_name].crop_canvas_ctx = canvas.getContext('2d');
 
+	// set the new config
 	tetris_ocr.setConfig(config);
+
+	updateCanvasSizeIfNeeded(
+		config.di_canvas,
+		config.capture_area.w,
+		config.capture_bounds.bottom
+	);
 
 	saveConfig(config);
 }
