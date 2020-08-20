@@ -2,16 +2,45 @@
 
 <head>
 <style type="text/css">
-b {
+video {
 	display: none;
+}
+
+#ui {
+	display: flex;
+	flex-direction: row;
 }
 
 #controls canvas, #controls span {
 	margin: 0.5em;
 }
 
+#controls .results {
+	display: flex;
+	align-items: center;
+}
+
+#frame_data, #perf_data {
+	font-family: monospace;
+	margin: 1em 0;
+}
+
+#capture {
+	display: flex;
+	align-items: center;
+	margin-right: 1em;
+}
+
+#controls {
+	display: none;
+}
+
 .coordinate_input {
 	width: 4em;
+}
+
+#conn_port {
+	width: 5em;
 }
 
 fieldset {
@@ -32,11 +61,6 @@ fieldset.field pre {
 	font-size: 1em;
 }
 
-#controls .results {
-	display: flex;
-	align-items: center;
-}
-
 </style>
 </head>
 
@@ -49,14 +73,17 @@ fieldset.field pre {
 	<input type="text" id="conn_host" value="localhost"></input>
 	port
 	<input type="number" id="conn_port" value="3337"></input>
+	<button id="clear_config">Clear config and reload</button>
 </div>
 
 <video id="device_video" playsinline controls="false"></video>
 
 <div id="frame_data"></div>
 <div id="perf_data"></div>
-<div id="capture"></div>
-<div id="controls"></div>
+<div id="ui">
+	<div id="capture"></div>
+	<div id="controls"></div>
+</div>
 <div id="templates"></div>
 
 <script src="../connection.js"></script>
@@ -124,28 +151,37 @@ function connect() {
 conn_host.addEventListener('change', connect);
 conn_port.addEventListener('change', connect);
 
+clear_config.addEventListener('click', evt => {
+	localStorage.clear();
+	location.reload();
+});
+
 // Updates the select element with the provided set of cameras
 function updateDeviceList(devices) {
-    device_selector.innerHTML = '';
+	device_selector.innerHTML = '';
 
-    const heading = [{
-    	label: "Select your video device",
-    	deviceId: "0"
-    }];
+	const heading = [{
+		label: "Select your video device",
+		deviceId: "0"
+	}];
 
-    const entries = heading.concat(devices);
+	const entries = heading.concat(devices);
 
-    entries.forEach(camera => {
-        const cameraOption = document.createElement('option');
-        cameraOption.text = camera.label;
-        cameraOption.value = camera.deviceId;
+	entries.forEach(camera => {
+		const camera_option = document.createElement('option');
+		camera_option.text = camera.label;
+		camera_option.value = camera.deviceId;
 
-        device_selector.appendChild(cameraOption)
-    });
+		if (config && config.device_id) {
+			camera_option.selected = true;
+		}
+
+		device_selector.appendChild(camera_option)
+	});
 }
 
 async function getConnectedDevices(type) {
-    return (await navigator.mediaDevices.enumerateDevices())
+	return (await navigator.mediaDevices.enumerateDevices())
 		.filter(device => device.kind === type && device.deviceId)
 }
 
@@ -160,44 +196,45 @@ navigator.mediaDevices.addEventListener('devicechange', resetDevices);
 async function playVideoFromDevice(device_id) {
 	capture_process = clearTimeout(capture_process);
 
-    try {
-        const constraints = {
-        	audio: false,
-        	video: {
-        		width: { ideal: 4096 },
-        		height: { ideal: 2160 }
-        	}
-        };
+	try {
+		const constraints = {
+			audio: false,
+			video: {
+				width: { ideal: 4096 },
+				height: { ideal: 2160 }
+			}
+		};
 
-        if (device_id) {
-        	constraints.video.deviceId = { exact: device_id };
-        }
+		if (device_id) {
+			constraints.video.deviceId = { exact: device_id };
+		}
 
-        const stream = await navigator.mediaDevices.getUserMedia(constraints);
+		const stream = await navigator.mediaDevices.getUserMedia(constraints);
 
-        // we only prompt for permission withthe first call
-        if (device_id === undefined) return;
+		// we only prompt for permission withthe first call
+		if (device_id === undefined) return;
 
-        // when an actual device id is supplied, we start everything
-        video.srcObject = stream;
-        video.play();
+		// when an actual device id is supplied, we start everything
+		video.srcObject = stream;
+		video.play();
 
 		stream.addEventListener('inactive', console.log('stream is inactive'));
 
-        startCapture(stream);
-    }
-    catch(error) {
-        console.error('Error opening video camera.', error);
-        video.pause();
-        capture_process = clearTimeout(capture_process);
-         // window.cancelAnimationFrame(capture_process);
-    }
+		startCapture(stream);
+	}
+	catch(error) {
+		console.error('Error opening video camera.', error);
+		video.pause();
+		capture_process = clearTimeout(capture_process);
+		// window.cancelAnimationFrame(capture_process);
+	}
 }
 
 let capture_process, blob;
 let frame_count = 0;
 let frame_ms = 1000/30;
 let start_time_ms;
+let last_frame_time;
 
 async function startCapture(stream) {
 	const settings = stream.getVideoTracks()[0].getSettings();
@@ -207,6 +244,10 @@ async function startCapture(stream) {
 	if (stream.asset) {
 		const response = await fetch(stream.asset);
 		blob = await response.blob();
+	}
+
+	if (show_parts) {
+		controls.style.display = 'block';
 	}
 
 	frame_ms = 1000 / settings.frameRate;
@@ -219,7 +260,7 @@ async function captureFrame() {
 	++frame_count;
 	const now = Date.now();
 
-	perf_data.textContent = now - last_frame_time;
+	// perf_data.textContent = now - last_frame_time;
 	last_frame_time = now;
 
 	try {
@@ -408,7 +449,7 @@ async function showParts(data) {
 
 		// show text result
 		if (name != 'field') {
-			holder.querySelector(`pre`).textContent = data[name];
+			holder.querySelector(`pre`).innerHTML = data[name] || '&nbsp;';
 		}
 		else {
 			const rows = [];
@@ -499,9 +540,13 @@ const IN_MENU = {};
 
 		data.gameid = gameid;
 
-		frame_data.textContent = JSON.stringify(data);
+		const perf = data.perf;
 
 		delete data.perf;
+
+		frame_data.textContent = JSON.stringify(data);
+		perf_data.textContent = JSON.stringify(perf);
+
 		delete data.color1;
 		delete data.color2;
 

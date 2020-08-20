@@ -170,7 +170,6 @@ class TetrisOCR extends EventTarget {
 		performance.mark('start');
 		this.capture_canvas_ctx.drawImage(frame, 0, 0, frame.width, frame.height);
 		performance.mark('draw_end');
-		performance.measure('draw_frame', 'start', 'draw_end');
 
 		const source_img = this.deinterlace();
 
@@ -200,6 +199,7 @@ class TetrisOCR extends EventTarget {
 
 		performance.mark('end');
 		performance.measure('total', 'start', 'end');
+		performance.measure('draw_frame', 'start', 'draw_end');
 
 		const res = {
 			score,
