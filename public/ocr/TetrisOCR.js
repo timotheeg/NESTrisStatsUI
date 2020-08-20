@@ -506,10 +506,11 @@ class TetrisOCR extends EventTarget {
 			..._colors
 		];
 
+		// crop is not needed, but done anyway to share task captured area with caller app
+		crop(source_img, x, y, w, h, task.crop_img);
 
 		/*
-		crop(source_img, x, y, w, h, task.crop_img);
-		bicubic(task.crop_img, task.scale_img);fscanfield
+		bicubic(task.crop_img, task.scale_img);
 		const field_img = task.scale_img;
 		/**/
 
@@ -528,7 +529,8 @@ class TetrisOCR extends EventTarget {
 		this.scaled_field_canvas_ctx.drawImage(resized, 0, 0);
 		const field_img = this.scaled_field_canvas_ctx.getImageData(0, 0, ...TASK_RESIZE.field);
 
-		// task.scale_img.data.set(field_img.data);
+		// writing into scale_img is not needed, but done anyway to share area with caller app
+		task.scale_img.data.set(field_img.data);
 		/**/
 
 		// simple array for now
