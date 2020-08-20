@@ -49,6 +49,8 @@ function timingDecorator(name, func) { // func must be prebound
 }
 
 class TetrisOCR extends EventTarget {
+	static TASK_RESIZE = TASK_RESIZE;
+
 	constructor(templates, config) {
 		super();
 
