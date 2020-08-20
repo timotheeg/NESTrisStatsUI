@@ -74,14 +74,6 @@ The 2 semi finals and the final match of CTWC 2019's Invisible Tetris Competitio
 * copy `config.example.js` to `config.js` and edit the values according to what you need
 
 
-### DB
-
-* install sqlite3 for your system
-* copy the content of the file `setup.sql`
-* run `sqlite3 tetris.db`
-* paste sql statement
-
-
 ### Twitch
 
 You need a twitch oauth token to be able to connect to chat. Get started [here](https://dev.twitch.tv/docs/irc)

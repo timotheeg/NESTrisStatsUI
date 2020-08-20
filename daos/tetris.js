@@ -1,10 +1,42 @@
-config = require('../config');
+const config = require('../config');
+const fs = require('fs');
+
+
 
 'use strict'
 
-const
-	db = require('better-sqlite3')('tetris.db'),
+// if local db does not exist, create it and instantiate it
+const db_filename = 'tetris.db';
+let db_is_file;
 
+try {
+	db_is_file = fs.statSync(db_filename).isFile();
+}
+catch(err) {
+	db_is_file = false;
+}
+
+const db = require('better-sqlite3')(db_filename);
+
+if (!db_is_file) {
+	// initial setup of the score table
+	db.exec(`
+		CREATE TABLE scores (
+			datetime datetime,
+			name text,
+			start_level int,
+			end_level int,
+			score int,
+			lines int,
+			tetris_rate real,
+			num_droughts int,
+			max_drought int,
+			das_avg real
+		)
+	`);
+}
+
+const
 	insert = db.prepare(
 		`INSERT INTO scores
 		(
