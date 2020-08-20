@@ -6,7 +6,7 @@ b {
 	display: none;
 }
 
-#controls canvas {
+#controls canvas, #controls span {
 	margin: 0.5em;
 }
 
@@ -67,9 +67,9 @@ fieldset.field pre {
 <script>
 // NTSC NES resolution: 256x224 -> 512x448
 
-const config = {
-	show_parts: true,
+const show_parts = true;
 
+const default_config = {
 	deinterlace: true,
 
 	palette: [[[65, 40, 228], [86, 168, 254]], [[3, 127, 1], [125, 199, 6]], [[139, 14, 179], [211, 96, 255]], [[64, 41, 225], [85, 210, 45]], [[154, 19, 87], [64, 205, 111]], [[65, 206, 112], [134, 131, 255]], [[146, 38, 2], [90, 91, 87]], [[97, 18, 215], [82, 0, 20]], [[64, 40, 227], [151, 43, 4]], [[147, 39, 3], [211, 137, 32]]],
@@ -101,11 +101,13 @@ const
 	controls        = document.querySelector('#controls')
 ;
 
-
+let config;
 let connection;
 
 device_selector.addEventListener('change', evt => {
-	playVideoFromDevice(device_selector.value);
+	config.device_id = device_selector.value;
+	saveConfig(config);
+	playVideoFromDevice(config.device_id);
 });
 
 function connect() {
@@ -265,7 +267,7 @@ function showTemplates(templates) {
 	}
 }
 
-function resetConfig(task_name, task_crop) {
+function resetConfig(config, task_name, task_crop) {
 	config.tasks[task_name].crop = task_crop;
 
 	// update display canvas with new data
@@ -275,9 +277,11 @@ function resetConfig(task_name, task_crop) {
 	config.tasks[task_name].crop_canvas_ctx = canvas.getContext('2d');
 
 	tetris_ocr.setConfig(config);
+
+	saveConfig(config);
 }
 
-function showConfigControls() {
+function showConfigControls(config) {
 	for (const [name, task] of Object.entries(config.tasks)) {
 		const fieldset = document.createElement('fieldset');
 		fieldset.classList.add(name);
@@ -286,7 +290,7 @@ function showConfigControls() {
 		legend.textContent = name;
 		fieldset.appendChild(legend);
 
-		addCropControls(fieldset, name, task.crop, resetConfig);
+		addCropControls(fieldset, config, name, resetConfig);
 
 		const canvas_holder = document.createElement('div');
 		canvas_holder.classList.add('results')
@@ -296,12 +300,12 @@ function showConfigControls() {
 	}
 }
 
-function addCropControls(parent, name, values, onChangeCallback) {
+function addCropControls(parent, config, name, onChangeCallback) {
 	const holder = document.createElement('div');
 	const inputs = [];
 
 	function onChange() {
-		onChangeCallback(name, inputs.map(input => parseInt(input.value, 10)));
+		onChangeCallback(config, name, inputs.map(input => parseInt(input.value, 10)));
 	}
 
 	['x', 'y', 'width', 'height'].forEach((label, idx) => {
@@ -312,7 +316,7 @@ function addCropControls(parent, name, values, onChangeCallback) {
 		input.classList.add('coordinate_input');
 		input.type = 'number';
 		input.size = 3;
-		input.value = values[idx];
+		input.value = config.tasks[name].crop[idx];
 		input.addEventListener('change', onChange);
 
 		inputs.push(input);
@@ -416,6 +420,36 @@ async function showParts(data) {
 	}
 }
 
+function saveConfig(config) {
+	// need to drop non-serializable fields
+	const config_copy = {
+		deinterlace: config.deinterlace,
+		device_id: config.device_id,
+		palette: config.palette,
+		tasks: {}
+	};
+
+	for (const [name, task] of Object.entries(config.tasks)) {
+		config_copy.tasks[name] = {
+			crop: task.crop,
+			pattern: task.pattern,
+			red: task.red,
+		};
+	}
+
+	localStorage.setItem('config', JSON.stringify(config_copy));
+}
+
+function loadConfig() {
+	const config = localStorage.getItem('config');
+
+	if (config) {
+		return JSON.parse(config);
+	}
+
+	return JSON.parse(JSON.stringify(default_config));
+}
+
 let tetris_ocr;
 
 const IN_GAME = {};
@@ -424,18 +458,13 @@ const IN_MENU = {};
 (async function init() {
 	connect();
 
+	config = loadConfig();
+
 	const templates = await loadDigitTemplates();
 
-	if (config.show_parts) {
-		showConfigControls();
+	if (show_parts) {
+		showConfigControls(config);
 	}
-
-	/*
-	// Not needed again
-	if (config.show_parts) {
-		showTemplates(templates);
-	}
-	/**/
 
 	tetris_ocr = new TetrisOCR(templates, config);
 
@@ -478,7 +507,7 @@ const IN_MENU = {};
 
 		data.ctime = Date.now();
 
-		if (config.show_parts) {
+		if (show_parts) {
 			showParts(data);
 		}
 
@@ -486,7 +515,7 @@ const IN_MENU = {};
 	}
 
 	/**/
-	await playVideoFromDevice()
+	await playVideoFromDevice(config.device_id);
 	resetDevices();
 	return;
 	/**/
@@ -500,7 +529,7 @@ const IN_MENU = {};
 					return {
 						width: 720,
 						height: 480,
-						frameRate: 4
+						frameRate: 12
 					}
 				}
 			}]

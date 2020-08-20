@@ -185,7 +185,7 @@ class TetrisOCR extends EventTarget {
 			color2 = this.scanColor2(source_img);
 		}
 
-		const colors = color1 && color2 ? [color1, color2] : this.config.palette[level % 10];
+		const colors = color1 && color2 ? [color1, color2] : this.config.palette[(level || 0) % 10];
 
 		const field = await this.scanField(source_img, colors);
 		const preview = this.scanPreview(source_img);
