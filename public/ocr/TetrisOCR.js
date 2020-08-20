@@ -18,7 +18,7 @@ const PERF_METHODS = [
 	'scanCurPiece',
 ];
 
-// Resize based on logical NES pixels (2x for digits)
+// Resize areas based on logical NES pixels (2x for digits)
 const TASK_RESIZE = {
 	score:         [16 * 6 - 2, 14],
 	level:         [16 * 2 - 2, 14],
@@ -55,6 +55,7 @@ class TetrisOCR extends EventTarget {
 
 		this.processConfig();
 
+		this.digit_img = new ImageData(14, 14); // 2x for better matching
 		this.block_img = new ImageData(7, 7);
 		this.small_block_img = new ImageData(5, 5);
 
@@ -66,6 +67,14 @@ class TetrisOCR extends EventTarget {
 			});
 	}
 
+	/*
+	 * processConfig()
+	 * 1. Calculate the overal crop area based on the individual task crop areas
+	 * 2. Instantiate ImageData objects for each cropped and resize job, so they can:
+	 *    a. be reused without memory allocation
+	 *    b. be shared via the config reference with client app (say for display of the areas)
+	 *
+	 */
 	processConfig() {
 		const bounds = {
 			top:    0xFFFFFFFF,
@@ -74,7 +83,7 @@ class TetrisOCR extends EventTarget {
 			right:  -1,
 		}
 
-		for (const task of Object.values(this.config.tasks)) {
+		for (const [name, task] of Object.entries(this.config.tasks)) {
 			const { crop: [x, y, w, h] } = task;
 
 			bounds.top    = Math.min(bounds.top,    y);
@@ -83,20 +92,9 @@ class TetrisOCR extends EventTarget {
 			bounds.right  = Math.max(bounds.right,  x + w);
 
 			task.crop_img = new ImageData(w, h);
-
-			if (task.pattern) {
-				// scale based on digit pattern
-				task.scale_img = new ImageData(
-					(8 * task.pattern.length - 1) * 2,
-					14
-				);
-			}
-			else if (task.resize) {
-				task.scale_img = new ImageData(...task.resize);
-			}
+			task.scale_img = new ImageData(...TASK_RESIZE[name]);
 		}
 
-		this.config.digit_img = new ImageData(14, 14);
 		this.config.capture_bounds = bounds;
 		this.config.capture_area = {
 			x: bounds.left,
@@ -286,9 +284,9 @@ class TetrisOCR extends EventTarget {
 		for (let idx=digits.length; idx--; ) {
 			const char = task.pattern[idx];
 
-			crop(task.scale_img, idx * 16, 0, 14, 14, this.config.digit_img);
+			crop(task.scale_img, idx * 16, 0, 14, 14, this.digit_img);
 
-			const digit = this.getDigit(this.config.digit_img.data, PATTERN_MAX_INDEXES[char]);
+			const digit = this.getDigit(this.digit_img.data, PATTERN_MAX_INDEXES[char]);
 
 			if (!digit) return null;
 
