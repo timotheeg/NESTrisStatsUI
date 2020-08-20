@@ -6,7 +6,7 @@ b {
 	display: none;
 }
 
-#capture canvas {
+#controls canvas {
 	margin: 0.5em;
 }
 
@@ -42,6 +42,7 @@ legend {
 <div id="frame_data"></div>
 <div id="perf_data"></div>
 <div id="capture"></div>
+<div id="controls"></div>
 <div id="templates"></div>
 
 <script src="../connection.js"></script>
@@ -81,7 +82,9 @@ const
 	conn_port       = document.querySelector('#conn_port'),
 	video           = document.querySelector('#device_video'),
 	frame_data      = document.querySelector('#frame_data'),
-	perf_data       = document.querySelector('#perf_data')
+	perf_data       = document.querySelector('#perf_data'),
+	capture         = document.querySelector('#capture'),
+	controls        = document.querySelector('#controls')
 ;
 
 
@@ -249,7 +252,28 @@ function showTemplates(templates) {
 }
 
 function resetConfig(task_name, task_crop) {
-	// TODO
+	config.tasks[task_name].crop = task_crop;
+
+	tetris_ocr.setConfig(config);
+}
+
+function showConfigControls() {
+	for (const [name, task] of Object.entries(config.tasks)) {
+		const fieldset = document.createElement('fieldset');
+		fieldset.classList.add(name);
+
+		const legend = document.createElement('legend');
+		legend.textContent = name;
+		fieldset.appendChild(legend);
+
+		addCropControls(fieldset, name, task.crop, resetConfig);
+
+		const canvas_holder = document.createElement('div');
+		canvas_holder.classList.add('results')
+		fieldset.appendChild(canvas_holder);
+
+		controls.appendChild(fieldset);
+	}
 }
 
 function addCropControls(parent, name, values, onChangeCallback) {
@@ -257,7 +281,7 @@ function addCropControls(parent, name, values, onChangeCallback) {
 	const inputs = [];
 
 	function onChange() {
-		onChangeCallback(name, inputs.map(input => input.value));
+		onChangeCallback(name, inputs.map(input => parseInt(input.value, 10)));
 	}
 
 	['x', 'y', 'width', 'height'].forEach((label, idx) => {
@@ -281,17 +305,13 @@ function addCropControls(parent, name, values, onChangeCallback) {
 }
 
 async function showParts() {
-	const capture = document.querySelector('#capture');
-
 	const half_di_height = Math.floor(config.deinterlaced_img.height / 2);
 
 	if (!config.di_canvas) {
-		const holder = document.createElement('div');
 		const di_canvas = document.createElement('canvas');
 		di_canvas.width = config.deinterlaced_img.width;
 		di_canvas.height = half_di_height;
-		holder.appendChild(di_canvas);
-		capture.appendChild(holder);
+		capture.appendChild(di_canvas);
 
 		config.di_canvas = di_canvas;
 	}
@@ -309,16 +329,10 @@ async function showParts() {
 	const x_offset = config.capture_area.x;
 
 	for (const [name, task] of Object.entries(config.tasks)) {
+		const holder = document.querySelector(`fieldset.${name} div.results`)
+
 		if (!task.crop_canvas_ctx) {
 			// create canvas at 2x resolution to make it easier to see the areas
-			const holder = document.createElement('fieldset');
-			const legend = document.createElement('legend');
-
-			legend.textContent = name;
-			holder.appendChild(legend);
-
-			addCropControls(holder, name, task.crop, resetConfig);
-
 			const crop_canvas = document.createElement('canvas');
 			crop_canvas.width = task.crop_img.width * 2;
 			crop_canvas.height = task.crop_img.height * 2;
@@ -328,8 +342,6 @@ async function showParts() {
 			scale_canvas.width = task.scale_img.width * 2;
 			scale_canvas.height = task.scale_img.height * 2;
 			holder.appendChild(scale_canvas);
-
-			capture.appendChild(holder);
 
 			task.crop_canvas_ctx = crop_canvas.getContext('2d');
 			task.scale_canvas_ctx = scale_canvas.getContext('2d');
@@ -369,6 +381,10 @@ const IN_MENU = {};
 	connect();
 
 	const templates = await loadDigitTemplates();
+
+	if (config.show_parts) {
+		showConfigControls();
+	}
 
 	/*
 	// Not needed again
