@@ -13,6 +13,8 @@ const PERF_METHODS = [
 	'scanColor2',
 	'scanPreview',
 	'scanField',
+	'scanPieceStats',
+
 	'scanInstantDas',
 	'scanCurPieceDas',
 	'scanCurPiece',
@@ -247,6 +249,10 @@ class TetrisOCR extends EventTarget {
 
 	scanCurPieceDas(source_img) {
 		return this.ocrDigits(source_img, this.config.tasks.cur_piece_das);
+	}
+
+	scanPieceStats(source_img) {
+		// TODO
 	}
 
 	deinterlace() {
