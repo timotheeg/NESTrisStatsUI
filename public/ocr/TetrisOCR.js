@@ -24,7 +24,7 @@ const PERF_METHODS = [
 const TASK_RESIZE = {
 	score:         [16 * 6 - 2, 14],
 	level:         [16 * 2 - 2, 14],
-	lines:         [16 * 2 - 2, 14],
+	lines:         [16 * 3 - 2, 14],
 	field:         [80, 160],
 	preview:       [31, 15],
 	cur_piece:     [23, 12],
@@ -53,9 +53,7 @@ class TetrisOCR extends EventTarget {
 		super();
 
 		this.templates = templates;
-		this.config = config;
-
-		this.processConfig();
+		this.setConfig(config);
 
 		this.digit_img = new ImageData(14, 14); // 2x for better matching
 		this.block_img = new ImageData(7, 7);
@@ -77,7 +75,9 @@ class TetrisOCR extends EventTarget {
 	 *    b. be shared via the config reference with client app (say for display of the areas)
 	 *
 	 */
-	processConfig() {
+	setConfig(config) {
+		this.config = config;
+
 		const bounds = {
 			top:    0xFFFFFFFF,
 			left:   0xFFFFFFFF,

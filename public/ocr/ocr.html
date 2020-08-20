@@ -10,6 +10,19 @@ b {
 	margin: 0.5em;
 }
 
+.coordinate_input {
+	width: 4em;
+}
+
+fieldset {
+	margin-bottom: 0.65em;
+}
+
+legend {
+	text-transform: uppercase;
+	font-weight: bold;
+}
+
 </style>
 </head>
 
@@ -235,6 +248,38 @@ function showTemplates(templates) {
 	}
 }
 
+function resetConfig(task_name, task_crop) {
+	// TODO
+}
+
+function addCropControls(parent, name, values, onChangeCallback) {
+	const holder = document.createElement('div');
+	const inputs = [];
+
+	function onChange() {
+		onChangeCallback(name, inputs.map(input => input.value));
+	}
+
+	['x', 'y', 'width', 'height'].forEach((label, idx) => {
+		const span = document.createElement('span');
+		span.textContent = ` ${label}: `;
+
+		const input = document.createElement('input');
+		input.classList.add('coordinate_input');
+		input.type = 'number';
+		input.size = 3;
+		input.value = values[idx];
+
+		inputs.push(input);
+
+		holder.appendChild(span);
+		holder.appendChild(input);
+		holder.addEventListener('change', onChange);
+	});
+
+	parent.appendChild(holder);
+}
+
 async function showParts() {
 	const capture = document.querySelector('#capture');
 
@@ -266,7 +311,13 @@ async function showParts() {
 	for (const [name, task] of Object.entries(config.tasks)) {
 		if (!task.crop_canvas_ctx) {
 			// create canvas at 2x resolution to make it easier to see the areas
-			const holder = document.createElement('div');
+			const holder = document.createElement('fieldset');
+			const legend = document.createElement('legend');
+
+			legend.textContent = name;
+			holder.appendChild(legend);
+
+			addCropControls(holder, name, task.crop, resetConfig);
 
 			const crop_canvas = document.createElement('canvas');
 			crop_canvas.width = task.crop_img.width * 2;
@@ -299,11 +350,12 @@ async function showParts() {
 			resizeQuality: 'pixelated'
 		});
 
+		// draw task captured areas
 		task.crop_canvas_ctx.drawImage(cropped, 0, 0);
 		task.scale_canvas_ctx.drawImage(scaled, 0, 0);
 
+		// highlight captured areas in main deinterlaced image
 		const [x, y, w, h] = task.crop;
-
 		di_ctx.fillRect(x - x_offset, y, w, h);
 	}
 }
@@ -318,10 +370,12 @@ const IN_MENU = {};
 
 	const templates = await loadDigitTemplates();
 
+	/*
+	// Not needed again
 	if (config.show_parts) {
 		showTemplates(templates);
 	}
-
+	/**/
 
 	tetris_ocr = new TetrisOCR(templates, config);
 
