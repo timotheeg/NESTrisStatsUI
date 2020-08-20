@@ -107,13 +107,19 @@ const default_config = {
 		lines:   { crop: [426, 22, 57, 7], pattern: "TDD", red: false },
 		field:   { crop: [284, 46, 201, 160] },
 		preview: { crop: [526, 118, 80, 15] },
-		// color1:  { crop: [139, 112, 11, 5] },
-		// color2:  { crop: [139, 129, 11, 5] },
+
+		/**/
+		color1:  { crop: [139, 112, 11, 5] },
+		color2:  { crop: [139, 129, 11, 5] },
+		/**/
+
 		// stats: { crop: [164, 93, 57, 105], red: true },
 
+		/*
 		instant_das:   { crop: [144, 38, 37, 7], pattern: "BD", red: false },
 		cur_piece_das: { crop: [184, 54, 37, 7], pattern: "BD", red: false },
 		cur_piece:     { crop: [83, 50, 59, 12] }
+		/**/
 	}
 };
 
@@ -423,6 +429,16 @@ async function showParts(data) {
 			task.crop_canvas_ctx.imageSmoothingEnabled = false;
 			task.scale_canvas_ctx.imageSmoothingEnabled = false;
 
+			if (name.startsWith('color')) {
+				const color_result = document.createElement('div');
+				color_result.classList.add('col_res');
+				color_result.style.display = 'inline-block';
+				color_result.style.width = '25px';
+				color_result.style.height = '25px';
+
+				holder.appendChild(color_result);
+			}
+
 			const text_result = document.createElement('pre');
 			holder.appendChild(text_result);
 		}
@@ -448,7 +464,13 @@ async function showParts(data) {
 		di_ctx.fillRect(x - x_offset, y, w, h);
 
 		// show text result
-		if (name != 'field') {
+		if (name.startsWith('color')) {
+			const color = `rgb(${data[name][0]},${data[name][1]},${data[name][2]})`;
+
+			holder.querySelector(`.col_res`).style.backgroundColor = color;
+			holder.querySelector(`pre`).textContent = color;
+		}
+		else if (name != 'field') {
 			holder.querySelector(`pre`).innerHTML = data[name] || '&nbsp;';
 		}
 		else {
@@ -544,19 +566,16 @@ const IN_MENU = {};
 
 		delete data.perf;
 
+		data.ctime = Date.now();
+
+		connection.send(data);
+
 		frame_data.textContent = JSON.stringify(data);
 		perf_data.textContent = JSON.stringify(perf);
-
-		delete data.color1;
-		delete data.color2;
-
-		data.ctime = Date.now();
 
 		if (show_parts) {
 			showParts(data);
 		}
-
-		connection.send(data);
 	}
 
 	/**/
@@ -566,7 +585,7 @@ const IN_MENU = {};
 	/**/
 
 	const fake_stream = {
-		asset: './full2.png',
+		asset: './full3.png',
 		addEventListener: function() {},
 		getVideoTracks() {
 			return [{
