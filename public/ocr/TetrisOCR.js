@@ -153,8 +153,8 @@ class TetrisOCR extends EventTarget {
 		// TODO: get rid of this additional canvas when we can T_T
 		this.scaled_field_canvas = document.createElement('canvas');
 
-		this.scaled_field_canvas.width = this.config.tasks.field.resize[0];
-		this.scaled_field_canvas.height = this.config.tasks.field.resize[1];
+		this.scaled_field_canvas.width = TASK_RESIZE.field[0];
+		this.scaled_field_canvas.height = TASK_RESIZE.field[1];
 
 		this.scaled_field_canvas_ctx = this.scaled_field_canvas.getContext('2d');
 		this.scaled_field_canvas_ctx.imageSmoothingEnabled = 'false';
@@ -515,14 +515,14 @@ class TetrisOCR extends EventTarget {
 			source_img,
 			x, y, w, h,
 			{
-				resizeWidth: task.resize[0],
-				resizeHeight: task.resize[1],
+				resizeWidth: TASK_RESIZE.field[0],
+				resizeHeight: TASK_RESIZE.field[1],
 				resizeQuality: 'medium'
 			}
 		);
 
 		this.scaled_field_canvas_ctx.drawImage(resized, 0, 0);
-		const field_img = this.scaled_field_canvas_ctx.getImageData(0, 0, ...task.resize);
+		const field_img = this.scaled_field_canvas_ctx.getImageData(0, 0, ...TASK_RESIZE.field);
 
 		// task.scale_img.data.set(field_img.data);
 		/**/
@@ -545,7 +545,7 @@ class TetrisOCR extends EventTarget {
 				const blockY = ridx * 8;
 				const destCoords = pix_refs.map(([dx, dy]) => [blockX + dx, blockY + dy]);
 
-				const channels = getBicubicPixels(task.crop_img, task.resize, destCoords)
+				const channels = getBicubicPixels(task.crop_img, TASK_RESIZE.field, destCoords)
 					.reduce((acc, col) => {
 						acc[0] += col[0];
 						acc[1] += col[1];
