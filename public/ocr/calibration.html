@@ -1,0 +1,69 @@
+<html>
+<head>
+</head>
+<body>
+
+<img id="template" src="./template_ui.png" />
+<img id="capture" src="./fake_input_ui.png" />
+
+<script src="./opencv.js"></script>
+<script>
+(async function init() {
+	ocv = await cv;
+
+	template = ocv.imread('template');
+	capture = ocv.imread('capture');
+
+	orb = new ocv.ORB(1000);
+
+	kp1 = new ocv.KeyPointVector();
+	kp2 = new ocv.KeyPointVector();
+
+	orb.detect(template, kp1);
+	orb.detect(capture, kp2);
+
+	des1 = new ocv.Mat();
+	orb.compute(template, kp1, des1);
+
+	des2 = new ocv.Mat();
+	orb.compute(template, kp2, des2);
+
+	bf = new ocv.BFMatcher(ocv.NORM_HAMMING, true);
+	matches = new ocv.DMatchVector();
+	bf.match(des1, des2, matches);
+
+	local_matches = (new Array(matches.size())).fill().map((_, idx) => matches.get(idx));
+	local_matches.sort((a, b) => a.distance - b.distance);
+
+	src_pts = local_matches
+		.map(m => kp1.get(m.queryIdx).pt)
+		.map(pt => [pt.x, pt.y]);
+
+	dst_pts = local_matches
+		.map(m => kp2.get(m.trainIdx).pt)
+		.map(pt => [pt.x, pt.y]);
+
+	src_mat = ocv.matFromArray(src_pts.length, 1, ocv.CV_32FC2, [].concat(...src_pts));
+	dst_mat = ocv.matFromArray(src_pts.length, 1, ocv.CV_32FC2, [].concat(...dst_pts));
+
+	// nor working because signature is incorrect :(
+	transform = ocv.findHomography(src_mat, dst_mat, ocv.RANSAC, 5.0);
+
+	size = template.size();
+	r = size.width - 1; // right
+	b = size.height - 1; // bottom
+
+	boundary_pts = ocv.matFromArray(4, 1, ocv.CV_32FC2, [
+		0, 0,
+		r, 0,
+		r, b,
+		0, b,
+	]);
+
+	target_pts = new ocv.Mat();
+	ocv.perspectiveTransform(boundary_pts, target_pts, transform);
+	/**/
+})();
+</script>
+</body>
+</html>
