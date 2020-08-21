@@ -18,6 +18,7 @@ video {
 #controls .results {
 	display: flex;
 	align-items: center;
+	margin-top: 0.65em;
 }
 
 #frame_data, #perf_data {
@@ -55,6 +56,7 @@ legend {
 pre {
 	display: inline;
 	font-size: 2em;
+	margin: 0 1em;
 }
 
 fieldset.field pre {
@@ -521,6 +523,10 @@ function saveConfig(config) {
 	localStorage.setItem('config', JSON.stringify(config_copy));
 }
 
+function hasConfig() {
+	return !!localStorage.getItem('config');
+}
+
 function loadConfig() {
 	const config = localStorage.getItem('config');
 
@@ -531,17 +537,27 @@ function loadConfig() {
 	return JSON.parse(JSON.stringify(default_config));
 }
 
+let ocv;
 let tetris_ocr;
 
 const IN_GAME = {};
 const IN_MENU = {};
 
 (async function init() {
-	connect();
-
-	config = loadConfig();
+	ocv = await cv;
 
 	const templates = await loadDigitTemplates();
+
+	if (false && !hasConfig()) {
+		// wait for user to select camera
+		// present button "click to calibrate"
+		// save config
+		// start OCR
+	}
+	else {
+		connect();
+		config = loadConfig();
+	}
 
 	if (show_parts) {
 		showConfigControls(config);
