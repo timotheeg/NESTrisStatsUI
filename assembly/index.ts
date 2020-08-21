@@ -1,20 +1,50 @@
 // The entry file of your WebAssembly module.
 
+import { Color, ImageData, luma, crop } from './image_tools';
+
 export const Uint32ArrayId = idof<Uint32Array>();
 export const Uint8ArrayId = idof<Uint8Array>();
 export const Float64ArrayId = idof<Float64Array>();
 
+let task_score: boolean = false;
+let task_level: boolean = false;
+let task_lines: boolean = false;
+let task_preview: boolean = false;
+let task_field: boolean = false;
+let task_color1: boolean = false;
+let task_color2: boolean = false;
+let task_instant_das: boolean = false;
+let task_cur_piece_das: boolean = false;
+let task_cur_piece: boolean = false;
+let task_stats: boolean = false;
 
-// a flattened 2d array of 17 templates of 196 bytes each
+
+class OCRResult {
+	score: i32
+	level: i32
+	lines: i32
+	preview: i32
+	color1: Color
+	color2: Color
+	instant_das: i32
+	cur_piece_das: i32
+	cur_piece: i32
+	field: Uint8Array
+}
+
+export function processFrame(width: u32, height: u32, data: Uint8Array): OCRResult {
+	return new OCRResult();
+}
+
+function set_task_score(x:u32, y:u32, w:u32, h:u32) {
+	task_score = true;
+
+}
+
 let templates: Float64Array;
 
 export function setTemplates(_templates: Float64Array): void {
 	templates = _templates;
-}
-
-@inline
-function luma(r: u8, g: u8, b: u8): f64 {
-	return r * 0.299 + g * 0.587 + b * 0.114;
 }
 
 export function getDigit(
@@ -50,5 +80,3 @@ export function getDigit(
 
 	return min_idx;
 }
-
-
