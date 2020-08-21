@@ -8,61 +8,65 @@
 
 <script src="./opencv.js"></script>
 <script>
-(async function init() {
-	ocv = await cv;
+let ocv;
 
-	template = ocv.imread('template');
-	capture = ocv.imread('capture');
+function getCaptureCoordinates() {
+	const template = ocv.imread('template');
+	const capture = ocv.imread('capture');
 
-	orb = new ocv.ORB(1000);
+	const orb = new ocv.ORB();
 
-	kp1 = new ocv.KeyPointVector();
-	kp2 = new ocv.KeyPointVector();
+	const kp1 = new ocv.KeyPointVector();
+	const kp2 = new ocv.KeyPointVector();
+	const des1 = new ocv.Mat();
+	const des2 = new ocv.Mat();
 
 	orb.detect(template, kp1);
-	orb.detect(capture, kp2);
-
-	des1 = new ocv.Mat();
 	orb.compute(template, kp1, des1);
 
-	des2 = new ocv.Mat();
-	orb.compute(template, kp2, des2);
+	orb.detect(capture, kp2);
+	orb.compute(capture, kp2, des2);
 
-	bf = new ocv.BFMatcher(ocv.NORM_HAMMING, true);
-	matches = new ocv.DMatchVector();
+	const bf = new ocv.BFMatcher(ocv.NORM_HAMMING, true);
+	const matches = new ocv.DMatchVector();
 	bf.match(des1, des2, matches);
 
-	local_matches = (new Array(matches.size())).fill().map((_, idx) => matches.get(idx));
+	const local_matches = (new Array(matches.size())).fill().map((_, idx) => matches.get(idx));
 	local_matches.sort((a, b) => a.distance - b.distance);
 
-	src_pts = local_matches
+	const src_pts = local_matches
 		.map(m => kp1.get(m.queryIdx).pt)
 		.map(pt => [pt.x, pt.y]);
 
-	dst_pts = local_matches
+	const dst_pts = local_matches
 		.map(m => kp2.get(m.trainIdx).pt)
 		.map(pt => [pt.x, pt.y]);
 
-	src_mat = ocv.matFromArray(src_pts.length, 1, ocv.CV_32FC2, [].concat(...src_pts));
-	dst_mat = ocv.matFromArray(src_pts.length, 1, ocv.CV_32FC2, [].concat(...dst_pts));
+	const src_mat = ocv.matFromArray(src_pts.length, 1, ocv.CV_32FC2, [].concat(...src_pts));
+	const dst_mat = ocv.matFromArray(src_pts.length, 1, ocv.CV_32FC2, [].concat(...dst_pts));
 
 	// nor working because signature is incorrect :(
-	transform = ocv.findHomography(src_mat, dst_mat, ocv.RANSAC, 5.0);
+	const transform = ocv.findHomography(src_mat, dst_mat, ocv.RANSAC, 5.0);
+	const size = template.size();
 
-	size = template.size();
-	r = size.width - 1; // right
-	b = size.height - 1; // bottom
-
-	boundary_pts = ocv.matFromArray(4, 1, ocv.CV_32FC2, [
+	boundary_pts = ocv.matFromArray(2, 1, ocv.CV_32FC2, [
 		0, 0,
-		r, 0,
-		r, b,
-		0, b,
+		size.width, size.height,
 	]);
 
-	target_pts = new ocv.Mat();
+	const target_pts = new ocv.Mat();
 	ocv.perspectiveTransform(boundary_pts, target_pts, transform);
-	/**/
+
+	const [l, t, r, b] = target_pts.data32F.map(Math.round);
+
+	// return in [x,y,w,h] format
+	return [l, t, r-l, b-t];
+}
+
+(async function init() {
+	ocv = await cv;
+
+	console.log(getCaptureCoordinates());
 })();
 </script>
 </body>
