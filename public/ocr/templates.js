@@ -37,13 +37,13 @@ async function loadDigitTemplates() {
 		const digit = crop(scaled, 2 + idx * 16, 0, 14, 14);
 
 		// and now we compute the luma for the digit
-		const lumas = new Uint8ClampedArray(14 * 14).fill(0);
+		const lumas = new Float64Array(14 * 14);
 		const pixel_data = digit.data;
 
 		for (let idx=0; idx<lumas.length; idx++) {
 			const offset_idx = idx << 2;
 
-			lumas[idx] = roundedLuma(
+			lumas[idx] = luma(
 				pixel_data[offset_idx],
 				pixel_data[offset_idx + 1],
 				pixel_data[offset_idx + 2],

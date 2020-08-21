@@ -109,19 +109,19 @@ class TetrisOCR extends EventTarget {
 	}
 
 	getDigit(pixel_data, max_check_index) {
-		const sums = new Uint32Array(max_check_index);
+		const sums = new Float64Array(max_check_index);
 		const size = pixel_data.length >>> 2;
 
 		for (let p_idx = size; p_idx--; ) {
 			const offset_idx = p_idx << 2;
-			const luma = roundedLuma(
+			const pixel_luma = luma(
 				pixel_data[offset_idx],
 				pixel_data[offset_idx + 1],
 				pixel_data[offset_idx + 2],
 			);
 
 			for (let t_idx=max_check_index; t_idx--; ) {
-				const diff = luma - this.templates[t_idx][p_idx];
+				const diff = pixel_luma - this.templates[t_idx][p_idx];
 				sums[t_idx] += diff * diff;
 			}
 		}
@@ -310,14 +310,14 @@ class TetrisOCR extends EventTarget {
 	static isBlock(img) {
 		const pixel_count = img.width * img.height;
 		const block_presence_threshold = 0.7;
-		const black_luma_limit = 15;
+		const black_luma_limit = 15.0;
 		const img_data = img.data;
 
 		let sum = 0;
 
 		for (let idx=pixel_count; idx--; ) {
 			const offset_idx = idx << 2;
-			sum += roundedLuma(
+			sum += luma(
 				img_data[offset_idx],
 				img_data[offset_idx + 1],
 				img_data[offset_idx + 2],

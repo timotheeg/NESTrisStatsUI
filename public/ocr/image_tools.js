@@ -160,8 +160,12 @@ function crop(source, x, y, w, h, target=null) {
 }
 
 
+function luma(r, g, b) {
+	return r * 0.299 + g * 0.587 + b * 0.114;
+}
+
 function roundedLuma(r, g, b) {
-	return Math.round(r * 0.299 + g * 0.587 + b * 0.114);
+	return Math.round(luma(r, g, b));
 }
 
 
