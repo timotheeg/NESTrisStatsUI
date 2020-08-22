@@ -1,0 +1,41 @@
+<html>
+<head>
+</head>
+<body>
+<canvas id="source"></canvas>
+<canvas id="di"></canvas>
+
+<script src="./image_tools.js"></script>
+<script>
+(async function init(){
+	const url = './template_ui.png';
+	const response = await fetch(url);
+	const blob = await response.blob();
+	let bmp = await createImageBitmap(blob);
+
+	const source = document.querySelector('#source');
+	const di = document.querySelector('#di');
+
+	source.width = bmp.width;
+	source.height = bmp.height;
+
+	di.width = bmp.width;
+	di.height = bmp.height >>> 1;
+
+	source.getContext('2d').drawImage(bmp, 0, 0);
+
+	const source_img = source.getContext('2d').getImageData(
+		0, 0,
+		bmp.width, bmp.height
+	);
+
+	const deinterlaced = deinterlace(source_img);
+
+	bmp = await createImageBitmap(source_img);
+
+	di.getContext('2d').drawImage(bmp, 0, 0, di.width, di.height, 0, 0, di.width, di.height);
+})();
+</script>
+
+</body>
+</html>

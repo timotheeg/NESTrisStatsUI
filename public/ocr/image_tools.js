@@ -167,7 +167,7 @@ function deinterlace(source, target) {
 
 	if (!target) {
 		for (let row_idx = 1; row_idx < max_rows; row_idx++) {
-			pixels.data.copyWithin(
+			source.data.copyWithin(
 				row_len * row_idx,
 				row_len * row_idx * 2,
 				row_len * (row_idx * 2 + 1)
@@ -181,7 +181,7 @@ function deinterlace(source, target) {
 		for (let row_idx = 0; row_idx < max_rows; row_idx++) {
 			const tgt_offset = row_len * row_idx;
 			const src_offset = tgt_offset * 2;
-			const slice = pixels.data.subarray(
+			const slice = source.data.subarray(
 				src_offset,
 				src_offset + row_len
 			);
