@@ -42,14 +42,14 @@ function getCaptureCoordinates() {
 		.map(m => kp2.get(m.trainIdx).pt)
 		.map(pt => [pt.x, pt.y]);
 
-	const src_mat = ocv.matFromArray(src_pts.length, 1, ocv.CV_32FC2, [].concat(...src_pts));
-	const dst_mat = ocv.matFromArray(src_pts.length, 1, ocv.CV_32FC2, [].concat(...dst_pts));
+	const src_mat = ocv.matFromArray(src_pts.length, 1, ocv.CV_64FC2, [].concat(...src_pts));
+	const dst_mat = ocv.matFromArray(src_pts.length, 1, ocv.CV_64FC2, [].concat(...dst_pts));
 
 	// nor working because signature is incorrect :(
 	const transform = ocv.findHomography(src_mat, dst_mat, ocv.RANSAC, 5.0);
 	const size = template.size();
 
-	boundary_pts = ocv.matFromArray(2, 1, ocv.CV_32FC2, [
+	boundary_pts = ocv.matFromArray(2, 1, ocv.CV_64FC2, [
 		0, 0,
 		size.width, size.height,
 	]);
@@ -57,7 +57,7 @@ function getCaptureCoordinates() {
 	const target_pts = new ocv.Mat();
 	ocv.perspectiveTransform(boundary_pts, target_pts, transform);
 
-	const [l, t, r, b] = target_pts.data32F.map(Math.round);
+	const [l, t, r, b] = target_pts.data64F.map(Math.round);
 
 	// return in [x,y,w,h] format
 	return [l, t, r-l, b-t];
