@@ -15,13 +15,27 @@ legend {
 	font-weight: bold;
 }
 
-#inputs {
+#inputs, #ocr_results {
 	display: flex;
 	flex-direction: row;
 }
 
-#inputs fieldset {
+#inputs fieldset, #ocr_results fieldset {
 	flex-grow: 1;
+}
+
+dl {
+  display: grid;
+  grid-template-columns: max-content auto;
+}
+
+dt {
+  grid-column-start: 1;
+}
+
+dd {
+  grid-column-start: 2;
+  text-overflow: ellipsis;
 }
 
 #inputs div {
@@ -59,7 +73,7 @@ legend {
 	margin-right: 1em;
 }
 
-#controls {
+#controls, #ocr_results {
 	display: none;
 }
 
@@ -112,8 +126,16 @@ fieldset.field pre {
 
 <video id="device_video" playsinline controls="false"></video>
 
-<div id="frame_data"></div>
-<div id="perf_data"></div>
+<div id="ocr_results">
+	<fieldset>
+		<legend>Frame Data</legend>
+		<dl id="frame_data"></dl>
+	</fieldset>
+	<fieldset>
+		<legend>OCR Performance (in ms)</legend>
+		<dl id="perf_data"></dl>
+	</fieldset>
+</div>
 
 <div id="ui">
 	<div id="capture"></div>
@@ -162,6 +184,7 @@ const
 	conn_host        = document.querySelector('#conn_host'),
 	conn_port        = document.querySelector('#conn_port'),
 	video            = document.querySelector('#device_video'),
+	ocr_results      = document.querySelector('#ocr_results'),
 	frame_data       = document.querySelector('#frame_data'),
 	perf_data        = document.querySelector('#perf_data'),
 	capture          = document.querySelector('#capture'),
@@ -329,6 +352,7 @@ async function startCapture(stream) {
 
 	if (show_parts) {
 		controls.style.display = 'block';
+		ocr_results.style.display = 'flex';
 	}
 
 	frame_ms = 1000 / settings.frameRate;
@@ -625,6 +649,43 @@ function loadConfig() {
 	return JSON.parse(JSON.stringify(default_config));
 }
 
+function showFrameData(data) {
+	// TODO: fix markup on config change, rather than destroy-rebuild at every frame
+	frame_data.innerHTML = '';
+
+	for (const [name, value] of Object.entries(data)) {
+		const dt = document.createElement('dt');
+		const dd = document.createElement('dd');
+
+		dt.textContent = name;
+		if (name === 'field') {
+			dd.textContent = `${data.field.slice(0, 30)}...`;
+		}
+		else {
+			dd.textContent = value;
+		}
+
+		frame_data.appendChild(dt);
+		frame_data.appendChild(dd);
+	}
+}
+
+function showPerfData(perf) {
+	// TODO: fix markup on config change, rather than destroy-rebuild at every frame
+	perf_data.innerHTML = '';
+
+	for (const [name, value] of Object.entries(perf)) {
+		const dt = document.createElement('dt');
+		const dd = document.createElement('dd');
+
+		dt.textContent = name;
+		dd.textContent = value;
+
+		perf_data.appendChild(dt);
+		perf_data.appendChild(dd);
+	}
+}
+
 (async function init() {
 	ocv = await cv;
 
@@ -690,11 +751,10 @@ function loadConfig() {
 
 		connection.send(data);
 
-		frame_data.textContent = JSON.stringify(data);
-		perf_data.textContent = JSON.stringify(perf);
-
 		if (show_parts) {
 			showParts(data);
+			showFrameData(data);
+			showPerfData(perf);
 		}
 	}
 
