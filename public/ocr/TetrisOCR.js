@@ -271,9 +271,11 @@ class TetrisOCR extends EventTarget {
 
 	deinterlace() {
 		const source_img = this.capture_canvas_ctx.getImageData(
-			this.config.capture_area.x, this.config.capture_area.y,
+			this.config.capture_area.x, this.config.capture_area.y << 1,
 			this.config.capture_area.w, this.config.capture_area.h << 1
 		);
+
+		this.frame_img = source_img;
 
 		return deinterlace(
 			source,
