@@ -165,18 +165,7 @@ function deinterlace(source, target) {
 	const row_len = source.width << 2;
 	const max_rows = source.height >>> 1;
 
-	if (!target) {
-		for (let row_idx = 1; row_idx < max_rows; row_idx++) {
-			pixels.data.copyWithin(
-				row_len * row_idx,
-				row_len * row_idx * 2,
-				row_len * (row_idx * 2 + 1)
-			);
-		}
-
-		return source;
-	}
-	else {
+	if (target) {
 		// assume targets is the correct size
 		for (let row_idx = 0; row_idx < max_rows; row_idx++) {
 			const tgt_offset = row_len * row_idx;
@@ -190,8 +179,18 @@ function deinterlace(source, target) {
 
 		return target;
 	}
-}
+	else {
+		for (let row_idx = 1; row_idx < max_rows; row_idx++) {
+			pixels.data.copyWithin(
+				row_len * row_idx,
+				row_len * row_idx * 2,
+				row_len * (row_idx * 2 + 1)
+			);
+		}
 
+		return source;
+	}
+}
 
 function luma(r, g, b) {
 	return r * 0.299 + g * 0.587 + b * 0.114;
