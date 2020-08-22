@@ -51,10 +51,11 @@ function timingDecorator(name, func) { // func must be prebound
 class TetrisOCR extends EventTarget {
 	static TASK_RESIZE = TASK_RESIZE;
 
-	constructor(templates, config) {
+	constructor(templates, palettes, config) {
 		super();
 
 		this.templates = templates;
+		this.palettes = palettes;
 		this.setConfig(config);
 
 		this.digit_img = new ImageData(14, 14); // 2x for better matching
@@ -79,6 +80,7 @@ class TetrisOCR extends EventTarget {
 	 */
 	setConfig(config) {
 		this.config = config;
+		this.palette = this.palettes && this.palettes[config.palette]; // will reset to undefined when needed
 
 		const bounds = {
 			top:    0xFFFFFFFF,
@@ -88,6 +90,8 @@ class TetrisOCR extends EventTarget {
 		}
 
 		for (const [name, task] of Object.entries(this.config.tasks)) {
+			if (this.palette && name.startsWith('color')) continue;
+
 			const { crop: [x, y, w, h] } = task;
 
 			bounds.top    = Math.min(bounds.top,    y);
@@ -167,53 +171,43 @@ class TetrisOCR extends EventTarget {
 			this.initCaptureContext(frame);
 		}
 
+		const res = { perf: {} };
+
 		performance.mark('start');
 		this.capture_canvas_ctx.drawImage(frame, 0, 0, frame.width, frame.height);
 		performance.mark('draw_end');
 
 		const source_img = this.deinterlace();
 
-		const score = this.scanScore(source_img);
-		const level = this.scanLevel(source_img);
-		const lines = this.scanLines(source_img);
+		res.score = this.scanScore(source_img);
+		res.level = this.scanLevel(source_img);
+		res.lines = this.scanLines(source_img);
 
-		let color1, color2;
+		let colors;
 
-		if (this.config.tasks.color1) { // assumes the color tasks are a unit
-			color1 = this.scanColor1(source_img);
-			color2 = this.scanColor2(source_img);
+		// color are either supplied from palette or read, there's no other choice
+		if (this.palette) {
+			colors = this.palette[(res.level || 0) % 10];
+		}
+		else {
+			// assume tasks color1 and color2 are set
+			res.color1 = this.scanColor1(source_img);
+			res.color2 = this.scanColor2(source_img);
+			colors = [res.color1, res.color2];
 		}
 
-		const colors = color1 && color2 ? [color1, color2] : this.config.palette[(level || 0) % 10];
-
-		const field = await this.scanField(source_img, colors);
-		const preview = this.scanPreview(source_img);
-
-		let instant_das, cur_piece_das, cur_piece;
+		res.field = await this.scanField(source_img, colors);
+		res.preview = this.scanPreview(source_img);
 
 		if (this.config.tasks.instant_das) { // assumes all 3 das tasks are a unit
-			instant_das = this.scanInstantDas(source_img);
-			cur_piece_das = this.scanCurPieceDas(source_img);
-			cur_piece = this.scanCurPiece(source_img);
+			res.instant_das = this.scanInstantDas(source_img);
+			res.cur_piece_das = this.scanCurPieceDas(source_img);
+			res.cur_piece = this.scanCurPiece(source_img);
 		}
 
 		performance.mark('end');
 		performance.measure('total', 'start', 'end');
 		performance.measure('draw_frame', 'start', 'draw_end');
-
-		const res = {
-			score,
-			level,
-			lines,
-			preview,
-			instant_das,
-			cur_piece_das,
-			cur_piece,
-			field,
-			color1,
-			color2,
-			perf: {},
-		};
 
 		const measures = performance.getEntriesByType("measure").forEach(m => {
 			res.perf[m.name] =  m.duration.toFixed(3);

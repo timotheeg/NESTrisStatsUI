@@ -6,9 +6,35 @@ video {
 	display: none;
 }
 
+fieldset {
+	margin-bottom: 0.65em;
+}
+
+legend {
+	text-transform: uppercase;
+	font-weight: bold;
+}
+
+#inputs {
+	display: flex;
+	flex-direction: row;
+}
+
+#inputs fieldset {
+	flex-grow: 1;
+}
+
+#inputs div {
+	margin: 0.5em 0;
+}
+
 #ui {
 	display: flex;
 	flex-direction: row;
+}
+
+#ui > div {
+	flex-grow: 1;
 }
 
 #controls canvas, #controls span {
@@ -29,6 +55,7 @@ video {
 #capture {
 	display: flex;
 	align-items: center;
+	justify-content: center;
 	margin-right: 1em;
 }
 
@@ -42,15 +69,6 @@ video {
 
 #conn_port {
 	width: 5em;
-}
-
-fieldset {
-	margin-bottom: 0.65em;
-}
-
-legend {
-	text-transform: uppercase;
-	font-weight: bold;
 }
 
 pre {
@@ -68,20 +86,35 @@ fieldset.field pre {
 
 <body>
 <div id="inputs">
-	<select id="device">
-		<option value="0">Select the desired video device.</option>
-	</select>
-	Target Host
-	<input type="text" id="conn_host" value="localhost"></input>
-	port
-	<input type="number" id="conn_port" value="3337"></input>
-	<button id="clear_config">Clear config and reload</button>
+	<fieldset >
+		<legend>Main Setup</legend>
+
+		<div>
+			<label for="device">Capture card</label>
+			<select id="device"></select>
+		</div>
+
+		<div>
+			<label for="palette">Color matching</label>
+			<select id="palette"></select>
+		</div>
+
+		<div>
+			<button id="clear_config">Clear config and reload</button>
+		</div>
+	</fieldset>
+	<fieldset>
+		<legend>Server Connection</legend>
+		<div>Host <input type="text" id="conn_host" value="localhost"></input></div>
+		<div>Port <input type="number" id="conn_port" value="3337"></input></div>
+	</fieldset>
 </div>
 
 <video id="device_video" playsinline controls="false"></video>
 
 <div id="frame_data"></div>
 <div id="perf_data"></div>
+
 <div id="ui">
 	<div id="capture"></div>
 	<div id="controls"></div>
@@ -92,6 +125,7 @@ fieldset.field pre {
 <script src="../connection.js"></script>
 <script src="./image_tools.js"></script>
 <script src="./templates.js"></script>
+<script src="./palettes.js"></script>
 <script src="./TetrisOCR.js"></script>
 
 <script>
@@ -100,10 +134,6 @@ fieldset.field pre {
 const show_parts = true;
 
 const default_config = {
-	deinterlace: true,
-
-	palette: [[[65, 40, 228], [86, 168, 254]], [[3, 127, 1], [125, 199, 6]], [[139, 14, 179], [211, 96, 255]], [[64, 41, 225], [85, 210, 45]], [[154, 19, 87], [64, 205, 111]], [[65, 206, 112], [134, 131, 255]], [[146, 38, 2], [90, 91, 87]], [[97, 18, 215], [82, 0, 20]], [[64, 40, 227], [151, 43, 4]], [[147, 39, 3], [211, 137, 32]]],
-
 	tasks: {
 		score:   { crop: [526, 62, 118, 7], pattern: "DDDDDD", red: false },
 		level:   { crop: [567, 166, 37, 7], pattern: "TD", red: false },
@@ -111,10 +141,10 @@ const default_config = {
 		field:   { crop: [284, 46, 201, 160] },
 		preview: { crop: [526, 118, 80, 15] },
 
-		/**/
+		// color tasks are always set
+		// but can be ignored during OCR if a palette is supplied
 		color1:  { crop: [139, 112, 11, 5] },
 		color2:  { crop: [139, 129, 11, 5] },
-		/**/
 
 		// stats: { crop: [164, 93, 57, 105], red: true },
 
@@ -127,16 +157,24 @@ const default_config = {
 };
 
 const
-	device_selector = document.querySelector('#device'),
-	conn_host       = document.querySelector('#conn_host'),
-	conn_port       = document.querySelector('#conn_port'),
-	video           = document.querySelector('#device_video'),
-	frame_data      = document.querySelector('#frame_data'),
-	perf_data       = document.querySelector('#perf_data'),
-	capture         = document.querySelector('#capture'),
-	controls        = document.querySelector('#controls')
+	device_selector  = document.querySelector('#device'),
+	palette_selector = document.querySelector('#palette'),
+	conn_host        = document.querySelector('#conn_host'),
+	conn_port        = document.querySelector('#conn_port'),
+	video            = document.querySelector('#device_video'),
+	frame_data       = document.querySelector('#frame_data'),
+	perf_data        = document.querySelector('#perf_data'),
+	capture          = document.querySelector('#capture'),
+	controls         = document.querySelector('#controls')
 ;
 
+const IN_GAME = {};
+const IN_MENU = {};
+
+let ocv;
+let templates;
+let palettes;
+let tetris_ocr;
 let config;
 let connection;
 
@@ -144,6 +182,17 @@ device_selector.addEventListener('change', evt => {
 	config.device_id = device_selector.value;
 	saveConfig(config);
 	playVideoFromDevice(config.device_id);
+});
+
+palette_selector.addEventListener('change', evt => {
+	config.palette = palette_selector.value;
+
+	config.device_id = palette_selector.value;
+	saveConfig(config);
+	tetris_ocr.setConfig(config);
+
+	showColorControls(palettes, config);
+	resetConfig(config);
 });
 
 function connect() {
@@ -165,18 +214,41 @@ clear_config.addEventListener('click', evt => {
 	location.reload();
 });
 
+function updatePaletteList() {
+	palette_selector.innerHTML = '';
+
+	[
+		{
+			label: 'Read from frame',
+			value: ''
+		},
+		...Object.keys(palettes).map(value => ({label: `${value} palette`, value}))
+	]
+	.forEach(option => {
+		const palette_option = document.createElement('option');
+		palette_option.text = option.label;
+		palette_option.value = option.value;
+
+		if (config && config.palette === option.value) {
+			palette_option.selected = true;
+		}
+
+		palette_selector.appendChild(palette_option)
+	});
+}
+
 // Updates the select element with the provided set of cameras
 function updateDeviceList(devices) {
 	device_selector.innerHTML = '';
 
-	const heading = [{
-		label: "Select your video device",
-		deviceId: "0"
-	}];
-
-	const entries = heading.concat(devices);
-
-	entries.forEach(camera => {
+	[
+		{
+			label: "None",
+			deviceId: "0"
+		},
+		...devices
+	]
+	.forEach(camera => {
 		const camera_option = document.createElement('option');
 		camera_option.text = camera.label;
 		camera_option.value = camera.deviceId;
@@ -325,16 +397,18 @@ function updateCanvasSizeIfNeeded(canvas, w, h) {
 }
 
 function resetConfig(config, task_name, task_crop) {
-	config.tasks[task_name].crop = task_crop;
+	if (task_name) {
+		config.tasks[task_name].crop = task_crop;
 
-	// update display canvas with new data
-	const canvas = config.tasks[task_name].crop_canvas_ctx.canvas;
-	updateCanvasSizeIfNeeded(
-		canvas,
-		task_crop[2] * 2,
-		task_crop[3] * 2
-	);
-	config.tasks[task_name].crop_canvas_ctx = canvas.getContext('2d');
+		// update display canvas with new data
+		const canvas = config.tasks[task_name].crop_canvas_ctx.canvas;
+		updateCanvasSizeIfNeeded(
+			canvas,
+			task_crop[2] * 2,
+			task_crop[3] * 2
+		);
+		config.tasks[task_name].crop_canvas_ctx = canvas.getContext('2d');
+	}
 
 	// set the new config
 	tetris_ocr.setConfig(config);
@@ -348,7 +422,15 @@ function resetConfig(config, task_name, task_crop) {
 	saveConfig(config);
 }
 
-function showConfigControls(config) {
+function showColorControls(palettes, config) {
+	const has_valid_palette = !!(config.palette && palettes[config.palette]);
+	const display = has_valid_palette ? 'none' : 'block';
+
+	document.querySelector(`fieldset.color1`).style.display = display;
+	document.querySelector(`fieldset.color2`).style.display = display;
+}
+
+function showConfigControls(templates, palettes, config) {
 	for (const [name, task] of Object.entries(config.tasks)) {
 		const fieldset = document.createElement('fieldset');
 		fieldset.classList.add(name);
@@ -365,6 +447,8 @@ function showConfigControls(config) {
 
 		controls.appendChild(fieldset);
 	}
+
+	showColorControls(palettes, config);
 }
 
 function addCropControls(parent, config, name, onChangeCallback) {
@@ -419,7 +503,11 @@ async function showParts(data) {
 
 	const x_offset = config.capture_area.x;
 
-	for (const [name, task] of Object.entries(config.tasks)) {
+	for (const name of Object.keys(data)) {
+		const task = config.tasks[name];
+
+		if (!task) continue;
+
 		const holder = document.querySelector(`fieldset.${name} div.results`);
 		let separator;
 
@@ -537,16 +625,12 @@ function loadConfig() {
 	return JSON.parse(JSON.stringify(default_config));
 }
 
-let ocv;
-let tetris_ocr;
-
-const IN_GAME = {};
-const IN_MENU = {};
-
 (async function init() {
 	ocv = await cv;
 
-	const templates = await loadDigitTemplates();
+	// load external assets - could parrallelize
+	templates = await loadDigitTemplates();
+	palettes = await loadPalettes();
 
 	if (false && !hasConfig()) {
 		// wait for user to select camera
@@ -559,11 +643,13 @@ const IN_MENU = {};
 		config = loadConfig();
 	}
 
+	updatePaletteList();
+
 	if (show_parts) {
-		showConfigControls(config);
+		showConfigControls(templates, palettes, config);
 	}
 
-	tetris_ocr = new TetrisOCR(templates, config);
+	tetris_ocr = new TetrisOCR(templates, palettes, config);
 
 	let game_state = IN_GAME;
 	let gameid = 1;
@@ -612,7 +698,7 @@ const IN_MENU = {};
 		}
 	}
 
-	/**/
+	/*
 	await playVideoFromDevice(config.device_id);
 	resetDevices();
 	return;
