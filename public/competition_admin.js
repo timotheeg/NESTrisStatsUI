@@ -18,22 +18,22 @@ const state = {
 
 const remoteAPI = {
 	setBestOf: function(n) {
-		connection.send('setBestOf', n);
+		connection.send(['setBestOf', n]);
 	},
 	setVictories: function(player_num, num_wins) {
-		connection.send('setVictories', player_num, num_wins);
+		connection.send(['setVictories', player_num, num_wins]);
 	},
 	setName: function(player_num, name) {
-		connection.send('setName', player_num, name);
+		connection.send(['setName', player_num, name]);
 	},
 	setAvatar: function(player_num, url) {
-		connection.send('setAvatar', player_num, url);
+		connection.send(['setAvatar', player_num, url]);
 	},
 	resetVictories: function() {
-		connection.send('resetVictories');
+		connection.send(['resetVictories']);
 	},
 	setLogo: function(url) {
-		connection.send('setLogo', url);
+		connection.send(['setLogo', url]);
 	}
 };
 

@@ -8,6 +8,9 @@ const player1_port = 4001;
 const player2_port = 4002;
 const view_port    = 4003;
 
+const player1_ws_port = 3335;
+const player2_ws_port = 3336;
+
 
 console.log('Setting up Viewer WS server');
 
