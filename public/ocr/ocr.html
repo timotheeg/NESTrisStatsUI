@@ -3,7 +3,8 @@
 <head>
 <style type="text/css">
 video {
-	display: none;
+	/* display: none; */
+	width: 360px;
 }
 
 fieldset {
@@ -49,6 +50,7 @@ dd {
 
 #ui > div {
 	flex-grow: 1;
+
 }
 
 #controls canvas, #controls span {
@@ -68,6 +70,7 @@ dd {
 
 #capture {
 	display: flex;
+	flex-direction: column;
 	align-items: center;
 	justify-content: center;
 	margin-right: 1em;
@@ -124,8 +127,6 @@ fieldset.field pre {
 	</fieldset>
 </div>
 
-<video id="device_video" playsinline controls="false"></video>
-
 <div id="ocr_results">
 	<fieldset>
 		<legend>Frame Data</legend>
@@ -138,7 +139,11 @@ fieldset.field pre {
 </div>
 
 <div id="ui">
-	<div id="capture"></div>
+	<div id="capture">
+		<video id="device_video" playsinline controls="false"></video>
+		<br />
+		<br />
+	</div>
 	<div id="controls"></div>
 </div>
 <div id="templates"></div>
@@ -371,12 +376,29 @@ async function captureFrame() {
 	try {
 		let bitmap;
 
+		// let's assume that pixelated resize of height divided 2 is the same as dropping every other row
+		// which is equivalent to the deinterlacing we want to do
+
 		if (blob) {
-			bitmap = await createImageBitmap(blob);
+			// images are known to be 720x480
+			bitmap = await createImageBitmap(blob,
+				0, 0, 720, 480,
+				{
+					resizeWidth: 720,
+					resizeHeight: 480 >> 1,
+					resizeQuality: 'pixelated',
+				}
+			);
 		}
 		else {
+			// we do cheap deinterlacing with pixelated resize...
 			bitmap = await createImageBitmap(video,
-				0, 0, video.videoWidth, video.videoHeight
+				0, 0, video.videoWidth, video.videoHeight,
+				{
+					resizeWidth: video.videoWidth,
+					resizeHeight: video.videoHeight >> 1,
+					resizeQuality: 'pixelated',
+				}
 			);
 		}
 
@@ -504,7 +526,7 @@ function addCropControls(parent, config, name, onChangeCallback) {
 }
 
 async function showParts(data) {
-	const half_di_height = Math.floor(config.deinterlaced_img.height / 2);
+	const half_di_height = Math.floor(config.deinterlaced_img.height);
 
 	if (!config.di_canvas) {
 		const di_canvas = document.createElement('canvas');

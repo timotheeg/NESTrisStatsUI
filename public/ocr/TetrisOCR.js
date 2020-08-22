@@ -254,9 +254,10 @@ class TetrisOCR extends EventTarget {
 	deinterlace() {
 		const pixels = this.capture_canvas_ctx.getImageData(
 			this.config.capture_area.x, 0,
-			this.config.capture_area.w, this.config.capture_bounds.bottom * 2
+			this.config.capture_area.w, this.config.capture_bounds.bottom
 		);
 
+		/*
 		const pixels_per_rows = this.config.capture_area.w * 4;
 		const max_rows = this.config.capture_bounds.bottom;
 
@@ -267,6 +268,7 @@ class TetrisOCR extends EventTarget {
 				pixels_per_rows * (row_idx * 2 + 1)
 			);
 		}
+		/**/
 
 		this.config.deinterlaced_img = pixels;
 
