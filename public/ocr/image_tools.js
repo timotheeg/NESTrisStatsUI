@@ -159,6 +159,39 @@ function crop(source, x, y, w, h, target=null) {
 	return target;
 }
 
+// if target is not supplied, modifies source image in place
+// with resulting top half being the deinterlaced copy
+function deinterlace(source, target) {
+	const row_len = source.width << 2;
+	const max_rows = source.height >>> 1;
+
+	if (!target) {
+		for (let row_idx = 1; row_idx < max_rows; row_idx++) {
+			pixels.data.copyWithin(
+				row_len * row_idx,
+				row_len * row_idx * 2,
+				row_len * (row_idx * 2 + 1)
+			);
+		}
+
+		return source;
+	}
+	else {
+		// assume targets is the correct size
+		for (let row_idx = 0; row_idx < max_rows; row_idx++) {
+			const tgt_offset = row_len * row_idx;
+			const src_offset = tgt_offset * 2;
+			const slice = pixels.data.subarray(
+				src_offset,
+				src_offset + row_len
+			);
+			target.set(slice, tgt_offset);
+		}
+
+		return target;
+	}
+}
+
 
 function luma(r, g, b) {
 	return r * 0.299 + g * 0.587 + b * 0.114;
