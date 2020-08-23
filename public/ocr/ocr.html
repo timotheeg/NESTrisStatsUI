@@ -281,7 +281,7 @@ function updateDeviceList(devices) {
 		camera_option.text = camera.label;
 		camera_option.value = camera.deviceId;
 
-		if (config && config.device_id) {
+		if (config && config.device_id === camera.deviceId) {
 			camera_option.selected = true;
 		}
 
