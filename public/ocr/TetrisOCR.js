@@ -303,9 +303,8 @@ class TetrisOCR extends EventTarget {
 	/*
 	 * Returns true if 70% of the pixels in the supplied image are not black.
 	 */
-	static isBlock(img) {
+	static isBlock(img, block_presence_threshold=0.7) {
 		const pixel_count = img.width * img.height;
-		const block_presence_threshold = 0.7;
 		const black_luma_limit = 15.0;
 		const img_data = img.data;
 
@@ -332,8 +331,8 @@ class TetrisOCR extends EventTarget {
 		bicubic(task.crop_img, task.scale_img);
 
 		// Trying side i blocks
-		if (TetrisOCR.isBlock(crop(task.scale_img, 0, 3, 4, 7))
-			&& TetrisOCR.isBlock(crop(task.scale_img, 27, 3, 4, 7))
+		if (TetrisOCR.isBlock(crop(task.scale_img, 0, 3, 4, 7), 0.5)
+			&& TetrisOCR.isBlock(crop(task.scale_img, 27, 3, 4, 7), 0.5)
 		) {
 			return 'I';
 		}
@@ -401,8 +400,8 @@ class TetrisOCR extends EventTarget {
 		bicubic(task.crop_img, task.scale_img);
 
 		// Trying side i blocks
-		if (TetrisOCR.isBlock(crop(task.scale_img, 0, 4, 2, 5))
-			&& TetrisOCR.isBlock(crop(task.scale_img, 20, 4, 3, 5))
+		if (TetrisOCR.isBlock(crop(task.scale_img, 0, 4, 2, 5), 0.5)
+			&& TetrisOCR.isBlock(crop(task.scale_img, 20, 4, 3, 5), 0.5)
 		) {
 			return 'I';
 		}
