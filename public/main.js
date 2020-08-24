@@ -891,6 +891,14 @@ function renderStage(level, stage_string) {
 let next_piece_currently_rendered = null;
 
 function renderNextPiece(level, next_piece) {
+	if (
+		level === null
+		|| isNaN(level)
+		|| !next_piece
+	) {
+		return;
+	}
+
 	const
 		piece_id = `${level}${next_piece}`;
 
