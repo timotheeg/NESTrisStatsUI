@@ -2,6 +2,12 @@ export class Color {
 	r: u8
 	g: u8
 	b: u8
+
+	constructor(r:u8, g:u8, b:u8) {
+		this.r = r;
+		this.g = g;
+		this.b = b;
+	}
 }
 
 export class ImageData {
