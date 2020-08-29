@@ -736,6 +736,8 @@ function showPerfData(perf) {
 
 	let game_state = IN_GAME;
 	let gameid = 1;
+	let last_frame_data = {};
+	let compare_fields = ['score', 'level', 'lines', 'field'];
 
 	// TODO: better event system and name for frame data events
 	tetris_ocr.onMessage = function(data) {
@@ -768,6 +770,12 @@ function showPerfData(perf) {
 		const perf = data.perf;
 
 		delete data.perf;
+
+		if (compare_fields.every(prop => last_frame_data[prop] === data[prop])) {
+			return;
+		}
+
+		last_frame = data;
 
 		data.ctime = Date.now();
 
