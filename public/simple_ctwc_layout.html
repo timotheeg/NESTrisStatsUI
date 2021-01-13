@@ -219,13 +219,20 @@ const timer_el = document.querySelector(`.timer .content`);
 let start_time = 0;
 let timer = null;
 
-function startTimer() {
+function startTimer(allowed) {
 	timer = clearInterval(timer);
 	start_time = Date.now();
 
+	const allowed_time = allowed || ALLOWED_TIME;
+
 	timer = setInterval(() => {
 		const elapsed = Math.floor((Date.now() - start_time) / 1000);
-		let remainder = ALLOWED_TIME - elapsed;
+		let remainder = allowed_time - elapsed;
+
+		if (remainder < 0) {
+			remainder = 0;
+			timer = clearInterval(timer);
+		}
 
 		hours = Math.floor(remainder / (60 * 60));
 		remainder = remainder % (60 * 60);
@@ -251,8 +258,8 @@ const API = {
 		player.setFrame(data);
 	},
 
-	startTimer() {
-		startTimer();
+	startTimer(allowed_time) {
+		startTimer(allowed_time);
 	}
 }
 
