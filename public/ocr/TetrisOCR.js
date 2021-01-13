@@ -32,6 +32,7 @@ const TASK_RESIZE = {
 	cur_piece_das: [16 * 2 - 2, 14],
 	color1:        [5, 5],
 	color2:        [5, 5],
+	stats:         [16 * 3 - 2, 14 * 7 + 14 * 7]
 };
 
 // timing decorator
