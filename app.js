@@ -141,8 +141,15 @@ web_producer_wss.on('connection', function connection(ws) {
   });
   ws.on('message', message => {
     // console.log(message);
-    fs.write(frame_log_fd, `${message},\n`, noop);
-    ClientConnectionAPI.frame(JSON.parse(message));
+    // fs.write(frame_log_fd, `${message},\n`, noop);
+    const data = JSON.parse(message);
+
+    if (Array.isArray(data)) {
+      ClientConnectionAPI[data[0]](...data.slice(1));
+    }
+    else {
+      ClientConnectionAPI.frame(data);
+    }
   });
 });
 

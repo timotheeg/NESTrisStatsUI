@@ -119,6 +119,9 @@ fieldset.field pre {
 		<div>
 			<button id="clear_config">Clear config and reload</button>
 		</div>
+		<div>
+			<button id="start_timer">Start Timer</button>
+		</div>
 	</fieldset>
 	<fieldset>
 		<legend>Server Connection</legend>
@@ -241,6 +244,10 @@ clear_config.addEventListener('click', evt => {
 	localStorage.clear();
 	location.reload();
 });
+
+start_timer.addEventListener('click', evt => {
+	connection.send(['startTimer'])
+})
 
 function updatePaletteList() {
 	palette_selector.innerHTML = '';
