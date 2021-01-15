@@ -20,19 +20,26 @@ const PERF_METHODS = [
 	'scanCurPiece',
 ];
 
+function getDigitsWidth(n) {
+	// width per digit is 8px times 2
+	// and for last digit, we ignore the 1px (times 2)
+	// border on the right, hence -2
+	return 16 * n - 2;
+}
+
 // Resize areas based on logical NES pixels (2x for digits)
 const TASK_RESIZE = {
-	score:         [16 * 6 - 2, 14],
-	level:         [16 * 2 - 2, 14],
-	lines:         [16 * 3 - 2, 14],
+	score:         [getDigitsWidth(6), 14],
+	level:         [getDigitsWidth(2), 14],
+	lines:         [getDigitsWidth(3), 14],
 	field:         [80, 160],
 	preview:       [31, 15],
 	cur_piece:     [23, 12],
-	instant_das:   [16 * 2 - 2, 14],
-	cur_piece_das: [16 * 2 - 2, 14],
+	instant_das:   [getDigitsWidth(2), 14],
+	cur_piece_das: [getDigitsWidth(2), 14],
 	color1:        [5, 5],
 	color2:        [5, 5],
-	stats:         [16 * 3 - 2, 14 * 7 + 14 * 7]
+	stats:         [getDigitsWidth(3), 14 * 7 + 14 * 7] // height captures all the individual stats...
 };
 
 // timing decorator
