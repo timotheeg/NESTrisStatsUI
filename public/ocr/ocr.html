@@ -336,6 +336,8 @@ async function playVideoFromDevice(device_id) {
 
 		stream.addEventListener('inactive', console.log('stream is inactive'));
 
+		console.log(stream.getVideoTracks()[0].getSettings());
+
 		startCapture(stream);
 	}
 	catch(error) {
