@@ -327,7 +327,7 @@ async function playVideoFromDevice(device_id) {
 
 		const stream = await navigator.mediaDevices.getUserMedia(constraints);
 
-		// we only prompt for permission withthe first call
+		// we only prompt for permission with the first call
 		if (device_id === undefined) return;
 
 		// when an actual device id is supplied, we start everything
