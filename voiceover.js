@@ -227,6 +227,8 @@ if (config.chat_voice && config.chat_voice.enabled) {
 	const say = eval(`say_${config.chat_voice.provider}`);
 
 	module.exports = function(chatter) {
+		if (!chatter || !chatter.username) return;
+
 		if (chatter.username == "classictetrisbot") return;
 
 		const [introduced] = getVoice(chatter.username);
