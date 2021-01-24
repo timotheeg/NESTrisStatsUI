@@ -310,14 +310,15 @@ navigator.mediaDevices.addEventListener('devicechange', resetDevices);
 
 
 async function playVideoFromDevice(device_id) {
-	capture_process = clearTimeout(capture_process);
+	clearTimeout(capture_process);
 
 	try {
 		const constraints = {
 			audio: false,
 			video: {
 				width: { ideal: 640 },
-				height: { ideal: 480 }
+				height: { ideal: 480 },
+				frameRate: { ideal: 60 }
 			}
 		};
 
@@ -344,7 +345,7 @@ async function playVideoFromDevice(device_id) {
 		console.error('Error opening video camera.', error);
 		video.pause();
 		capture_process = clearTimeout(capture_process);
-		// window.cancelAnimationFrame(capture_process);
+		window.cancelAnimationFrame(capture_process);
 	}
 }
 
@@ -419,7 +420,14 @@ async function captureFrame() {
 
 	const next_frame_time = start_time_ms + frame_ms * frame_count;
 
-	capture_process = setTimeout(captureFrame, Math.ceil(next_frame_time - Date.now()));
+	// tryingto get time accurate frames
+	// seems to not work well with missing frames sometimes, which can be a problem for clear animation detections
+	//capture_process = setTimeout(captureFrame, Math.ceil(next_frame_time - Date.now()));
+
+	// instead let's try to read at the maximum speed possible
+	// and see how that goes
+	// this might capture twice as many frames as we need, but we can have a process to dedup later in the pipeline
+	capture_process = window.requestAnimationFrame(captureFrame);
 }
 
 function showTemplates(templates) {
