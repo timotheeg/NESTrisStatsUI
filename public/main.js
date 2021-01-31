@@ -107,9 +107,11 @@ let
 	gameid = -1,
 	last_valid_state = null,
 
+	pending_delay_frames = 3,
+
 	pending_game = true,
-	pending_piece = false,
-	pending_line = false,
+	pending_piece = -1,
+	pending_line = -1,
 
 	line_animation_remaining_frames = 0,
 	pending_single = false,
@@ -168,7 +170,7 @@ function onFrame(event, debug) {
 
 		line_animation_remaining_frames = 0;
 
-		pending_piece = true;
+		pending_piece = 1;
 	}
 
 	if (!game.over) {
@@ -213,9 +215,8 @@ function onFrame(event, debug) {
 	diff.stage_blocks  = transformed.stage.num_blocks - last_valid_state.stage.num_blocks;
 
 	// check if a change to cur_piece_stats
-	if (pending_piece) {
+	if (--pending_piece === 0) {
 		if (transformed.cur_piece && transformed.next_piece && !isNaN(transformed.cur_piece_das) && transformed.cur_piece_das <= 16) {
-			pending_piece = false;
 			game.onPiece(transformed);
 			renderPiece(transformed);
 
@@ -225,10 +226,13 @@ function onFrame(event, debug) {
 				cur_piece_das: transformed.cur_piece_das
 			});
 		}
+		else {
+			pending_piece = 1; // check again next frame
+		}
 	}
 
 	// check for score change
-	if (pending_line) {
+	if (--pending_line === 0) {
 		if (
 			transformed.score
 			&& !isNaN(transformed.lines)
@@ -236,8 +240,6 @@ function onFrame(event, debug) {
 			&& diff.score >= 0
 			&& diff.cleared_lines >= 0
 		) {
-			pending_line = false;
-
 			game.onLine(transformed);
 			renderLine();
 
@@ -247,11 +249,14 @@ function onFrame(event, debug) {
 				level: transformed.level
 			});
 		}
+		else {
+			pending_line = 1; // check again next frame
+		}
 	}
 	else if(diff.score) {
 		// always wait one frame to read score and line
 		// this is to protect against transition blur causing incorrect OCR
-		pending_line = true;
+		pending_line = pending_delay_frames;
 	}
 
 	if (!isNaN(transformed.level) && transformed.level != null) {
@@ -267,7 +272,7 @@ function onFrame(event, debug) {
 
 	if (diff.stage_blocks === 4) {
 		last_valid_state.stage = transformed.stage;
-		pending_piece = true;
+		pending_piece = pending_delay_frames;
 	}
 	else {
 		// assuming we aren't dropping any frame, the number of blocks only reduces when the
