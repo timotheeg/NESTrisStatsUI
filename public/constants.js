@@ -1,5 +1,7 @@
 const
 
+	DOM_DEV_NULL = document.createElement('div'),
+
 	PIECES = ['T', 'J', 'Z', 'O', 'S', 'L', 'I'],
 
 	// generate colors at https://paletton.com/

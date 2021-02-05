@@ -243,12 +243,13 @@ const players = [1, 2].map(num => new CompetitionPlayer(
 		level:       document.querySelector(`.level.p${num} .content`),
 		lines:       document.querySelector(`.lines.p${num} .content`),
 		trt:         document.querySelector(`.tetris_rate.p${num} .content`),
-		eff:         document.querySelector(`.dev_null`),
 		running_trt: document.querySelector(`.running_trt.p${num}`),
 		preview:     document.querySelector(`.next_piece.p${num}`),
 		field:       document.querySelector(`.board.p${num}`),
-		drought:     document.querySelector(`.dev_null`),
 		hearts:      document.querySelector(`.name.p${num} .content`),
+
+		eff:         DOM_DEV_NULL,
+		drought:     DOM_DEV_NULL,
 	},
 	{
 		field_pixel_size: 3,
@@ -266,8 +267,8 @@ function onFrame(frame, debug) {
 }
 </script>
 
-<!-- script src="sample_frames/sample_frames_16.js"></script>
-<script src="debug.js"></script -->
+<script src="sample_frames/sample_frames_16.js"></script>
+<script src="debug.js"></script>
 
 
 </body>
