@@ -48,6 +48,41 @@ function oneFrame(debug=false) {
 	onFrame(frames[timeline_idx++], debug);
 }
 
+function createElementFromHTML(htmlString) {
+  var div = document.createElement('div');
+  div.innerHTML = htmlString.trim();
+
+  // Change this to div.childNodes to support multiple top-level nodes
+  return div.firstChild;
+}
+
+(function setupDebugUI() {
+	// 1. load the debug css to HEAD
+	const link = document.createElement('link');
+	link.rel = 'stylesheet';
+	link.type = 'text/css';
+	link.href = 'debug.css';
+	document.getElementsByTagName('HEAD')[0].appendChild(link);
+
+	// 2. prepend the debug elements to BODY
+	const body = document.getElementsByTagName('BODY')[0];
+
+	[
+		'<textarea id="cur_frame"></textarea>',
+		'<textarea id="next_frame"></textarea>',
+		'<button id="goto_next_frame">Next Frame</button>',
+		'<button id="goto_next_frame_debug">Next Frame Debug</button>',
+		'<button id="play">Play</button>',
+		'<button id="stop">Stop</button>',
+		'<div id="skip"><input class="to"></body><button class="btn">Skip to</button></div>',
+	]
+		.reverse()
+		.forEach(element_string => {
+			body.prepend(createElementFromHTML(element_string));
+		});
+
+})();
+
 document.querySelector('#goto_next_frame').addEventListener('click', () => {
 	oneFrame();
 });

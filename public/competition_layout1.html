@@ -2,7 +2,6 @@
 <html>
 <head>
 <link rel="stylesheet" type="text/css" href="tetris.css">
-<link rel="stylesheet" type="text/css" href="debug.css" />
 <style>
 #playing_fields {
 	position: absolute;
@@ -132,16 +131,6 @@
 </head>
 <body>
 
-<textarea id="cur_frame"></textarea>
-<textarea id="next_frame"></textarea>
-
-
-<button id="goto_next_frame">Next Frame</button>
-<button id="goto_next_frame_debug">Next Frame Debug</button>
-<button id="play">Play</button>
-<button id="stop">Stop</button>
-<div id="skip"><input class="to"></body><button class="btn">Skip to</button></div>
-
 <div id="stream_bg">
 <div id="playing_fields">
 
@@ -267,9 +256,8 @@ function onFrame(frame, debug) {
 }
 </script>
 
-<script src="sample_frames/sample_frames_16.js"></script>
-<script src="debug.js"></script>
-
+<!-- script src="sample_frames/sample_frames_16.js"></script>
+<script src="debug.js"></script -->
 
 </body>
 <html>
