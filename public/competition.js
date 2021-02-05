@@ -65,15 +65,15 @@ class TetrisCompetitionAPI {
 	}
 
 	_repaintVictories(player_num) {
-		const hearts = document.querySelector(`.wins .p${player_num}`);
+		const player = getPlayer(player_num);
+		const victories = this.victories[player_num]
+
+		const hearts = player.dom.hearts;
 
 		// clear all the hearts
 		while (hearts.childNodes.length) {
 			hearts.removeChild(hearts.childNodes[0]);
 		}
-
-		const player = getPlayer(player_num);
-		const victories = this.victories[player_num]
 
 		// reset to specified value
 		for (let idx = 0; idx < this.first_to; idx++) {

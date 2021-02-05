@@ -2,6 +2,7 @@
 <html>
 <head>
 <link rel="stylesheet" type="text/css" href="tetris.css">
+<link rel="stylesheet" type="text/css" href="debug.css" />
 <style>
 #playing_fields {
 	position: absolute;
@@ -123,9 +124,23 @@
 	text-align: center;
 }
 
+.dev_null {
+	display: none;
+}
+
 </style>
 </head>
 <body>
+
+<textarea id="cur_frame"></textarea>
+<textarea id="next_frame"></textarea>
+
+
+<button id="goto_next_frame">Next Frame</button>
+<button id="goto_next_frame_debug">Next Frame Debug</button>
+<button id="play">Play</button>
+<button id="stop">Stop</button>
+<div id="skip"><input class="to"></body><button class="btn">Skip to</button></div>
 
 <div id="stream_bg">
 <div id="playing_fields">
@@ -205,6 +220,8 @@
 <div class="box board p2"></div>
 
 
+<div class="dev_null"></div>
+
 </div><!-- End Playing Fields -->
 </div><!-- End Stream BG -->
 
@@ -212,10 +229,10 @@
 <!-- Audio -->
 
 
-<script src="sample_frames/sample_frames_10.js"></script>
 <script src="constants.js"></script>
 <script src="utils.js"></script>
 <script src="Player.js"></script>
+<script src="connection.js"></script>
 <script src="CompetitionPlayer.js"></script>
 <script>
 const players = [1, 2].map(num => new CompetitionPlayer(
@@ -226,9 +243,12 @@ const players = [1, 2].map(num => new CompetitionPlayer(
 		level:       document.querySelector(`.level.p${num} .content`),
 		lines:       document.querySelector(`.lines.p${num} .content`),
 		trt:         document.querySelector(`.tetris_rate.p${num} .content`),
+		eff:         document.querySelector(`.dev_null`),
 		running_trt: document.querySelector(`.running_trt.p${num}`),
 		preview:     document.querySelector(`.next_piece.p${num}`),
-		field:       document.querySelector(`.board.p${num}`)
+		field:       document.querySelector(`.board.p${num}`),
+		drought:     document.querySelector(`.dev_null`),
+		hearts:      document.querySelector(`.name.p${num} .content`),
 	},
 	{
 		field_pixel_size: 3,
@@ -240,7 +260,15 @@ const players = [1, 2].map(num => new CompetitionPlayer(
 <script src="competition.js"></script>
 <script>
 const API = new TetrisCompetitionAPI();
+
+function onFrame(frame, debug) {
+	API.frame(1, frame, debug);
+}
 </script>
+
+<!-- script src="sample_frames/sample_frames_16.js"></script>
+<script src="debug.js"></script -->
+
 
 </body>
 <html>
