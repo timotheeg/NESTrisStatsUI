@@ -253,7 +253,7 @@ function onFrame(event, debug) {
 			pending_line = 1; // check again next frame
 		}
 	}
-	else if(diff.score) {
+	else if(pending_line < 0 && diff.score) {
 		// always wait one frame to read score and line
 		// this is to protect against transition blur causing incorrect OCR
 		pending_line = pending_delay_frames;
