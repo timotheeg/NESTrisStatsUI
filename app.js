@@ -103,7 +103,7 @@ function is_spam(msg) {
 Bot.on('message', chatter => {
   if (chatter && chatter.username && chatter.message) {
     if (is_spam(chatter.message)) {
-      // TODO: auto ban with chat command
+      Bot.ban(chatter.username, 'spam');
       return;
     }
 
