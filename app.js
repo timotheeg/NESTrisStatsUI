@@ -40,7 +40,7 @@ module.exports = function (fastify, opts, next) {
 }
 
 
-// set up twitch bot
+// set up view
 const WebSocket = require('ws');
 
 const wss = new WebSocket.Server({ port: 3339 });
@@ -75,20 +75,14 @@ const ClientConnectionAPI = new Proxy({}, {
 });
 
 
-// Connect to Twitch and forward chgat messages to client
-const TwitchBot = require('twitch-bot')
+// =========================================================
+// Set up Twitch Chat connector
 
-const Bot = new TwitchBot(config.twitch);
+const TwitchAuth = require('twitch-auth');
+const StaticAuthProvider = TwitchAuth.StaticAuthProvider;
+const RefreshableAuthProvider = TwitchAuth.RefreshableAuthProvider;
+const ChatClient = require('twitch-chat-client').ChatClient;
 
-Bot.on('join', channel => {
-  console.log(`Joined channel: ${channel}`)
-});
-
-['connected', 'error', 'close', 'timeout', 'ban', 'message', 'part', 'subscription'].forEach(evt => {
-  Bot.on(evt, data => {
-    console.log(evt, data);
-  });
-});
 
 function is_spam(msg) {
   if (/bigfollows\s*.\s*com/i.test(msg)) return true;
@@ -100,18 +94,73 @@ function is_spam(msg) {
   );
 }
 
-Bot.on('message', chatter => {
-  if (chatter && chatter.username && chatter.message) {
-    if (is_spam(chatter.message)) {
-      Bot.ban(chatter.username, 'spam');
+async function twitch() {
+  const auth = new RefreshableAuthProvider(
+      new StaticAuthProvider(
+        config.twitch.client.id,
+        config.twitch.access.accessToken
+      ),
+      {
+        clientSecret: config.twitch.client.secret,
+        refreshToken: config.twitch.access.refreshToken,
+        expiry: config.twitch.access.expiryTimestamp == null ? null : new Date(config.twitch.access.expiryTimestamp),
+        onRefresh: ({ accessToken, refreshToken, expiryDate }) => {
+              config.twitch.access = {
+                  accessToken,
+                  refreshToken,
+                  expiryTimestamp: expiryDate === null ? null : expiryDate.getTime()
+              };
+              config.save()
+          }
+      }
+  );
+
+  const chatClient = new ChatClient(auth, { channels: config.twitch.channels });
+
+  chatClient.onMessage((channel, user, message) => {
+    // comes from sample client, but I might as well leave it for fun :)
+    if (message === '!ping') {
+      chatClient.say(channel, 'Pong!');
+    }
+    else if (message === '!dice') {
+      const diceRoll = Math.floor(Math.random() * 6) + 1;
+      chatClient.say(channel, `@${user} rolled a ${diceRoll}`)
+    }
+
+    if (is_spam(message)) {
+      // Bot.ban(user, 'spam'); // TODO: find API to do that
       return;
     }
 
-    speak(chatter);
-  }
+    // compatibility format with previous version
+    const chatter = {
+      user:         user,
+      username:     user,
+      display_name: user,
+      message:      message || ''
+    }
 
-  ClientConnectionAPI.message(chatter);
-});
+    speak(chatter);
+
+    ClientConnectionAPI.message(chatter);
+  });
+
+  chatClient.onSub((channel, user) => {
+    chatClient.say(channel, `Thanks to @${user} for subscribing to the channel!`);
+  });
+
+  chatClient.onResub((channel, user, subInfo) => {
+    chatClient.say(channel, `Thanks to @${user} for subscribing to the channel for a total of ${subInfo.months} months!`);
+  });
+
+  chatClient.onSubGift((channel, user, subInfo) => {
+    chatClient.say(channel, `Thanks to ${subInfo.gifter} for gifting a subscription to ${user}!`);
+  });
+
+  chatClient.connect();
+}
+
+twitch();
 
 
 

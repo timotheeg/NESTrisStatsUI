@@ -33,7 +33,8 @@
     "fastify-static": "^3.2.0",
     "lodash": "^4.17.20",
     "play-sound": "^1.1.3",
-    "twitch-bot": "^1.3.5",
+    "twitch-auth": "^4.4.10",
+    "twitch-chat-client": "^4.4.10",
     "utf-8-validate": "^5.0.2",
     "ws": "^7.3.1"
   },
