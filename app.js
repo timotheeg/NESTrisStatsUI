@@ -95,6 +95,10 @@ function is_spam(msg) {
 }
 
 async function twitch() {
+  if (!config.twitch.enabled) {
+    return;
+  }
+
   const auth = new RefreshableAuthProvider(
       new StaticAuthProvider(
         config.twitch.client.id,
@@ -115,9 +119,13 @@ async function twitch() {
       }
   );
 
+  console.log('TWITCH: connecting to ', config.twitch.channels);
+
   const chatClient = new ChatClient(auth, { channels: config.twitch.channels });
 
   chatClient.onMessage((channel, user, message) => {
+    console.log('TWITCH', user, message);
+
     // comes from sample client, but I might as well leave it for fun :)
     if (message === '!ping') {
       chatClient.say(channel, 'Pong!');
@@ -146,18 +154,44 @@ async function twitch() {
   });
 
   chatClient.onSub((channel, user) => {
-    chatClient.say(channel, `Thanks to @${user} for subscribing to the channel!`);
+    ClientConnectionAPI.message({
+      user:         'yobi9',
+      username:     'yobi9',
+      display_name: 'yobi9',
+      message:      `Thanks to ${user} for subscribing to the channel!`
+    });
   });
 
   chatClient.onResub((channel, user, subInfo) => {
-    chatClient.say(channel, `Thanks to @${user} for subscribing to the channel for a total of ${subInfo.months} months!`);
+    ClientConnectionAPI.message({
+      user:         'yobi9',
+      username:     'yobi9',
+      display_name: 'yobi9',
+      message:      `Thanks to ${user} for subscribing to the channel for a total of ${subInfo.months} months!`
+    });
   });
 
   chatClient.onSubGift((channel, user, subInfo) => {
-    chatClient.say(channel, `Thanks to ${subInfo.gifter} for gifting a subscription to ${user}!`);
+    ClientConnectionAPI.message({
+      user:         'yobi9',
+      username:     'yobi9',
+      display_name: 'yobi9',
+      message:      `Thanks to ${subInfo.gifter} for gifting a subscription to ${user}!`
+    });
   });
 
-  chatClient.connect();
+  chatClient.onRaid((channel, user, raidInfo) => {
+    ClientConnectionAPI.message({
+      user:         'yobi9',
+      username:     'yobi9',
+      display_name: raidInfo.displayName,
+      message:      `Woohoo! ${raidInfo.displayName} is raiding with a party of ${raidInfo.viewerCount}. Thanks for the raid ${raidInfo.displayName}!`
+    });
+  });
+
+  await chatClient.connect();
+
+  console.log('TWITCH: chatClient connected');
 }
 
 twitch();
