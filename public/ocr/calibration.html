@@ -104,6 +104,9 @@ function getCaptureCoordinates(ocv_img_capture) {
 		video.srcObject = captureStream;
 		video.play();
 	}
+	else {
+		return;
+	}
 
 	(async function readFrame() {
 		console.log(video.videoWidth, video.videoHeight);
