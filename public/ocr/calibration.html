@@ -3,7 +3,7 @@
 </head>
 <body>
 
-<img id="template" src="./template_ui.png" />
+<img id="template" src="./reference_ui.png" />
 <img id="capture" src="./fake_input_ui.png" />
 
 <script src="./opencv.js"></script>
@@ -45,7 +45,6 @@ function getCaptureCoordinates() {
 	const src_mat = ocv.matFromArray(src_pts.length, 1, ocv.CV_64FC2, [].concat(...src_pts));
 	const dst_mat = ocv.matFromArray(src_pts.length, 1, ocv.CV_64FC2, [].concat(...dst_pts));
 
-	// nor working because signature is incorrect :(
 	const transform = ocv.findHomography(src_mat, dst_mat, ocv.RANSAC, 5.0);
 	const size = template.size();
 
