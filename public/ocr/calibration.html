@@ -1,18 +1,24 @@
 <html>
 <head>
+<style>
+	video {
+		display: none;
+	}
+</style>
 </head>
 <body>
 
 <img id="template" src="./reference_ui.png" />
 <img id="capture" src="./fake_input_ui.png" />
+<video id="video" />
 
 <script src="./opencv.js"></script>
 <script>
 let ocv;
 
-function getCaptureCoordinates() {
+function getCaptureCoordinates(ocv_img_capture) {
 	const template = ocv.imread('template');
-	const capture = ocv.imread('capture');
+	const capture = ocv_img_capture;
 
 	const orb = new ocv.ORB();
 
@@ -65,7 +71,83 @@ function getCaptureCoordinates() {
 (async function init() {
 	ocv = await cv;
 
-	console.log(getCaptureCoordinates());
+	// check coordinates acquisition from sample image
+	console.log(getCaptureCoordinates(ocv.imread('capture')));
+
+	// try coordinates acquisition from emulator
+	const displayMediaOptions = {
+		cursor: "never",
+		video: {
+			cursor: "never",
+
+			// width: { ideal: 640 },
+			// height: { ideal: 480 },
+			frameRate: { ideal: 60 }
+		},
+		audio: false
+	}
+
+	let captureStream = null;
+	let video = document.getElementById('video');
+
+	try {
+		captureStream = await navigator.mediaDevices.getDisplayMedia(displayMediaOptions);
+		const track = captureStream.getVideoTracks()[0]
+		console.log(track.getSettings())
+		console.log(track.getConstraints())
+	}
+	catch(err) {
+		console.error("Error: " + err);
+	}
+
+	if (captureStream) {
+		video.srcObject = captureStream;
+		video.play();
+	}
+
+	(async function readFrame() {
+		console.log(video.videoWidth, video.videoHeight);
+
+		if (video.videoWidth <= 0 || video.videoHeight <= 0) {
+			window.requestAnimationFrame(readFrame);
+			return;
+		}
+
+		bitmap = await createImageBitmap(video,
+			0, 0, video.videoWidth, video.videoHeight,
+			{}
+			/*
+			,
+			{
+				resizeWidth: video.videoWidth,
+				resizeHeight: video.videoHeight,
+				resizeQuality: 'pixelated',
+			}
+			/**/
+		);
+
+
+		const capture_canvas = document.createElement('canvas');
+
+		capture_canvas.width = bitmap.width;
+		capture_canvas.height = bitmap.height;
+
+		capture_canvas.setAttribute('id', 'the_canva');
+		capture_canvas.setAttribute('width', bitmap.width);
+		capture_canvas.setAttribute('height', bitmap.height);
+
+		const capture_canvas_ctx = capture_canvas.getContext('2d');
+		capture_canvas_ctx.imageSmoothingEnabled = 'false';
+
+		document.body.append(capture_canvas);
+
+		capture_canvas_ctx.drawImage(bitmap, 0, 0, bitmap.width, bitmap.height);
+
+		const capture = ocv.imread('the_canva');
+
+		console.log(getCaptureCoordinates(capture));
+	})();
+
 })();
 </script>
 </body>
