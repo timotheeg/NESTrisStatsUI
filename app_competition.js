@@ -68,7 +68,15 @@ admin_wss.on('connection', function connection(ws) {
 	admin_conn = ws;
 
 	admin_conn.on('message', message => {
-		RPCToViewers(...JSON.parse(message));
+		const command = JSON.parse(message);
+
+		switch (command[0]) {
+			case 'start_demo':
+				startDemo();
+				break;
+			default:
+				RPCToViewers(...command);
+		}
 	});
 });
 
@@ -107,6 +115,22 @@ web_producer_wss.on('connection', function connection(ws) {
 		RPCToViewers('frame', 1, JSON.parse(message));
 	});
 });
+
+
+function startDemo() {
+	console.log('starting demo');
+
+	// load to game files and play the frames at 30fps for both players
+	const base = '/Users/timothee/src/NESTrisOCR_Alex';
+
+	const p1_frames = fs.readFileSync(`${base}/frames.game.32.jsons`, 'utf8').split('\n');
+	const p2_frames = fs.readFileSync(`${base}/frames.game.33.jsons`, 'utf8').split('\n');
+
+	setInterval(() => {
+		RPCToViewers('frame', 1, JSON.parse(p1_frames.shift()));
+		RPCToViewers('frame', 2, JSON.parse(p2_frames.shift()));
+	}, (1001/30));
+}
 
 
 
