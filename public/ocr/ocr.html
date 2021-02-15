@@ -217,6 +217,8 @@ const configs = {
 
 const show_parts = true;
 
+let do_deinterlace = true;
+
 const default_config = {
 	tasks: {
 		score:   { crop: [526, 62, 118, 7], pattern: "DDDDDD", red: false },
@@ -376,6 +378,8 @@ navigator.mediaDevices.addEventListener('devicechange', resetDevices);
 async function playVideoFromDevice(device_id) {
 	capture_process = clearTimeout(capture_process);
 
+	do_deinterlace = true;
+
 	try {
 		const constraints = {
 			audio: false,
@@ -409,6 +413,41 @@ async function playVideoFromDevice(device_id) {
 		console.error('Error opening video camera.', error);
 		video.pause();
 		capture_process = clearTimeout(capture_process);
+	}
+}
+
+async function playVideoFromScreenCap() {
+	clearTimeout(capture_process);
+
+	do_deinterlace = false;
+
+	try {
+		const constraints = {
+			audio: false,
+			video: {
+				cursor: 'never',
+				frameRate: { ideal: 60 }
+			}
+		};
+
+		const stream = await navigator.mediaDevices.getDisplayMedia(constraints);
+
+		// when an actual device id is supplied, we start everything
+		video.srcObject = stream;
+		video.play();
+
+		stream.addEventListener('inactive', console.log('stream is inactive'));
+		stream.addEventListener('close', console.log('stream is closed'));
+
+		console.log(stream.getVideoTracks()[0].getSettings());
+
+		startCapture(stream);
+	}
+	catch(error) {
+		console.error('Error opening video camera.', error);
+		video.pause();
+		capture_process = clearTimeout(capture_process);
+		window.cancelAnimationFrame(capture_process);
 	}
 }
 
@@ -468,11 +507,13 @@ async function captureFrame() {
 			// we do cheap deinterlacing with pixelated resize...
 			bitmap = await createImageBitmap(video,
 				0, 0, video.videoWidth, video.videoHeight,
-				{
-					resizeWidth: video.videoWidth,
-					resizeHeight: video.videoHeight >> 1,
-					resizeQuality: 'pixelated',
-				}
+				do_deinterlace
+					? {
+						resizeWidth: video.videoWidth,
+						resizeHeight: video.videoHeight >> 1,
+						resizeQuality: 'pixelated',
+					}
+					: {}
 			);
 		}
 		performance.mark('capture_end');
@@ -879,9 +920,14 @@ function showPerfData(perf) {
 		performance.clearMeasures();
 	}
 
-	/**/
+	/*
 	await playVideoFromDevice(config.device_id);
 	resetDevices();
+	return;
+	/**/
+
+	/**/
+	await playVideoFromScreenCap();
 	return;
 	/**/
 
