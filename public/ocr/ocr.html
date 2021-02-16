@@ -389,6 +389,7 @@ async function captureFrame() {
 		// let's assume that pixelated resize of height divided 2 is the same as dropping every other row
 		// which is equivalent to the deinterlacing we want to do
 
+		performance.mark('capture_start');
 		if (blob) {
 			// images are known to be 720x480
 			bitmap = await createImageBitmap(blob,
@@ -411,6 +412,7 @@ async function captureFrame() {
 				}
 			);
 		}
+		performance.mark('capture_end');
 
 		tetris_ocr.processFrame(bitmap);
 	}
@@ -791,10 +793,29 @@ function showPerfData(perf) {
 		connection.send(data);
 
 		if (show_parts) {
+			const perf = {};
+
+			performance.measure('capture', 'capture_start', 'capture_end');
+
+			performance.mark('show_parts_start');
 			showParts(data);
+			performance.mark('show_parts_end');
+			performance.measure('show_parts', 'show_parts_start', 'show_parts_end');
+
+			performance.mark('show_frame_data_start');
 			showFrameData(data);
+			performance.mark('show_frame_data_end');
+			performance.measure('show_frame_data', 'show_frame_data_start', 'show_frame_data_end');
+
+			const measures = performance.getEntriesByType("measure").forEach(m => {
+				perf[m.name] =  m.duration.toFixed(3);
+			});
+
 			showPerfData(perf);
 		}
+
+		performance.clearMarks();
+		performance.clearMeasures();
 	}
 
 	/**/

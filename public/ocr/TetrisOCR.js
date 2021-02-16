@@ -179,13 +179,13 @@ class TetrisOCR extends EventTarget {
 			this.initCaptureContext(frame);
 		}
 
-		const res = { perf: {} };
+		const res = {};
 
 		performance.mark('start');
 		this.capture_canvas_ctx.drawImage(frame, 0, 0, frame.width, frame.height);
 		performance.mark('draw_end');
 
-		const source_img = this.deinterlace();
+		const source_img = this.deinterlace(); // TODO rename
 
 		res.score = this.scanScore(source_img);
 		res.level = this.scanLevel(source_img);
@@ -214,15 +214,8 @@ class TetrisOCR extends EventTarget {
 		}
 
 		performance.mark('end');
-		performance.measure('total', 'start', 'end');
 		performance.measure('draw_frame', 'start', 'draw_end');
-
-		const measures = performance.getEntriesByType("measure").forEach(m => {
-			res.perf[m.name] =  m.duration.toFixed(3);
-		});
-
-		performance.clearMarks();
-		performance.clearMeasures();
+		performance.measure('total', 'start', 'end');
 
 		this.onMessage(res);
 	}
