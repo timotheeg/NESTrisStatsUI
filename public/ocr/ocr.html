@@ -50,7 +50,6 @@ dd {
 
 #ui > div {
 	flex-grow: 1;
-
 }
 
 #controls canvas, #controls span {
@@ -98,10 +97,22 @@ fieldset.field pre {
 	font-size: 1em;
 }
 
+#calibration,
+#color_matching,
+#rom_selection,
+#button_controls {
+	display: none;
+}
+
+
 </style>
 </head>
 
 <body>
+<div id="calibration">
+	<img id="reference_ui" />
+	<canvas id="video_capture" />
+</div>
 <div id="inputs">
 	<fieldset >
 		<legend>Main Setup</legend>
@@ -111,16 +122,31 @@ fieldset.field pre {
 			<select id="device"></select>
 		</div>
 
-		<div>
+		<div id="color_matching">
 			<label for="palette">Color matching</label>
 			<select id="palette"></select>
 		</div>
 
-		<div>
-			<button id="clear_config">Clear config and reload</button>
+		<div id="rom_selection">
+			<div>
+				<label for="rom">ROM</label>
+				<select id="rom">
+					<option value="classic">Classic</option>
+					<option value="das_trainer">Das Trainer</option>
+				</select>
+			</div>
+			<div>
+				<button id="go">Calibrate and Capture</button>
+			</div>
 		</div>
-		<div>
-			<button id="start_timer">Start Timer</button>
+
+		<div id="button_controls">
+			<div>
+				<button id="clear_config">Clear config and reload</button>
+			</div>
+			<div>
+				<button id="start_timer">Start Timer</button>
+			</div>
 		</div>
 	</fieldset>
 	<fieldset>
@@ -152,6 +178,7 @@ fieldset.field pre {
 <div id="templates"></div>
 
 <script src="./opencv.js"></script>
+<script src="./calibration.js"></script>
 <script src="../connection.js"></script>
 <script src="./image_tools.js"></script>
 <script src="./templates.js"></script>
@@ -188,6 +215,7 @@ const configs = {
 			'score',
 			'level',
 			'lines',
+			'field',
 			'preview',
 			'color1',
 			'color2',
@@ -202,10 +230,12 @@ const configs = {
 	},
 	das_trainer: {
 		reference: './reference_ui_das_trainer.png',
+		palette: 'easiercap',
 		fields: [
 			'score',
 			'level',
 			'lines',
+			'field',
 			'preview',
 			'instant_das',
 			'cur_piece_das',
@@ -213,7 +243,6 @@ const configs = {
 		],
 	}
 };
-
 
 const show_parts = true;
 
@@ -253,8 +282,14 @@ const default_config = {
 };
 
 const
+	reference_ui     = document.querySelector('#reference_ui'),
+	video_capture    = document.querySelector('#video_capture'),
 	device_selector  = document.querySelector('#device'),
 	palette_selector = document.querySelector('#palette'),
+	rom_selection    = document.querySelector('#rom_selection'),
+	rom_selector     = document.querySelector('#rom'),
+	button_controls  = document.querySelector('#button_controls'),
+	go_btn           = document.querySelector('#go'),
 	conn_host        = document.querySelector('#conn_host'),
 	conn_port        = document.querySelector('#conn_port'),
 	video            = document.querySelector('#device_video'),
@@ -277,8 +312,7 @@ let connection;
 
 device_selector.addEventListener('change', evt => {
 	config.device_id = device_selector.value;
-	saveConfig(config);
-	playVideoFromDevice(config.device_id);
+	playVideoFromConfig();
 });
 
 palette_selector.addEventListener('change', evt => {
@@ -315,6 +349,70 @@ start_timer.addEventListener('click', evt => {
 	connection.send(['startTimer'])
 })
 
+go_btn.addEventListener('click', async (evt) => {
+	if (device_selector.value == 0) return;
+
+	device_selector.disabled = true;
+	rom_selector.disabled = true;
+	go_btn.disabled = true;
+
+	// set up config per rom selection
+	const rom_config = configs[rom_selector.value];
+
+	config.palette = rom_config.palette;
+
+	await loadImage(reference_ui, rom_config.reference);
+
+	const bitmap = await createImageBitmap(video,
+		0, 0, video.videoWidth, video.videoHeight,
+		do_deinterlace
+			? {
+				resizeWidth: video.videoWidth,
+				resizeHeight: video.videoHeight >> 1,
+				resizeQuality: 'pixelated',
+			}
+			: {}
+	);
+
+	updateCanvasSizeIfNeeded(
+		video_capture,
+		video.videoWidth,
+		video.videoHeight >> (do_deinterlace ? 1 : 0)
+	);
+
+	video_capture.getContext('2d').drawImage(bitmap, 0, 0);
+
+	const [ox, oy, ow, oh] = getCaptureCoordinates('reference_ui', 'video_capture');
+
+	console.log('Found offsets: ', ox, oy, ow, oh);
+
+	const xscale = ow / reference_size[0];
+	const yscale = oh / reference_size[1];
+
+	console.log('scale factors', xscale, yscale);
+
+	rom_config.fields.forEach(name => {
+		config.tasks[name] = JSON.parse(JSON.stringify(reference_locations[name]));
+
+		const crop = config.tasks[name].crop;
+
+		crop[0] = Math.round(ox + crop[0] * xscale);
+		crop[1] = Math.round(oy + crop[1] * yscale);
+		crop[2] = Math.round(crop[2] * xscale);
+		crop[3] = Math.round(crop[3] * yscale);
+	});
+
+	saveConfig(config);
+	trackAndSendFrames();
+});
+
+function loadImage(img, src) {
+	return new Promise(resolve => {
+		img.onload = resolve;
+		img.src = src;
+	});
+}
+
 function updatePaletteList() {
 	palette_selector.innerHTML = '';
 
@@ -347,6 +445,10 @@ function updateDeviceList(devices) {
 			label: "None",
 			deviceId: "0"
 		},
+		{
+			label: "Window Capture",
+			deviceId: "window"
+		},
 		...devices
 	]
 	.forEach(camera => {
@@ -376,10 +478,6 @@ navigator.mediaDevices.addEventListener('devicechange', resetDevices);
 
 
 async function playVideoFromDevice(device_id) {
-	capture_process = clearTimeout(capture_process);
-
-	do_deinterlace = true;
-
 	try {
 		const constraints = {
 			audio: false,
@@ -402,25 +500,14 @@ async function playVideoFromDevice(device_id) {
 		// when an actual device id is supplied, we start everything
 		video.srcObject = stream;
 		video.play();
-
-		stream.addEventListener('inactive', console.log('stream is inactive'));
-
-		console.log(stream.getVideoTracks()[0].getSettings());
-
-		startCapture(stream);
 	}
 	catch(error) {
 		console.error('Error opening video camera.', error);
 		video.pause();
-		capture_process = clearTimeout(capture_process);
 	}
 }
 
 async function playVideoFromScreenCap() {
-	clearTimeout(capture_process);
-
-	do_deinterlace = false;
-
 	try {
 		const constraints = {
 			audio: false,
@@ -435,19 +522,21 @@ async function playVideoFromScreenCap() {
 		// when an actual device id is supplied, we start everything
 		video.srcObject = stream;
 		video.play();
-
-		stream.addEventListener('inactive', console.log('stream is inactive'));
-		stream.addEventListener('close', console.log('stream is closed'));
-
-		console.log(stream.getVideoTracks()[0].getSettings());
-
-		startCapture(stream);
 	}
 	catch(error) {
-		console.error('Error opening video camera.', error);
+		console.error('Error capturing window.', error);
 		video.pause();
-		capture_process = clearTimeout(capture_process);
-		window.cancelAnimationFrame(capture_process);
+	}
+}
+
+async function playVideoFromConfig() {
+	if (config.device_id === 'window') {
+		do_deinterlace = false;
+		await playVideoFromScreenCap();
+	}
+	else {
+		do_deinterlace = true;
+		await playVideoFromDevice(config.device_id);
 	}
 }
 
@@ -458,6 +547,19 @@ let start_time_ms;
 let last_frame_time;
 
 async function startCapture(stream) {
+	capture_process = clearTimeout(capture_process);
+
+	if (!stream) {
+		stream = video.srcObject;
+
+		if (!stream) {
+			return;
+		}
+	}
+
+	stream.addEventListener('inactive', console.log('stream is inactive'));
+	stream.addEventListener('close', console.log('stream is closed'));
+
 	const settings = stream.getVideoTracks()[0].getSettings();
 
 	console.log(`Video settings: ${settings.width}x${settings.height}@${settings.frameRate.toFixed(1)}fps`);
@@ -525,6 +627,7 @@ async function captureFrame() {
 	}
 
 	// schedule next async run, device wil hold till next frame 👍
+	// might need to do a animationFrame or 60fps interval 🤔
 	capture_process = setTimeout(captureFrame, 0);
 }
 
@@ -783,8 +886,6 @@ function loadConfig() {
 	if (config) {
 		return JSON.parse(config);
 	}
-
-	return JSON.parse(JSON.stringify(default_config));
 }
 
 function showFrameData(data) {
@@ -824,28 +925,7 @@ function showPerfData(perf) {
 	}
 }
 
-(async function init() {
-	ocv = await cv;
-
-	// load external assets - could parrallelize
-	templates = await loadDigitTemplates();
-	palettes = await loadPalettes();
-
-	connect();
-
-	if (!hasConfig()) {
-		config = default_config;
-		// wait for user to select camera
-		// present button "click to calibrate"
-		// save config
-		// start OCR
-	}
-	else {
-		config = loadConfig();
-	}
-
-	updatePaletteList();
-
+function trackAndSendFrames() {
 	if (show_parts) {
 		showConfigControls(templates, palettes, config);
 	}
@@ -883,9 +963,15 @@ function showPerfData(perf) {
 
 		data.gameid = gameid;
 
-		const perf = data.perf;
+		/*
+		// TODO: don't send consecutive identical frames
+		if (last_game_frame) {
+			for (let key in last_game_frame) {
 
-		delete data.perf;
+			}
+		}
+		/**/
+
 
 		data.ctime = Date.now();
 
@@ -920,17 +1006,8 @@ function showPerfData(perf) {
 		performance.clearMeasures();
 	}
 
+
 	/*
-	await playVideoFromDevice(config.device_id);
-	resetDevices();
-	return;
-	/**/
-
-	/**/
-	await playVideoFromScreenCap();
-	return;
-	/**/
-
 	const fake_stream = {
 		asset: './full3.png',
 		addEventListener: function() {},
@@ -948,8 +1025,39 @@ function showPerfData(perf) {
 	};
 
 	startCapture(fake_stream);
-})();
+	return;
+	/**/
 
+	startCapture();
+}
+
+
+(async function init() {
+	ocv = await cv;
+
+	// load external assets - could parrallelize
+	templates = await loadDigitTemplates();
+	palettes = await loadPalettes();
+
+	connect();
+
+	await updatePaletteList();
+
+	if (hasConfig()) {
+		config = loadConfig();
+		await resetDevices();
+		button_controls.style.display = 'block';
+		await playVideoFromConfig();
+		trackAndSendFrames();
+	}
+	else {
+		await resetDevices();
+
+		// create default dummy waiting to be populated by user selection
+		config = { tasks: {} };
+		rom_selection.style.display = 'block';
+	}
+})();
 
 </script>
 </body>
