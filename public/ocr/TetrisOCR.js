@@ -199,6 +199,7 @@ class TetrisOCR extends EventTarget {
 		performance.mark('start');
 		this.capture_canvas_ctx.drawImage(frame, 0, 0, frame.width, frame.height);
 		performance.mark('draw_end');
+		performance.measure('draw_frame', 'start', 'draw_end');
 
 		const source_img = this.deinterlace(); // TODO rename
 
@@ -231,10 +232,6 @@ class TetrisOCR extends EventTarget {
 		if (this.config.tasks.t) {
 			Object.assign(res, this.scanPieceStats(source_img));
 		}
-
-		performance.mark('end');
-		performance.measure('draw_frame', 'start', 'draw_end');
-		performance.measure('total', 'start', 'end');
 
 		this.onMessage(res);
 	}
