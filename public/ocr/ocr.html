@@ -176,12 +176,22 @@ const default_config = {
 		color1:  { crop: [139, 112, 11, 5] },
 		color2:  { crop: [139, 129, 11, 5] },
 
-		// stats: { crop: [164, 93, 57, 105], red: true },
-
 		/**/
 		instant_das:   { crop: [144, 38, 37, 7], pattern: "BD", red: false },
 		cur_piece_das: { crop: [184, 54, 37, 7], pattern: "BD", red: false },
 		cur_piece:     { crop: [83, 50, 59, 12] }
+		/**/
+
+		/*
+		// Although pieces are random, inpractice, we expect piece count to be less than 200 per piece
+		// refer to https://www.youtube.com/watch?v=rR1ScL65EDY&t=544 for a very high scoring game
+		t: { crop: [426, 22, 57, 7], pattern: "BDD", red: true },
+		j: { crop: [426, 22, 57, 7], pattern: "BDD", red: true },
+		z: { crop: [426, 22, 57, 7], pattern: "BDD", red: true },
+		o: { crop: [426, 22, 57, 7], pattern: "BDD", red: true },
+		s: { crop: [426, 22, 57, 7], pattern: "BDD", red: true },
+		l: { crop: [426, 22, 57, 7], pattern: "BDD", red: true },
+		i: { crop: [426, 22, 57, 7], pattern: "BDD", red: true },
 		/**/
 	}
 };

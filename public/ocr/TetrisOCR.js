@@ -39,7 +39,8 @@ const TASK_RESIZE = {
 	cur_piece_das: [getDigitsWidth(2), 14],
 	color1:        [5, 5],
 	color2:        [5, 5],
-	stats:         [getDigitsWidth(3), 14 * 7 + 14 * 7] // height captures all the individual stats...
+	stats:         [getDigitsWidth(3), 14 * 7 + 14 * 7], // height captures all the individual stats...
+	piece_count:   [getDigitsWidth(3), 14],
 };
 
 // timing decorator
@@ -95,8 +96,11 @@ class TetrisOCR extends EventTarget {
 			left:   0xFFFFFFFF,
 			bottom: -1,
 			right:  -1,
-		}
+		};
 
+		// This create a lot of imageData objects of similar sizes
+		// Somecould be shared because they are the same dimensions (e.g. 3 digits for lines, and piece stats)
+		// but if we share them, we wouldnotbe able to display them individually in the debug UI
 		for (const [name, task] of Object.entries(this.config.tasks)) {
 			if (this.palette && name.startsWith('color')) continue;
 
@@ -213,6 +217,10 @@ class TetrisOCR extends EventTarget {
 			res.cur_piece = this.scanCurPiece(source_img);
 		}
 
+		if (this.config.tasks.t) {
+			objec.assign(res, this.scanPieceStats(source_img));
+		}
+
 		performance.mark('end');
 		performance.measure('draw_frame', 'start', 'draw_end');
 		performance.measure('total', 'start', 'end');
@@ -249,7 +257,15 @@ class TetrisOCR extends EventTarget {
 	}
 
 	scanPieceStats(source_img) {
-		// TODO
+		return {
+			t: this.ocrDigits(source_img, this.config.tasks.t),
+			j: this.ocrDigits(source_img, this.config.tasks.j),
+			z: this.ocrDigits(source_img, this.config.tasks.z),
+			o: this.ocrDigits(source_img, this.config.tasks.o),
+			s: this.ocrDigits(source_img, this.config.tasks.s),
+			l: this.ocrDigits(source_img, this.config.tasks.l),
+			i: this.ocrDigits(source_img, this.config.tasks.i),
+		};
 	}
 
 	deinterlace() {
