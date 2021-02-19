@@ -482,7 +482,7 @@ function resetConfig(config, task_name, task_crop) {
 	updateCanvasSizeIfNeeded(
 		config.di_canvas,
 		config.capture_area.w,
-		config.capture_bounds.bottom
+		config.capture_area.h
 	);
 
 	saveConfig(config);
@@ -568,6 +568,7 @@ async function showParts(data) {
 	di_ctx.fillStyle = '#FFA50080';
 
 	const x_offset = config.capture_area.x;
+	const y_offset = config.capture_area.y;
 
 	for (const name of Object.keys(data)) {
 		const task = config.tasks[name];
@@ -635,7 +636,7 @@ async function showParts(data) {
 
 		// highlight captured areas in main deinterlaced image
 		const [x, y, w, h] = task.crop;
-		di_ctx.fillRect(x - x_offset, y, w, h);
+		di_ctx.fillRect(x - x_offset, y - y_offset, w, h);
 
 		// show text result
 		if (name.startsWith('color')) {
@@ -645,7 +646,7 @@ async function showParts(data) {
 			holder.querySelector(`pre`).textContent = color;
 		}
 		else if (name != 'field') {
-			holder.querySelector(`pre`).innerHTML = data[name] || '&nbsp;';
+			holder.querySelector(`pre`).innerHTML = data[name] === null ? '&nbsp;' : data[name];
 		}
 		else {
 			const rows = [];

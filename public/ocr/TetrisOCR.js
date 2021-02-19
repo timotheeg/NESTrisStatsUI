@@ -133,17 +133,19 @@ class TetrisOCR extends EventTarget {
 		};
 	}
 
-	getDigit(pixel_data, max_check_index) {
+	getDigit(pixel_data, max_check_index, is_red) {
 		const sums = new Float64Array(max_check_index);
 		const size = pixel_data.length >>> 2;
 
 		for (let p_idx = size; p_idx--; ) {
 			const offset_idx = p_idx << 2;
-			const pixel_luma = luma(
-				pixel_data[offset_idx],
-				pixel_data[offset_idx + 1],
-				pixel_data[offset_idx + 2],
-			);
+			const pixel_luma = is_red
+				? pixel_data[offset_idx] // only consider red component for luma
+				: luma(
+					pixel_data[offset_idx],
+					pixel_data[offset_idx + 1],
+					pixel_data[offset_idx + 2],
+				);
 
 			for (let t_idx=max_check_index; t_idx--; ) {
 				const diff = pixel_luma - this.templates[t_idx][p_idx];
@@ -279,8 +281,8 @@ class TetrisOCR extends EventTarget {
 
 	deinterlace() {
 		const pixels = this.capture_canvas_ctx.getImageData(
-			this.config.capture_area.x, 0,
-			this.config.capture_area.w, this.config.capture_bounds.bottom
+			this.config.capture_area.x, this.config.capture_area.y,
+			this.config.capture_area.w, this.config.capture_area.h
 		);
 
 		/*
@@ -301,10 +303,19 @@ class TetrisOCR extends EventTarget {
 		return pixels;
 	}
 
-	ocrDigits(source_img, task) {
-		const [raw_x, y, w, h] = task.crop;
-		const x = raw_x - this.config.capture_area.x;
+	getCropCoordinates(task) {
+		const [raw_x, raw_y, w, h] = task.crop;
 
+		return [
+			raw_x - this.config.capture_area.x,
+			raw_y - this.config.capture_area.y,
+			w,
+			h,
+		];
+	}
+
+	ocrDigits(source_img, task) {
+		const [x, y, w, h] = this.getCropCoordinates(task);
 		const nominal_width = 8 * task.pattern.length - 1;
 		const digits = new Array(task.pattern.length);
 
@@ -316,7 +327,7 @@ class TetrisOCR extends EventTarget {
 
 			crop(task.scale_img, idx * 16, 0, 14, 14, this.digit_img);
 
-			const digit = this.getDigit(this.digit_img.data, PATTERN_MAX_INDEXES[char]);
+			const digit = this.getDigit(this.digit_img.data, PATTERN_MAX_INDEXES[char], task.red);
 
 			if (!digit) return null;
 
@@ -350,8 +361,7 @@ class TetrisOCR extends EventTarget {
 
 	scanPreview(source_img) {
 		const task = this.config.tasks.preview;
-		const [raw_x, y, w, h] = task.crop;
-		const x = raw_x - this.config.capture_area.x;
+		const [x, y, w, h] = this.getCropCoordinates(task);
 
 		crop(source_img, x, y, w, h, task.crop_img);
 		bicubic(task.crop_img, task.scale_img);
@@ -415,8 +425,7 @@ class TetrisOCR extends EventTarget {
 
 	scanCurPiece(source_img) {
 		const task = this.config.tasks.cur_piece;
-		const [raw_x, y, w, h] = task.crop;
-		const x = raw_x - this.config.capture_area.x;
+		const [x, y, w, h] = this.getCropCoordinates(task);
 
 		// curPieces are not vertically aligned on the op row
 		// L and J are rendered 1 pixel higher
@@ -493,8 +502,7 @@ class TetrisOCR extends EventTarget {
 	}
 
 	scanColor(source_img, task) {
-		const [raw_x, y, w, h] = task.crop;
-		const x = raw_x - this.config.capture_area.x;
+		const [x, y, w, h] = this.getCropCoordinates(task);
 
 		crop(source_img, x, y, w, h, task.crop_img);
 		bicubic(task.crop_img, task.scale_img);
@@ -521,8 +529,7 @@ class TetrisOCR extends EventTarget {
 
 	async scanField(source_img, _colors) {
 		const task = this.config.tasks.field;
-		const [raw_x, y, w, h] = task.crop;
-		const x = raw_x - this.config.capture_area.x;
+		const [x, y, w, h] = this.getCropCoordinates(task);
 		const colors = [
 			[0, 0, 0],
 			[0xFF, 0xFF, 0xFF],
