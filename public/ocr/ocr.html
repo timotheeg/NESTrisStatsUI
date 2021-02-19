@@ -735,14 +735,16 @@ function showPerfData(perf) {
 	templates = await loadDigitTemplates();
 	palettes = await loadPalettes();
 
-	if (false && !hasConfig()) {
+	connect();
+
+	if (!hasConfig()) {
+		config = default_config;
 		// wait for user to select camera
 		// present button "click to calibrate"
 		// save config
 		// start OCR
 	}
 	else {
-		connect();
 		config = loadConfig();
 	}
 

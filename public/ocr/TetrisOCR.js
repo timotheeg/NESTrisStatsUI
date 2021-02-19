@@ -111,8 +111,17 @@ class TetrisOCR extends EventTarget {
 			bounds.bottom = Math.max(bounds.bottom, y + h);
 			bounds.right  = Math.max(bounds.right,  x + w);
 
+			let resize_tuple;
+
+			if (name.length === 1) {
+				resize_tuple = TASK_RESIZE.piece_count;
+			}
+			else {
+				resize_tuple = TASK_RESIZE[name];
+			}
+
 			task.crop_img = new ImageData(w, h);
-			task.scale_img = new ImageData(...TASK_RESIZE[name]);
+			task.scale_img = new ImageData(...resize_tuple);
 		}
 
 		this.config.capture_bounds = bounds;
@@ -218,7 +227,7 @@ class TetrisOCR extends EventTarget {
 		}
 
 		if (this.config.tasks.t) {
-			objec.assign(res, this.scanPieceStats(source_img));
+			Object.assign(res, this.scanPieceStats(source_img));
 		}
 
 		performance.mark('end');
