@@ -121,13 +121,21 @@ fieldset.field pre {
 			<label for="device">Capture card</label>
 			<select id="device"></select>
 		</div>
+
 		<div>
 			<label for="rom">ROM</label>
 			<select id="rom">
+				<option value="">-</option>
 				<option value="classic">Classic</option>
 				<option value="das_trainer">Das Trainer</option>
 			</select>
 		</div>
+
+		<div id="color_matching">
+			<label for="palette">Color matching</label>
+			<select id="palette"></select>
+		</div>
+
 		<div>
 			<button id="go">Calibrate and Capture</button>
 		</div>
@@ -136,11 +144,10 @@ fieldset.field pre {
 	<fieldset id="controls">
 		<legend>Controls</legend>
 
-		<div id="color_matching">
-			<label for="palette">Color matching</label>
-			<select id="palette"></select>
+		<div>
+			<label for="show_parts">Show Parts</label>
+			<input type="checkbox" id="show_parts" checked />
 		</div>
-
 		<div>
 			<button id="clear_config">Clear config and reload</button>
 		</div>
@@ -244,8 +251,6 @@ const configs = {
 	}
 };
 
-const show_parts = true;
-
 let do_deinterlace = true;
 
 const
@@ -253,12 +258,15 @@ const
 	video_capture    = document.querySelector('#video_capture'),
 
 	wizard           = document.querySelector('#wizard'),
-	controls         = document.querySelector('#controls'),
 	device_selector  = document.querySelector('#device'),
+	color_matching   = document.querySelector('#color_matching'),
 	palette_selector = document.querySelector('#palette'),
 	rom_selector     = document.querySelector('#rom'),
-	button_controls  = document.querySelector('#button_controls'),
 	go_btn           = document.querySelector('#go'),
+
+	controls         = document.querySelector('#controls'),
+	show_parts       = document.querySelector('#show_parts'),
+
 	conn_host        = document.querySelector('#conn_host'),
 	conn_port        = document.querySelector('#conn_port'),
 	video            = document.querySelector('#device_video'),
@@ -282,18 +290,38 @@ let connection;
 device_selector.addEventListener('change', evt => {
 	config.device_id = device_selector.value;
 	playVideoFromConfig();
+	checkActivateGoButton();
 });
 
+palette_selector.disabled = true;
 palette_selector.addEventListener('change', evt => {
 	config.palette = palette_selector.value;
-
-	config.device_id = palette_selector.value;
-	saveConfig(config);
-	tetris_ocr.setConfig(config);
-
-	showColorControls(palettes, config);
-	resetConfig(config);
+	checkActivateGoButton();
 });
+
+rom_selector.addEventListener('change', evt => {
+	if (rom_selector.value === 'classic') {
+		color_matching.style.display = 'block';
+		palette_selector.value = '';
+		palette_selector.disabled = false;
+	}
+	else {
+		color_matching.style.display = 'none';
+		palette_selector.disabled = true;
+		palette_selector.value = Object.keys(palettes)[0];
+	}
+
+	config.palette = palette_selector.value;
+
+	checkActivateGoButton();
+});
+
+function checkActivateGoButton() {
+	// no need to check palette, if rom_selector has a value, then palette automatically has a valid value too
+	const all_ready = device_selector.value && rom_selector.value;
+
+	go_btn.disabled = !all_ready;
+}
 
 function connect() {
 	if (connection) {
@@ -318,6 +346,7 @@ start_timer.addEventListener('click', evt => {
 	connection.send(['startTimer'])
 })
 
+go_btn.disabled = true;
 go_btn.addEventListener('click', async (evt) => {
 	if (device_selector.value == 0) return;
 
@@ -327,8 +356,6 @@ go_btn.addEventListener('click', async (evt) => {
 
 	// set up config per rom selection
 	const rom_config = configs[rom_selector.value];
-
-	config.palette = rom_config.palette;
 
 	await loadImage(reference_ui, rom_config.reference);
 
@@ -387,6 +414,13 @@ go_btn.addEventListener('click', async (evt) => {
 	controls.style.display = 'block';
 });
 
+show_parts.addEventListener('change', evt => {
+	const display = show_parts.checked ? 'block' : 'none';
+
+	adjustments.style.display = display;
+	config.di_canvas.style.display = display;
+});
+
 function loadImage(img, src) {
 	return new Promise(resolve => {
 		img.onload = resolve;
@@ -423,8 +457,8 @@ function updateDeviceList(devices) {
 
 	[
 		{
-			label: "None",
-			deviceId: "0"
+			label: "-",
+			deviceId: ""
 		},
 		{
 			label: "Window Capture",
@@ -511,7 +545,10 @@ async function playVideoFromScreenCap() {
 }
 
 async function playVideoFromConfig() {
-	if (config.device_id === 'window') {
+	if (!config.device_id) {
+		return;
+	}
+	else if (config.device_id === 'window') {
 		do_deinterlace = false;
 		await playVideoFromScreenCap();
 	}
@@ -550,7 +587,7 @@ async function startCapture(stream) {
 		blob = await response.blob();
 	}
 
-	if (show_parts) {
+	if (show_parts.checked) {
 		adjustments.style.display = 'block';
 		ocr_results.style.display = 'flex';
 	}
@@ -911,7 +948,7 @@ function showPerfData(perf) {
 }
 
 function trackAndSendFrames() {
-	if (show_parts) {
+	if (show_parts.checked) {
 		showConfigControls(templates, palettes, config);
 	}
 
@@ -959,35 +996,33 @@ function trackAndSendFrames() {
 
 		data.ctime = Date.now();
 
-		if (show_parts) {
-			const perf = {};
-
-			performance.measure('capture', 'capture_start', 'capture_end');
-
+		if (show_parts.checked) {
 			performance.mark('show_parts_start');
 			await showParts(data);
 			performance.mark('show_parts_end');
 			performance.measure('show_parts', 'show_parts_start', 'show_parts_end');
-
-			performance.mark('show_frame_data_start');
-			showFrameData(data);
-			performance.mark('show_frame_data_end');
-			performance.measure('show_frame_data', 'show_frame_data_start', 'show_frame_data_end');
-
-			performance.mark('process_over');
-			performance.measure('total', 'capture_start', 'process_over');
-
-			const measures = performance.getEntriesByType("measure").forEach(m => {
-				perf[m.name] =  m.duration.toFixed(3);
-			});
-
-			showPerfData(perf);
 		}
 
+		const perf = {};
+
+		performance.measure('capture', 'capture_start', 'capture_end');
+
+		performance.mark('show_frame_data_start');
+		showFrameData(data);
+		performance.mark('show_frame_data_end');
+		performance.measure('show_frame_data', 'show_frame_data_start', 'show_frame_data_end');
+
+		performance.mark('process_over');
+		performance.measure('total', 'capture_start', 'process_over');
+
+		const measures = performance.getEntriesByType("measure").forEach(m => {
+			perf[m.name] =  m.duration.toFixed(3);
+		});
+
+		showPerfData(perf);
 		performance.clearMarks();
 		performance.clearMeasures();
 
-		// don't  send colors
 		delete data.color1;
 		delete data.color2;
 
