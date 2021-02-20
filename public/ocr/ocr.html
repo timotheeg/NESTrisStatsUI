@@ -921,7 +921,7 @@ function trackAndSendFrames() {
 	let gameid = 1;
 
 	// TODO: better event system and name for frame data events
-	tetris_ocr.onMessage = function(data) {
+	tetris_ocr.onMessage = async function(data) {
 		// make frame NESTrisOCR compatible
 		// TODO: update stats UI to take in numbers rather than strings
 		if (data.score !== null) data.score = `${data.score}`.padStart(6, '0');
@@ -965,7 +965,7 @@ function trackAndSendFrames() {
 			performance.measure('capture', 'capture_start', 'capture_end');
 
 			performance.mark('show_parts_start');
-			showParts(data);
+			await showParts(data);
 			performance.mark('show_parts_end');
 			performance.measure('show_parts', 'show_parts_start', 'show_parts_end');
 

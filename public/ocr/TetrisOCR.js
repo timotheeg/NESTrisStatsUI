@@ -313,7 +313,6 @@ class TetrisOCR extends EventTarget {
 
 	ocrDigits(source_img, task) {
 		const [x, y, w, h] = this.getCropCoordinates(task);
-		const nominal_width = 8 * task.pattern.length - 1;
 		const digits = new Array(task.pattern.length);
 
 		crop(source_img, x, y, w, h, task.crop_img);
