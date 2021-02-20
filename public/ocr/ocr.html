@@ -248,39 +248,6 @@ const show_parts = true;
 
 let do_deinterlace = true;
 
-const default_config = {
-	tasks: {
-		score:   { crop: [526, 62, 118, 7], pattern: "DDDDDD", red: false },
-		level:   { crop: [567, 166, 37, 7], pattern: "TD", red: false },
-		lines:   { crop: [426, 22, 57, 7], pattern: "TDD", red: false },
-		field:   { crop: [284, 46, 201, 160] },
-		preview: { crop: [526, 118, 80, 15] },
-
-		// color tasks are always set
-		// but can be ignored during OCR if a palette is supplied
-		color1:  { crop: [139, 112, 11, 5] },
-		color2:  { crop: [139, 129, 11, 5] },
-
-		/**/
-		instant_das:   { crop: [144, 38, 37, 7], pattern: "BD", red: false },
-		cur_piece_das: { crop: [184, 54, 37, 7], pattern: "BD", red: false },
-		cur_piece:     { crop: [83, 50, 59, 12] }
-		/**/
-
-		/*
-		// Although pieces are random, inpractice, we expect piece count to be less than 200 per piece
-		// refer to https://www.youtube.com/watch?v=rR1ScL65EDY&t=544 for a very high scoring game
-		t: { crop: [426, 22, 57, 7], pattern: "BDD", red: true },
-		j: { crop: [426, 22, 57, 7], pattern: "BDD", red: true },
-		z: { crop: [426, 22, 57, 7], pattern: "BDD", red: true },
-		o: { crop: [426, 22, 57, 7], pattern: "BDD", red: true },
-		s: { crop: [426, 22, 57, 7], pattern: "BDD", red: true },
-		l: { crop: [426, 22, 57, 7], pattern: "BDD", red: true },
-		i: { crop: [426, 22, 57, 7], pattern: "BDD", red: true },
-		/**/
-	}
-};
-
 const
 	reference_ui     = document.querySelector('#reference_ui'),
 	video_capture    = document.querySelector('#video_capture'),
