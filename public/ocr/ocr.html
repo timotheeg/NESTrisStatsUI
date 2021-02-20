@@ -690,8 +690,12 @@ function showColorControls(palettes, config) {
 	const has_valid_palette = !!(config.palette && palettes[config.palette]);
 	const display = has_valid_palette ? 'none' : 'block';
 
-	document.querySelector(`fieldset.color1`).style.display = display;
-	document.querySelector(`fieldset.color2`).style.display = display;
+	const color_fieldset = document.querySelector(`fieldset.color1`);
+
+	if (color_fieldset) {
+		document.querySelector(`fieldset.color1`).style.display = display;
+		document.querySelector(`fieldset.color2`).style.display = display;
+	}
 }
 
 function showConfigControls(templates, palettes, config) {
