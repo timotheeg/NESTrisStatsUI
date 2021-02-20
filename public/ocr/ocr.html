@@ -382,6 +382,9 @@ go_btn.addEventListener('click', async (evt) => {
 
 	saveConfig(config);
 	trackAndSendFrames();
+
+	wizard.style.display = 'none';
+	controls.style.display = 'block';
 });
 
 function loadImage(img, src) {
@@ -954,6 +957,9 @@ function trackAndSendFrames() {
 		}
 		/**/
 
+		// don't report or send colors
+		delete data.color1;
+		delete data.color2;
 
 		data.ctime = Date.now();
 
