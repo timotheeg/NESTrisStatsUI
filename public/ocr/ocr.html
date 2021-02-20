@@ -957,13 +957,7 @@ function trackAndSendFrames() {
 		}
 		/**/
 
-		// don't report or send colors
-		delete data.color1;
-		delete data.color2;
-
 		data.ctime = Date.now();
-
-		connection.send(data);
 
 		if (show_parts) {
 			const perf = {};
@@ -992,6 +986,12 @@ function trackAndSendFrames() {
 
 		performance.clearMarks();
 		performance.clearMeasures();
+
+		// don't  send colors
+		delete data.color1;
+		delete data.color2;
+
+		connection.send(data);
 	}
 
 
