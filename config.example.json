@@ -1,0 +1,35 @@
+{
+    "default_player": "TIM",
+    "twitch": {
+        "enabled": true,
+        "client": {
+            "id": "TWITCH_CLIENT_ID",
+            "secret": "TWITCH_CLIENT_SECRET"
+        },
+        "access": {
+            "accessToken": "TWITCH_OAUTH_ACCESS_TOKEN",
+            "refreshToken": "TWITCH_OAUTH_REFRESH_TOKEN",
+            "expiryTimestamp": 1618978232553
+        },
+        "channels": [
+            "yobi9"
+        ]
+    },
+    "chat_voice": {
+        "enabled": true,
+        "provider": "google",
+        "credentials": "./GCP_TwitchChatVoiceOver.json",
+        "twitch_mappings": {
+            "osx": {
+                "puffy2303": "Karen",
+                "yobi9": "Daniel"
+            },
+            "google": {
+                "puffy2303": "en-AU-Wavenet-A",
+                "yobi9": "en-GB-Wavenet-B",
+                "allenbotspeedruns": "en-IN-Wavenet-A",
+                "gscookie": "en-US-Wavenet-C"
+            }
+        }
+    }
+}
