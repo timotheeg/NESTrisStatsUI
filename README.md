@@ -1,3 +1,9 @@
+⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️
+This project is **obsolete**.
+It has been superseeded by [NesTrisChamps](https://github.com/timotheeg/nestrischamps)
+⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️
+
+
 ## A Renderer for Classic NES Tetris
 
 NesTrisStatsUI is a project to render NES Tetris. It runs by processing Tetris data reported by [NESTrisOCR](https://github.com/alex-ong/NESTrisOCR).
