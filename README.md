@@ -1,6 +1,9 @@
 ⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️
+
 This project is **obsolete**.
+
 It has been superseeded by [NesTrisChamps](https://github.com/timotheeg/nestrischamps)
+
 ⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️
 
 
