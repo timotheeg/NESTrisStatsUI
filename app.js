@@ -154,39 +154,51 @@ async function twitch() {
   });
 
   chatClient.onSub((channel, user) => {
-    ClientConnectionAPI.message({
+    const chatter = {
       user:         'yobi9',
       username:     'yobi9',
       display_name: 'yobi9',
       message:      `Thanks to ${user} for subscribing to the channel!`
-    });
+    };
+
+    speak(chatter);
+    ClientConnectionAPI.message(chatter);
   });
 
   chatClient.onResub((channel, user, subInfo) => {
-    ClientConnectionAPI.message({
+    const chatter = {
       user:         'yobi9',
       username:     'yobi9',
       display_name: 'yobi9',
       message:      `Thanks to ${user} for subscribing to the channel for a total of ${subInfo.months} months!`
-    });
+    };
+
+    speak(chatter);
+    ClientConnectionAPI.message(chatter);
   });
 
   chatClient.onSubGift((channel, user, subInfo) => {
-    ClientConnectionAPI.message({
+    const chatter = {
       user:         'yobi9',
       username:     'yobi9',
       display_name: 'yobi9',
       message:      `Thanks to ${subInfo.gifter} for gifting a subscription to ${user}!`
-    });
+    };
+
+    speak(chatter);
+    ClientConnectionAPI.message(chatter);
   });
 
   chatClient.onRaid((channel, user, raidInfo) => {
-    ClientConnectionAPI.message({
+    const chatter = {
       user:         'yobi9',
       username:     'yobi9',
       display_name: raidInfo.displayName,
       message:      `Woohoo! ${raidInfo.displayName} is raiding with a party of ${raidInfo.viewerCount}. Thanks for the raid ${raidInfo.displayName}!`
-    });
+    };
+
+    speak(chatter);
+    ClientConnectionAPI.message(chatter);
   });
 
   await chatClient.connect();
